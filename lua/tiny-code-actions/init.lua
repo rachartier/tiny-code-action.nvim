@@ -1,7 +1,10 @@
 local M = {}
 
+local utils = require("tiny-code-actions.utils")
+
 M.cache = {
 	highlights = {},
+	diff_hl = {},
 }
 
 local Job = require("plenary.job")
@@ -18,168 +21,45 @@ M.config = {
 	height = 0.8,
 	preview_height = 0.7,
 	backend = "delta",
+	backend_opts = {
+		delta = {
+			override_cmd = nil,
+			use_git_config = false,
+		},
+	},
+	signs = {
+		quickfix = "󰁨",
+	},
 }
 
-local function find_next_escapes(texts, index)
-	local pattern = "\27%[%d+;%d+;%d+;%d+;%d+m" -- Pour les séquences d'échappement ANSI comme \27[38;5;196m
-	local alt_pattern = "%[[0-9]+[m|K]" -- Pour les séquences comme ^[[0m
-
-	local combined_text = table.concat(texts)
-
-	local pre_text, escape, post_text = combined_text:match("(.-)(" .. pattern .. ")(.*)", index)
-	if not escape then
-		pre_text, escape, post_text = combined_text:match("(.-)(" .. alt_pattern .. ")(.*)", index)
-		if not escape then
-			return nil
-		end
-	end
-
-	return pre_text, escape, post_text
-end
-
-local function get_colors_from_term(color_index)
-	local match_color = {
-		["0"] = { fg = "#E5E9F0", bg = nil, bold = false, italic = false, underline = false },
-		["1"] = { fg = "#E5E9F0", bg = nil, bold = false, italic = false, underline = false },
-		["30"] = { fg = "#2E3440", bg = nil, bold = false, italic = false, underline = false },
-		["31"] = { fg = "#BF616A", bg = nil, bold = false, italic = false, underline = false },
-		["32"] = { fg = "#A3BE8C", bg = nil, bold = false, italic = false, underline = false },
-		["33"] = { fg = "#EBCB8B", bg = nil, bold = false, italic = false, underline = false },
-		["34"] = { fg = "#81A1C1", bg = nil, bold = false, italic = false, underline = false },
-		["35"] = { fg = "#B48EAD", bg = nil, bold = false, italic = false, underline = false },
-		["36"] = { fg = "#88C0D0", bg = nil, bold = false, italic = false, underline = false },
-		["37"] = { fg = "#E5E9F0", bg = nil, bold = false, italic = false, underline = false },
-	}
-
-	return match_color[color_index]
-end
-
-local function extract_color_from_escape(escape)
-	local pattern = "%[(%d+);(%d+);(%d+);%d+;%d+m"
-	local alt_pattern = "%[([0-9]+)[m|K]"
-	print(escape:match(pattern))
-
-	if not escape:match(pattern) then
-		return get_colors_from_term(escape:match(alt_pattern))
-	end
-
-	local r, g, b = escape:match(pattern)
-	print(r, g, b)
-	return {
-		fg = string.format("#%02x%02x%02x", r, g, b),
-		bg = "None",
-		bold = false,
-		italic = false,
-		underline = false,
-	}
-end
-
-local function remove_escapes_from_line(line)
-	local new_line = line:gsub("\27%[%d+;%d+;%d+;%d+;%d+m", ""):gsub("\27%[[0-9]+[m|K]", "")
-	return new_line
-end
-
-local function parse_escapes(texts)
-	local lines = {}
-
-	for line_index, text in ipairs(texts) do
-		local index = 1
-		local segments = {}
-
-		while index <= #text do
-			local pre_text, escape, post_text = find_next_escapes(texts, index)
-
-			if escape then
-				local next_pre_text, next_escape, next_post_text = find_next_escapes(texts, index + #pre_text + #escape)
-				local segment_length = #post_text
-
-				if next_post_text then
-					segment_length = #post_text - #next_pre_text
-				end
-
-				local color = extract_color_from_escape(escape)
-				local removed_escapes_text = remove_escapes_from_line(post_text:sub(1, segment_length))
-
-				table.insert(segments, {
-					start_col = #pre_text,
-					end_col = #pre_text + #removed_escapes_text,
-					color = color,
-					text = removed_escapes_text,
-				})
-
-				index = index + segment_length
-			else
-				break
-			end
-		end
-
-		table.insert(lines, {
-			text = remove_escapes_from_line(text),
-			line_index = line_index,
-			segments = segments,
-		})
-	end
-
-	return lines
-end
-
--- Function pour créer un groupe de highlights
-local function create_highlight_group(color)
-	local group_name = "TinyCodeAction_Preview_Highlight_" .. color.fg:sub(2) or "None" .. color.bg:sub(2) or "None"
-
-	if M.cache.highlights[group_name] then
-		return group_name
-	end
-
-	vim.api.nvim_set_hl(0, group_name, {
-		fg = color.fg or "None",
-		bg = color.bg or "None",
-		bold = color.bold,
-		italic = color.italic,
-		underline = color.underline,
+local function get_hl(name)
+	return vim.api.nvim_get_hl(0, {
+		name = name,
 	})
-	return group_name
 end
 
--- Function principale pour gérer les séquences d'échappement et les highlights
-local function handle_escapes(text, bufnr, ns_id, hl_group)
-	local lines = parse_escapes(text)
-	local highlights = {}
-
-	for _, line in ipairs(lines) do
-		local segments = line.segments
-
-		for _, segment in ipairs(segments) do
-			local color = segment.color
-			if not highlights[color] then
-				local group = create_highlight_group(color)
-				highlights[color] = group
-			end
-		end
-
-		vim.api.nvim_buf_set_lines(bufnr, line.line_index, line.line_index + 1, false, { line.text })
-
-		for _, segment in ipairs(segments) do
-			local start_col = segment.start_col
-			local end_col = segment.end_col
-
-			print("line.line_index", line.line_index)
-			print(highlights[segment.color])
-
-			vim.api.nvim_buf_add_highlight(
-				bufnr,
-				ns_id,
-				highlights[segment.color],
-				line.line_index - 1,
-				start_col - 1,
-				end_col
-			)
-		end
-	end
+local function get_diff_hl()
+	return {
+		added = get_hl("DiffAdd"),
+		removed = get_hl("DiffDelete"),
+		changed = get_hl("DiffChange"),
+		normal = get_hl("Normal"),
+		border = get_hl("FloatBorder"),
+	}
 end
 
-local function get_diff(old_lines, new_lines, backend)
-	if backend == "delta" then
+local function get_diff_hl_for_delta()
+	local bg = utils.int_to_hex(M.cache.diff_hl.normal.bg)
+
+	return {
+		plus_style = utils.blend(utils.int_to_hex(M.cache.diff_hl.added.bg), bg, 0.90),
+		plus_emph_style = utils.blend(utils.int_to_hex(M.cache.diff_hl.added.bg), bg, 0.75),
+		line_numbers_left_style = utils.int_to_hex(M.cache.diff_hl.border.fg),
+	}
+end
+
+local function get_diff(old_lines, new_lines, opts)
+	if opts.backend == "delta" then
 		local old_file = vim.fn.tempname() .. ".txt"
 		local new_file = vim.fn.tempname() .. ".txt"
 
@@ -190,10 +70,35 @@ local function get_diff(old_lines, new_lines, backend)
 		vim.fn.writefile(new_lines, new_file)
 
 		local diff = {}
+		local hl = get_diff_hl_for_delta()
+
+		local args = {
+			"--color-only",
+			"--hunk-header-decoration-style=none",
+		}
+
+		if opts.backend_opts.delta.override_cmd then
+			args = vim.list_extend(args, opts.backend_opts.delta.override_cmd)
+		else
+			vim.list_extend(args, {
+				"--line-numbers",
+				"--line-numbers-plus-style='bold " .. hl.plus_style .. "'",
+				"--line-numbers-left-style='" .. hl.line_numbers_left_style .. "'",
+				"--plus-emph-style='bold syntax " .. hl.plus_emph_style .. "'",
+				"--plus-style='syntax #313943'",
+			})
+		end
+
+		if opts.backend_opts.delta.use_git_config == false then
+			table.insert(args, "--no-gitconfig")
+		end
+
+		table.insert(args, old_file)
+		table.insert(args, new_file)
 
 		Job:new({
 			command = "delta",
-			args = { "--color-only", old_file, new_file },
+			args = args,
 			on_exit = function(j)
 				diff = j:result()
 			end,
@@ -201,6 +106,11 @@ local function get_diff(old_lines, new_lines, backend)
 
 		os.remove(old_file)
 		os.remove(new_file)
+
+		-- enleve les 4 premières lignes de diff
+		for i = 1, 4 do
+			table.remove(diff, 1)
+		end
 		return diff
 	else
 		return vim.diff(table.concat(old_lines, "\n"), table.concat(new_lines, "\n"), {
@@ -259,7 +169,7 @@ local function preview_action(action, bufnr)
 			apply_edit(new_lines, edit)
 		end
 
-		local diff = get_diff(lines, new_lines, M.config.backend)
+		local diff = get_diff(lines, new_lines, M.config)
 
 		if type(diff) == "string" then
 			diff = vim.split(diff, "\n")
@@ -295,9 +205,11 @@ function M.preview_code_actions()
 				finder = finders.new_table({
 					results = result,
 					entry_maker = function(action)
+						local kind_sign = M.config.signs[action.kind] or "󰁨"
+
 						return {
 							value = action,
-							display = action.title,
+							display = kind_sign .. " " .. action.title,
 							ordinal = action.title,
 						}
 					end,
@@ -341,6 +253,7 @@ end
 
 function M.setup(opts)
 	M.config = vim.tbl_deep_extend("force", M.config, opts or {})
+	M.cache.diff_hl = get_diff_hl()
 end
 
 return M
