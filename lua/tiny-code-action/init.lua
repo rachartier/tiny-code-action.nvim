@@ -9,7 +9,7 @@ local finders = require("telescope.finders")
 local conf = require("telescope.config").values
 local previewers = require("telescope.previewers")
 
-local lsp_actions = require("tiny-code-actions.action")
+local lsp_actions = require("tiny-code-action.action")
 
 M.config = {
 	backend = "delta",
@@ -137,7 +137,7 @@ local make_display = function(entry)
 	})
 end
 
-function M.code_actions()
+function M.code_action()
 	local bufnr = vim.api.nvim_get_current_buf()
 
 	local params = {
