@@ -1,9 +1,9 @@
-## 🚀 tiny-code-action.nvim
+## 📇 tiny-code-action.nvim
 
 A Neovim plugin that provides a simple way to run and visualize code actions with Telescope.
 
 
-## Preview
+## 🖼️ Preview
 
 ### Delta
 
