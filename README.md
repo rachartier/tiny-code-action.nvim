@@ -38,15 +38,12 @@ With Lazy.nvim:
 }
 ```
 
-And add  this to your keymaps:
+And add the following snippet to your keymaps:
 
 ```lua
-vim.api.nvim_set_keymap(
-	"n",
-	"<leader>ca",
-	'<cmd>lua require"tiny-code-action".code_action()<CR>',
-	{ noremap = true, silent = true }
-)
+vim.api.nvim_set_keymap("n", "<leader>ca", function()
+	require("tiny-code-action").code_action()
+end, { noremap = true, silent = true })
 ```
 
 ## ⚙️ Options
@@ -69,7 +66,6 @@ require("tiny-code-action").setup({
 
 			-- If you have a custom config path
 			config_path = nil,
-			-- config_path = nil,
 		},
 	},
 	telescope_opts = {
@@ -101,3 +97,8 @@ require("tiny-code-action").setup({
 	},
 })
 ```
+
+## ❓ FAQ:
+- How to look like the preview?
+	- You can find my `delta` configuration here: ![rachartier/dotfiles/delta](https://github.com/rachartier/dotfiles/blob/main/.config/delta/delta.config)
+    - Then you can set the `config_path` to the path of your configuration file.
