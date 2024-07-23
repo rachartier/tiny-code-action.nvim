@@ -100,5 +100,5 @@ require("tiny-code-action").setup({
 
 ## ❓ FAQ:
 - How to look like the preview?
-	- You can find my `delta` configuration here: ![rachartier/dotfiles/delta](https://github.com/rachartier/dotfiles/blob/main/.config/delta/delta.config)
+	- You can find my `delta` configuration here: ![rachartier/dotfiles/delta](https://github.com/rachartier/dotfiles/tree/main/.config/delta)
     - Then you can set the `config_path` to the path of your configuration file.
