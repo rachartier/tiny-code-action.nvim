@@ -1,6 +1,6 @@
 ## 🚀 tiny-code-action.nvim
 
-A Neovim plugin that provides a simple way to run and visualize code actions.
+A Neovim plugin that provides a simple way to run and visualize code actions with Telescope.
 
 
 ## Preview
@@ -19,13 +19,18 @@ A Neovim plugin that provides a simple way to run and visualize code actions.
 ## 📥 Installation
 
 > [!NOTE]
-> Only works with Telescope
+> This plugins comes with NerdFonts icons by default.
+> If you don't want to use them, you can remove them from the `signs` option.
 
 With Lazy.nvim:
 
 ```lua
 {
     "rachartier/tiny-code-action.nvim",
+    dependencies = {
+        {"nvim-lua/plenary.nvim"},
+        {"nvim-telescope/telescope.nvim"},
+    },
     event = "LspAttach",
     config = function()
         require('tiny-code-action').setup()
@@ -45,6 +50,10 @@ vim.api.nvim_set_keymap(
 ```
 
 ## ⚙️ Options
+
+> [!WARNING]
+> Due to some limitations, the `delta` backend can be slow if the action is really big.
+> If you want optimal performance, use the `vim` backend.
 
 ```lua
 require("tiny-code-action").setup({
@@ -77,7 +86,7 @@ require("tiny-code-action").setup({
 	},
 	-- The icons to use for the code actions
 	-- You can add your own icons, you just need to set the exact action's kind of the code action
-	-- Maybe make a PR to add more icons for all !
+	-- You can set the highlight like so: { link = "DiagnosticError" } or  like nvim_set_hl ({ fg ..., bg..., bold..., ...})
 	signs = {
 		quickfix = { "󰁨", { link = "DiagnosticInfo" } },
 		others = { "?", { link = "DiagnosticWarning" } },
