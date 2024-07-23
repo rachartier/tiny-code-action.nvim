@@ -2,6 +2,7 @@
 
 A Neovim plugin that provides a simple way to run and visualize code actions with Telescope.
 
+The LSP code action protocol is nearly fully implemented in this plugin, so you can use it with any LSP server, even with, like in the preview, Omnisharp which uses partial code actions.
 
 ## 🖼️ Preview
 
@@ -61,7 +62,7 @@ require("tiny-code-action").setup({
 			-- If you want to override the delta command
 			override_cmd = nil,
 
-			-- If you want to use git config or not
+			-- If you want to use git config or not, if you set config_path, it needs to be false
 			use_git_config = false,
 
 			-- If you have a custom config path
@@ -76,6 +77,8 @@ require("tiny-code-action").setup({
 			preview_cutoff = 1,
 			preview_height = function(_, _, max_lines)
 				local h = math.floor(max_lines * 0.5)
+					use_git_config = false,
+					config_path = os.getenv("HOME") .. "/.config/delta/delta.config",
 				return math.max(h, 10)
 			end,
 		},
