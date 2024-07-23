@@ -12,23 +12,24 @@ local previewers = require("telescope.previewers")
 local lsp_actions = require("tiny-code-action.action")
 
 M.config = {
-	backend = "delta",
+	backend = "vim",
 	backend_opts = {
 		delta = {
 			override_cmd = nil,
 			use_git_config = false,
-			config_path = os.getenv("HOME") .. "/.config/delta/delta.config",
+			config_path = nil,
 			-- config_path = nil,
 		},
 	},
 	telescope_opts = {
 		layout_strategy = "vertical",
 		layout_config = {
-			width = 0.4,
-			height = 0.6,
+			width = 0.7,
+			height = 0.9,
 			preview_cutoff = 1,
 			preview_height = function(_, _, max_lines)
-				return math.floor(max_lines * 0.5)
+				local h = math.floor(max_lines * 0.5)
+				return math.max(h, 10)
 			end,
 		},
 	},
@@ -263,7 +264,7 @@ function M.setup(opts)
 		error("Invalid backend: " .. M.config.backend)
 	end
 
-	M.backend = require("tiny-code-actions.backend." .. M.config.backend)
+	M.backend = require("tiny-code-action.backend." .. M.config.backend)
 
 	for kind_name, sign in pairs(M.config.signs) do
 		vim.api.nvim_set_hl(0, "TinyCodeActionKind" .. kind_name, sign[2])
