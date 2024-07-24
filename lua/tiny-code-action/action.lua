@@ -2,7 +2,7 @@ local M = {}
 
 function M.apply(action)
 	if action == nil then
-		vim.notify("Error: No action to apply", vim.log.levels.ERROR)
+		vim.notify("Error: No action to apply/action can't be applied", vim.log.levels.ERROR)
 		return
 	end
 
@@ -70,7 +70,7 @@ local function apply_edit(lines, edit)
 end
 
 function M.preview(opts, action, backend, bufnr)
-	if not action.edit then
+	if not action or not action.edit then
 		return { "No preview available for this action" }
 	end
 
