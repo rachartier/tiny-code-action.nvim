@@ -57,7 +57,7 @@ function M.get_diff(old_lines, new_lines, opts)
 	os.remove(old_file)
 	os.remove(new_file)
 
-	for i = 1, 4 do
+	for i = 1, opts.backend_opts.delta.header_lines_to_remove do
 		table.remove(diff, 1)
 	end
 	return diff
@@ -87,7 +87,6 @@ function M.create_previewer(opts, bufnr, backend, preview_action_callback)
 
 			local preview_lines = preview_action_callback(opts, action, backend, bufnr)
 
-			print(vim.o.lines)
 			return { "echo", table.concat(preview_lines, "\n") .. string.rep("\n", vim.o.lines) } -- HACK: to prevent `Process exited` message
 		end,
 	})

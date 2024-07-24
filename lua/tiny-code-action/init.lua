@@ -24,6 +24,7 @@ M.config = {
 			override_cmd = nil,
 			use_git_config = false,
 			config_path = nil,
+			header_lines_to_removed = 4,
 			-- config_path = nil,
 		},
 	},

@@ -70,6 +70,10 @@ require("tiny-code-action").setup({
 
 			-- If you have a custom config path
 			config_path = nil,
+
+			-- Header from delta can be quite large.
+			-- You can remove them by setting this to the number of lines to remove
+			header_lines_to_removed = 4,
 		},
 	},
 	telescope_opts = {
