@@ -80,8 +80,6 @@ require("tiny-code-action").setup({
 			preview_cutoff = 1,
 			preview_height = function(_, _, max_lines)
 				local h = math.floor(max_lines * 0.5)
-					use_git_config = false,
-					config_path = os.getenv("HOME") .. "/.config/delta/delta.config",
 				return math.max(h, 10)
 			end,
 		},
