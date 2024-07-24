@@ -1,6 +1,11 @@
 local M = {}
 
 function M.apply(action)
+	if action == nil then
+		vim.notify("Error: No action to apply", vim.log.levels.ERROR)
+		return
+	end
+
 	if action.edit then
 		vim.lsp.util.apply_workspace_edit(action.edit, "UTF-8")
 	elseif type(action.command) == "table" then
