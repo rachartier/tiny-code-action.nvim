@@ -1,6 +1,8 @@
 local M = {}
 
 local Job = require("plenary.job")
+local previewers = require("telescope.previewers")
+local lsp_actions = require("tiny-code-action.action")
 
 function M.get_diff(old_lines, new_lines, opts)
 	local old_file = vim.fn.tempname() .. ".txt"
@@ -59,6 +61,35 @@ function M.get_diff(old_lines, new_lines, opts)
 		table.remove(diff, 1)
 	end
 	return diff
+end
+
+function M.create_previewer(opts, bufnr, backend, preview_action_callback)
+	return previewers.new_termopen_previewer({
+		title = "Action Preview",
+		get_command = function(entry)
+			local action = entry.value.action
+			local client = entry.value.client
+
+			if lsp_actions.action_is_not_complete(action) then
+				local action_result, err_action = lsp_actions.blocking_resolve(action, bufnr, client)
+
+				if err_action then
+					---@diagnostic disable-next-line: need-check-nil
+					if action_result.command then
+						action = action_result
+					else
+						vim.notify("Error resolving action:" .. vim.inspect(err), vim.log.levels.ERROR)
+					end
+				else
+					action = action_result
+				end
+			end
+
+			local preview_lines = preview_action_callback(opts, action, backend, bufnr)
+
+			return { "echo", table.concat(preview_lines, "\n") .. string.rep("\n", vim.o.columns) } -- HACK: to prevent `Process exited` message
+		end,
+	})
 end
 
 return M
