@@ -129,7 +129,7 @@ function M.code_action()
 
 	local results = code_action_finder({ bufnr = bufnr })
 
-	if results == nil then
+	if results == nil or vim.tbl_isempty(results) then
 		vim.notify("No code actions available.", vim.log.levels.INFO)
 		return
 	end
@@ -166,7 +166,6 @@ function M.code_action()
 				}
 			end,
 		}),
-
 		sorter = conf.generic_sorter({}),
 		attach_mappings = function(prompt_bufnr, map)
 			actions.select_default:replace(function()
