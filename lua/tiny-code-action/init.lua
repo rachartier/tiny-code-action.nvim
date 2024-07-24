@@ -2,12 +2,12 @@ local M = {}
 
 M.match_hl_kind = {}
 
+local async = require("plenary.async")
 local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
 local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
 local conf = require("telescope.config").values
-local previewers = require("telescope.previewers")
 
 local lsp_actions = require("tiny-code-action.action")
 
@@ -47,77 +47,6 @@ M.config = {
 	},
 }
 
-local function apply_edit(lines, edit)
-	local start_line, start_char = edit.range.start.line + 1, edit.range.start.character + 1
-	local end_line, end_char = edit.range["end"].line + 1, edit.range["end"].character + 1
-
-	for i = 1, end_line do
-		if lines[i] == nil then
-			lines[i] = ""
-		end
-	end
-
-	local new_text = edit.newText:gsub("\t", string.rep(" ", vim.bo.tabstop))
-
-	if start_line == end_line then
-		lines[start_line] = string.sub(lines[start_line], 1, start_char - 1)
-			.. new_text
-			.. string.sub(lines[start_line], end_char)
-	else
-		local first = string.sub(lines[start_line], 1, start_char - 1) .. new_text
-		local last = string.sub(lines[end_line], end_char)
-		lines[start_line] = first
-		for i = start_line + 1, end_line - 1 do
-			table.remove(lines, start_line + 1)
-		end
-		lines[start_line + 1] = last
-	end
-end
-
-local function preview_action(action, bufnr, client)
-	if not action.edit then
-		return { "No preview available for this action" }
-	end
-
-	local changes = action.edit.changes or {}
-	if vim.tbl_isempty(changes) and action.edit.documentChanges then
-		for _, change in ipairs(action.edit.documentChanges) do
-			if change.edits then
-				changes[change.textDocument.uri] = change.edits
-			end
-		end
-	end
-
-	local preview_lines = {}
-	for uri, edits in pairs(changes) do
-		local current_bufnr = vim.uri_to_bufnr(uri)
-		local lines
-		if current_bufnr == bufnr then
-			lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-		else
-			local fname = vim.uri_to_fname(uri)
-			lines = vim.fn.readfile(fname)
-		end
-		local new_lines = vim.deepcopy(lines)
-
-		for _, edit in ipairs(edits) do
-			apply_edit(new_lines, edit)
-		end
-
-		local diff = M.backend.get_diff(lines, new_lines, M.config)
-
-		if type(diff) == "string" then
-			diff = vim.split(diff, "\n")
-		end
-
-		for _, line in ipairs(diff) do
-			table.insert(preview_lines, line)
-		end
-	end
-
-	return preview_lines
-end
-
 local function displayer(action_text, picker)
 	local display = require("telescope.pickers.entry_display").create({
 		separator = " ",
@@ -138,8 +67,8 @@ local make_display = function(entry)
 	})
 end
 
-function M.code_action()
-	local bufnr = vim.api.nvim_get_current_buf()
+local function code_action_finder(opts)
+	local results = {}
 
 	local params = {
 		textDocument = vim.lsp.util.make_text_document_params(),
@@ -148,110 +77,118 @@ function M.code_action()
 
 	local context = {}
 	context.triggerKind = vim.lsp.protocol.CodeActionTriggerKind.Invoked
-	context.diagnostics = vim.lsp.diagnostic.get_line_diagnostics(bufnr)
+	context.diagnostics = vim.lsp.diagnostic.get_line_diagnostics(opts.bufnr)
 	params.context = context
 
-	vim.lsp.buf_request(bufnr, "textDocument/codeAction", params, function(err, result, ctx, _)
-		if err or not result or vim.tbl_isempty(result) then
-			vim.notify("No code actions available.", vim.log.levels.INFO)
-			return
+	local clients = vim.lsp.get_clients({ bufnr = opts.bufnr, method = "textDocument/codeAction" })
+
+	if not clients or #clients == 0 then
+		return nil
+	end
+
+	local all_results, err = vim.lsp.buf_request_sync(opts.bufnr, "textDocument/codeAction", params, 1000)
+
+	---@diagnostic disable-next-line: param-type-mismatch
+	if not all_results then
+		return nil
+	end
+
+	for client_id, buf_result in pairs(all_results) do
+		local client = vim.lsp.get_client_by_id(client_id)
+
+		if err then
+			vim.notify("Error getting code actions: " .. vim.inspect(err), vim.log.levels.ERROR)
+			break
 		end
 
-		local client = vim.lsp.get_client_by_id(ctx.client_id)
-
-		if not client then
-			vim.notify("No client found.", vim.log.levels.WARN)
-			return
+		if not buf_result or vim.tbl_isempty(buf_result) then
+			break
 		end
 
-		local picker_opts = {
-			prompt_title = "Code Actions",
-			finder = finders.new_table({
-				results = result,
-				entry_maker = function(action)
-					local kind = M.config.signs[action.kind] or M.config.signs.others
-					local kind_hl = M.match_hl_kind[action.kind] or M.match_hl_kind.others
+		if buf_result then
+			for _, action in ipairs(buf_result.result) do
+				table.insert(results, {
+					client = client,
+					action = action,
+				})
+			end
+		end
+	end
 
-					return {
-						value = action,
-						kind = kind[1],
-						kind_hl = kind_hl,
-						ordinal = action.title,
-						client = client.name or "unknown",
-						display = make_display,
-					}
-				end,
-			}),
-			sorter = conf.generic_sorter({}),
-			attach_mappings = function(prompt_bufnr, map)
-				actions.select_default:replace(function()
-					actions.close(prompt_bufnr)
-					local selection = action_state.get_selected_entry()
-					local action = selection.value
-					if lsp_actions.action_is_not_complete(action) then
-						client.request("codeAction/resolve", action, function(e, res)
-							action, err = res, e
-							lsp_actions.apply(action)
-						end, bufnr)
-					else
-						lsp_actions.apply(action)
-					end
-				end)
-				return true
-			end,
-		}
+	return results
+end
 
-		picker_opts = vim.tbl_deep_extend("force", M.config.telescope_opts, picker_opts)
-		local picker = pickers.new({}, picker_opts)
+function M.code_action()
+	local bufnr = vim.api.nvim_get_current_buf()
 
-		if M.config.backend == "vim" then
-			picker.previewer = previewers.new_buffer_previewer({
-				title = "Action Preview",
-				define_preview = function(self, entry, status)
-					local action = entry.value
+	local results = code_action_finder({ bufnr = bufnr })
 
-					vim.api.nvim_set_option_value("filetype", "diff", { buf = self.state.bufnr })
-					if lsp_actions.action_is_not_complete(action) then
-						lsp_actions.resolve(action, bufnr, client, function(res, err)
-							local preview_lines = preview_action(res, bufnr, client)
+	if results == nil then
+		vim.notify("No code actions available.", vim.log.levels.INFO)
+		return
+	end
 
-							vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, preview_lines)
-						end)
-					else
-						local preview_lines = preview_action(action, bufnr, client)
+	local picker_opts = {
+		prompt_title = "Code Actions",
+		finder = finders.new_table({
+			results = results,
+			entry_maker = function(pair_client_action)
+				local action = pair_client_action.action
+				local client = pair_client_action.client
 
-						vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, preview_lines)
-					end
-				end,
-			})
-		else
-			picker.previewer = previewers.new_termopen_previewer({
-				title = "Action Preview",
-				get_command = function(entry)
-					local action = entry.value
+				local kind = M.config.signs.others
+				local kind_hl = M.match_hl_kind.others
+				local last_k_len = 0
 
-					if lsp_actions.action_is_not_complete(action) then
-						local action_result, err_action = lsp_actions.blocking_resolve(action, bufnr, client)
-
-						if err_action then
-							if action_result.command then
-								action = action_result
-							else
-								print("Error resolving action:", vim.inspect(err))
-							end
-						else
-							action = action_result
+				for _, k in pairs(vim.tbl_keys(M.config.signs)) do
+					if string.find(action.kind, k, 1, true) then
+						if #k > last_k_len then
+							last_k_len = #k
+							kind = M.config.signs[k]
+							kind_hl = M.match_hl_kind[k]
 						end
 					end
+				end
 
-					local preview_lines = preview_action(action, bufnr, client)
-					return { "echo", table.concat(preview_lines, "\n") .. string.rep("\n", vim.o.columns) } -- HACK: to prevent `Process exited` message
-				end,
-			})
-		end
+				return {
+					value = pair_client_action,
+					kind = kind[1],
+					kind_hl = kind_hl,
+					ordinal = action.title,
+					client = client.name or "unknown",
+					display = make_display,
+				}
+			end,
+		}),
 
-		picker:find()
-	end)
+		sorter = conf.generic_sorter({}),
+		attach_mappings = function(prompt_bufnr, map)
+			actions.select_default:replace(function()
+				actions.close(prompt_bufnr)
+
+				local selection = action_state.get_selected_entry()
+				local action = selection.value.action
+				local client = selection.value.client
+
+				if lsp_actions.action_is_not_complete(action) then
+					client.request("codeAction/resolve", action, function(e, res)
+						action, err = res, e
+						lsp_actions.apply(action)
+					end, bufnr)
+				else
+					lsp_actions.apply(action)
+				end
+			end)
+			return true
+		end,
+	}
+
+	picker_opts = vim.tbl_deep_extend("force", M.config.telescope_opts, picker_opts)
+
+	local picker = pickers.new({}, picker_opts)
+	picker.previewer = M.backend.create_previewer(M.config, bufnr, M.backend, lsp_actions.preview)
+
+	picker:find()
 end
 
 function M.setup(opts)
