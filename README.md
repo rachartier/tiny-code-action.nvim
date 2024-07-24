@@ -4,6 +4,9 @@ A Neovim plugin that provides a simple way to run and visualize code actions wit
 
 The LSP code action protocol is nearly fully implemented in this plugin, so you can use it with any LSP server, even with, like in the preview, Omnisharp which uses partial code actions.
 
+> [!WARNING]
+> I have not tested on all LSP, so do not hesitate to open an issue if it doesn't work for you.
+
 ## 🖼️ Preview
 
 ### Delta
