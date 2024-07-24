@@ -87,7 +87,8 @@ function M.create_previewer(opts, bufnr, backend, preview_action_callback)
 
 			local preview_lines = preview_action_callback(opts, action, backend, bufnr)
 
-			return { "echo", table.concat(preview_lines, "\n") .. string.rep("\n", vim.o.columns) } -- HACK: to prevent `Process exited` message
+			local height = vim.api.nvim_win_get_height(0)
+			return { "echo", table.concat(preview_lines, "\n") .. string.rep("\n", height) } -- HACK: to prevent `Process exited` message
 		end,
 	})
 end

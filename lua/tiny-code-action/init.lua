@@ -1,5 +1,11 @@
 local M = {}
 
+local has_telescope, telescope = pcall(require, "telescope")
+
+if not has_telescope then
+	error("This plugin requires telescope.nvim (https://github.com/nvim-telescope/telescope.nvim)")
+end
+
 M.match_hl_kind = {}
 
 local async = require("plenary.async")
