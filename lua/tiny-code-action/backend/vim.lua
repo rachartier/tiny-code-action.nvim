@@ -21,7 +21,7 @@ function M.create_previewer(opts, bufnr, backend, preview_action_callback)
 			vim.api.nvim_set_option_value("filetype", "diff", { buf = self.state.bufnr })
 			if lsp_actions.action_is_not_complete(action) then
 				lsp_actions.resolve(action, bufnr, client, function(res, err)
-					local preview_lines = preview_action_callback(res, bufnr, client)
+					local preview_lines = preview_action_callback(opts, res, backend, bufnr)
 
 					vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, preview_lines)
 				end)
