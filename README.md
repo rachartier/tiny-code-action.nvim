@@ -45,7 +45,7 @@ With Lazy.nvim:
 And add the following snippet to your keymaps:
 
 ```lua
-vim.api.nvim_set_keymap("n", "<leader>ca", function()
+vim.keymap.set("n", "<leader>ca", function()
 	require("tiny-code-action").code_action()
 end, { noremap = true, silent = true })
 ```
