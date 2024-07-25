@@ -17,29 +17,13 @@ function M.get_diff(old_lines, new_lines, opts)
 	local diff = {}
 	local args = {}
 
-	if opts.backend_opts.delta.override_cmd then
-		args = vim.list_extend(args, opts.backend_opts.delta.override_cmd)
-	else
-		if opts.backend_opts.delta.use_git_config == false then
-			if opts.backend_opts.delta.config_path then
-				vim.list_extend(args, {
-					"--config",
-					opts.backend_opts.delta.config_path,
-				})
-			else
-				vim.list_extend(args, {
-					"--line-numbers",
-				})
+	vim.list_extend(args, opts.backend_opts.delta.args)
 
-				if vim.o.background == "dark" then
-					table.insert(args, "--dark")
-				end
-			end
-		end
+	if vim.o.background == "dark" then
+		table.insert(args, "--dark")
 	end
 
 	args = vim.list_extend(args, {
-		"--color-only",
 		"--hunk-header-decoration-style=omit",
 	})
 

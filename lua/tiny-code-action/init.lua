@@ -21,11 +21,10 @@ M.config = {
 	backend = "vim",
 	backend_opts = {
 		delta = {
-			override_cmd = nil,
-			use_git_config = false,
-			config_path = nil,
 			header_lines_to_remove = 4,
-			-- config_path = nil,
+			args = {
+				"--line-numbers",
+			},
 		},
 	},
 	telescope_opts = {

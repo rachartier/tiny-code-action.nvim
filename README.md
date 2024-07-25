@@ -62,18 +62,18 @@ require("tiny-code-action").setup({
 	backend = "vim",
 	backend_opts = {
 		delta = {
-			-- If you want to override the delta command
-			override_cmd = nil,
-
-			-- If you want to use git config or not, if you set config_path, it needs to be false
-			use_git_config = false,
-
-			-- If you have a custom config path
-			config_path = nil,
-
 			-- Header from delta can be quite large.
 			-- You can remove them by setting this to the number of lines to remove
 			header_lines_to_remove = 4,
+
+			-- The arguments to pass to delta
+			-- If you have a custom configuration file, you can set the path to it like so:
+			-- args = {
+			--     "--config" .. os.getenv("HOME") .. "/.config/delta/config.yml",
+			-- }
+			args = {
+				"--line-numbers",
+			},
 		},
 	},
 	telescope_opts = {
