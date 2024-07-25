@@ -91,7 +91,11 @@ function M.preview(opts, action, backend, bufnr)
 			lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 		else
 			local fname = vim.uri_to_fname(uri)
-			lines = vim.fn.readfile(fname)
+			if not vim.loop.fs_stat(fname) then
+				lines = {}
+			else
+				lines = vim.fn.readfile(fname)
+			end
 		end
 		local new_lines = vim.deepcopy(lines)
 
