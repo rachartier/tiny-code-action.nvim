@@ -73,7 +73,7 @@ require("tiny-code-action").setup({
 
 			-- Header from delta can be quite large.
 			-- You can remove them by setting this to the number of lines to remove
-			header_lines_to_removed = 4,
+			header_lines_to_remove = 4,
 		},
 	},
 	telescope_opts = {
