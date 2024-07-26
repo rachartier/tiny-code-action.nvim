@@ -44,31 +44,46 @@ function M.action_is_not_complete(action)
 	return action.edit == nil and action.command == nil
 end
 
-local function apply_edit(lines, edit)
-	local start_line, start_char = edit.range.start.line + 1, edit.range.start.character + 1
-	local end_line, end_char = edit.range["end"].line + 1, edit.range["end"].character + 1
+local function apply_edit(lines, edits)
+	table.sort(edits, function(a, b)
+		if a.range["end"].line == b.range["end"].line then
+			return a.range["end"].character > b.range["end"].character
+		end
+		return a.range["end"].line > b.range["end"].line
+	end)
 
-	for i = 1, end_line do
-		if lines[i] == nil then
-			lines[i] = ""
+	for _, edit in ipairs(edits) do
+		local start_line = edit.range.start.line + 1
+		local end_line = edit.range["end"].line + 1
+		local start_char = edit.range.start.character + 1
+		local end_char = edit.range["end"].character + 1
+
+		for i = start_line, end_line do
+			if i > #lines then
+				table.insert(lines, "")
+			end
+		end
+
+		if start_line == end_line then
+			local line = lines[start_line]
+			lines[start_line] = line:sub(1, start_char - 1) .. edit.newText .. line:sub(end_char)
+		else
+			local first_line = lines[start_line]
+			local last_line = lines[end_line]
+
+			lines[start_line] = first_line:sub(1, start_char - 1) .. edit.newText
+
+			for i = start_line + 1, end_line - 1 do
+				table.remove(lines, start_line + 1)
+			end
+
+			if end_line > start_line then
+				lines[start_line + 1] = last_line:sub(end_char)
+			end
 		end
 	end
 
-	local new_text = edit.newText:gsub("\t", string.rep(" ", vim.bo.tabstop))
-
-	if start_line == end_line then
-		lines[start_line] = string.sub(lines[start_line], 1, start_char - 1)
-			.. new_text
-			.. string.sub(lines[start_line], end_char)
-	else
-		local first = string.sub(lines[start_line], 1, start_char - 1) .. new_text
-		local last = string.sub(lines[end_line], end_char)
-		lines[start_line] = first
-		for i = start_line + 1, end_line - 1 do
-			table.remove(lines, start_line + 1)
-		end
-		lines[start_line + 1] = last
-	end
+	return lines
 end
 
 function M.preview(opts, action, backend, bufnr)
@@ -95,14 +110,6 @@ function M.preview(opts, action, backend, bufnr)
 		changes = changes_found
 	end
 
-	-- if vim.tbl_isempty(changes) and action.edit.documentChanges then
-	-- 	for _, change in ipairs(action.edit.documentChanges) do
-	-- 		if change.edits then
-	-- 			changes[change.textDocument.uri] = change.edits
-	-- 		end
-	-- 	end
-	-- end
-
 	local preview_lines = {}
 	for uri, edits in pairs(changes) do
 		local current_bufnr = vim.uri_to_bufnr(uri)
@@ -117,11 +124,9 @@ function M.preview(opts, action, backend, bufnr)
 				lines = vim.fn.readfile(fname)
 			end
 		end
-		local new_lines = vim.deepcopy(lines)
 
-		for _, edit in ipairs(edits) do
-			apply_edit(new_lines, edit)
-		end
+		local new_lines = vim.deepcopy(lines)
+		new_lines = apply_edit(new_lines, edits)
 
 		local diff = backend.get_diff(lines, new_lines, opts)
 
