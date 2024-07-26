@@ -2,7 +2,7 @@ local M = {}
 
 local utils = require("tiny-code-action.utils")
 
-function M.apply(action)
+function M.apply(action, client)
 	if action == nil then
 		vim.notify("Error: No action to apply/action can't be applied", vim.log.levels.ERROR)
 		return
@@ -112,6 +112,12 @@ local function apply_edit(lines, edits)
 			if end_line > start_line then
 				lines[start_line + 1] = last_line:sub(end_char)
 			end
+		end
+
+		-- Merge the last modified line with the previous line if newText is empty
+		if edit.newText == "" then
+			lines[start_line] = lines[start_line] .. lines[start_line + 1]
+			table.remove(lines, start_line + 1)
 		end
 	end
 
