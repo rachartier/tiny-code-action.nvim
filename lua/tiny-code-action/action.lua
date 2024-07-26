@@ -1,5 +1,7 @@
 local M = {}
 
+local utils = require("tiny-code-action.utils")
+
 function M.apply(action)
 	if action == nil then
 		vim.notify("Error: No action to apply/action can't be applied", vim.log.levels.ERROR)
@@ -70,18 +72,36 @@ local function apply_edit(lines, edit)
 end
 
 function M.preview(opts, action, backend, bufnr)
-	if not action or not action.edit then
+	local found, _, changes_found = utils.find_key_in_table(action, "changes")
+	if not found or changes_found == nil then
+		found, _, changes_found = utils.find_key_in_table(action, "documentChanges")
+	end
+
+	if not action or not changes_found or not found or vim.tbl_isempty(changes_found or {}) then
 		return { "No preview available for this action" }
 	end
 
-	local changes = action.edit.changes or {}
-	if vim.tbl_isempty(changes) and action.edit.documentChanges then
-		for _, change in ipairs(action.edit.documentChanges) do
+	local changes = {}
+	if type(changes_found[1]) == "table" then
+		for _, change in ipairs(changes_found) do
 			if change.edits then
 				changes[change.textDocument.uri] = change.edits
+			elseif change.textChanges then
+				local uri = utils.path_to_uri(change.fileName)
+				changes[uri] = change.textChanges
 			end
 		end
+	else
+		changes = changes_found
 	end
+
+	-- if vim.tbl_isempty(changes) and action.edit.documentChanges then
+	-- 	for _, change in ipairs(action.edit.documentChanges) do
+	-- 		if change.edits then
+	-- 			changes[change.textDocument.uri] = change.edits
+	-- 		end
+	-- 	end
+	-- end
 
 	local preview_lines = {}
 	for uri, edits in pairs(changes) do
