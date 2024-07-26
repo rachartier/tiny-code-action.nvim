@@ -116,8 +116,10 @@ local function apply_edit(lines, edits)
 
 		-- Merge the last modified line with the previous line if newText is empty
 		if edit.newText == "" then
-			lines[start_line] = lines[start_line] .. lines[start_line + 1]
-			table.remove(lines, start_line + 1)
+			for i = start_line, end_line - 1 do
+				lines[i] = lines[i] .. lines[i + 1]
+				table.remove(lines, i + 1)
+			end
 		end
 	end
 
