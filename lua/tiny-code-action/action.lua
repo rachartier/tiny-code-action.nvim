@@ -44,19 +44,51 @@ function M.action_is_not_complete(action)
 	return action.edit == nil and action.command == nil
 end
 
+local function get_line_start_end(edit)
+	if edit.range then
+		return edit.range.start.line + 1, edit.range["end"].line + 1
+	end
+
+	return edit.start.line + 1, edit["end"].line + 1
+end
+
+local function get_char_start_end(edit)
+	if edit.range then
+		if edit.range.start.character == nil then
+			return edit.range.start.offset, edit.range["end"].offset
+		end
+		return edit.range.start.character + 1, edit.range["end"].character + 1
+	end
+
+	if edit.start.character == nil then
+		return edit.start.offset, edit["end"].offset
+	end
+	return edit.start.character + 1, edit["end"].character + 1
+end
+
 local function apply_edit(lines, edits)
 	table.sort(edits, function(a, b)
-		if a.range["end"].line == b.range["end"].line then
-			return a.range["end"].character > b.range["end"].character
+		local start_line_a, end_line_a = get_line_start_end(a)
+		local start_line_b, end_line_b = get_line_start_end(b)
+		local start_char_a, end_char_a = get_char_start_end(a)
+		local start_char_b, end_char_b = get_char_start_end(b)
+
+		if start_line_a == start_line_b then
+			if start_char_a == start_char_b then
+				if end_line_a == end_line_b then
+					return end_char_a > end_char_b
+				end
+				return end_line_a > end_line_b
+			end
+			return start_char_a > start_char_b
 		end
-		return a.range["end"].line > b.range["end"].line
+
+		return start_line_a > start_line_b
 	end)
 
 	for _, edit in ipairs(edits) do
-		local start_line = edit.range.start.line + 1
-		local end_line = edit.range["end"].line + 1
-		local start_char = edit.range.start.character + 1
-		local end_char = edit.range["end"].character + 1
+		local start_line, end_line = get_line_start_end(edit)
+		local start_char, end_char = get_char_start_end(edit)
 
 		for i = start_line, end_line do
 			if i > #lines then
