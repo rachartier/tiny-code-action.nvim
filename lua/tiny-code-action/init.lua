@@ -99,17 +99,13 @@ local function code_action_finder(opts)
 		return nil
 	end
 
+	if err then
+		vim.notify("Error getting code actions: " .. vim.inspect(err), vim.log.levels.ERROR)
+		return {}
+	end
+
 	for client_id, buf_result in pairs(all_results) do
 		local client = vim.lsp.get_client_by_id(client_id)
-
-		if err then
-			vim.notify("Error getting code actions: " .. vim.inspect(err), vim.log.levels.ERROR)
-			break
-		end
-
-		if not buf_result or vim.tbl_isempty(buf_result) then
-			break
-		end
 
 		if buf_result then
 			for _, action in ipairs(buf_result.result) do
