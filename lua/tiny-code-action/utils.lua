@@ -40,4 +40,42 @@ function M.int_to_hex(int)
 	return string.format("#%06X", int)
 end
 
+function M.find_key_in_table(tbl, key_to_find)
+	local function recursive_search(t, key)
+		for k, v in pairs(t) do
+			if k == key then
+				return true, k, v
+			elseif type(v) == "table" then
+				local found, found_key, found_value = recursive_search(v, key)
+				if found then
+					return true, found_key, found_value
+				end
+			end
+		end
+		return false, nil, nil
+	end
+
+	return recursive_search(tbl, key_to_find)
+end
+
+function M.path_to_uri(path)
+	path = path:gsub("\\", "/")
+
+	local function encode_char(c)
+		return string.format("%%%02X", string.byte(c))
+	end
+
+	path = path:gsub("[^%w%-%.%_%~%/]", encode_char)
+
+	if not path:match("^%a+://") then
+		if path:sub(1, 1) == "/" then
+			path = "file://" .. path
+		else
+			path = "file:///" .. path
+		end
+	end
+
+	return path
+end
+
 return M
