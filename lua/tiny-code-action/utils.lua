@@ -78,4 +78,24 @@ function M.path_to_uri(path)
 	return path
 end
 
+function M.split_lines_to_table(line)
+	local lines = {}
+	local current_line = ""
+
+	for c in line:gmatch(".") do
+		if c == "\n" then
+			table.insert(lines, current_line)
+			current_line = ""
+		else
+			current_line = current_line .. c
+		end
+	end
+
+	if current_line ~= "" then
+		table.insert(lines, current_line)
+	end
+
+	return lines
+end
+
 return M
