@@ -94,7 +94,11 @@ local function code_action_finder(opts)
 
 	local all_results, err = vim.lsp.buf_request_sync(opts.bufnr, "textDocument/codeAction", params, 1000)
 
-	---@diagnostic disable-next-line: param-type-mismatch
+	if err then
+		vim.notify("Error getting code actions: " .. vim.inspect(err), vim.log.levels.ERROR)
+		return
+	end
+
 	if not all_results then
 		return nil
 	end
@@ -102,16 +106,7 @@ local function code_action_finder(opts)
 	for client_id, buf_result in pairs(all_results) do
 		local client = vim.lsp.get_client_by_id(client_id)
 
-		if err then
-			vim.notify("Error getting code actions: " .. vim.inspect(err), vim.log.levels.ERROR)
-			break
-		end
-
-		if not buf_result or vim.tbl_isempty(buf_result) then
-			break
-		end
-
-		if buf_result then
+		if buf_result and buf_result.result and #buf_result.result > 0 then
 			for _, action in ipairs(buf_result.result) do
 				table.insert(results, {
 					client = client,
