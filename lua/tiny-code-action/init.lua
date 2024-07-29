@@ -111,6 +111,7 @@ local function code_action_finder(opts)
 				table.insert(results, {
 					client = client,
 					action = action,
+					context = context,
 				})
 			end
 		end
@@ -136,6 +137,7 @@ function M.code_action()
 			entry_maker = function(pair_client_action)
 				local action = pair_client_action.action
 				local client = pair_client_action.client
+				local context = pair_client_action.context
 
 				local kind = M.config.signs.others
 				local kind_hl = M.match_hl_kind.others
@@ -169,14 +171,26 @@ function M.code_action()
 				local selection = action_state.get_selected_entry()
 				local action = selection.value.action
 				local client = selection.value.client
+				local context = selection.value.context
 
-				if lsp_actions.action_is_not_complete(action) then
-					client.request("codeAction/resolve", action, function(e, res)
-						action, err = res, e
-						lsp_actions.apply(action)
+				local reg = client.dynamic_capabilities:get("textDocument/codeAction", { bufnr = bufnr })
+				local support_resolve = vim.tbl_get(reg or {}, "registerOptions", "resolveProvider")
+					or client.supports_method("codeAction/resolve")
+
+				if lsp_actions.action_is_not_complete(action) and client and support_resolve then
+					client.request("codeAction/resolve", action, function(e, resolved_action)
+						if e then
+							if action.command then
+								lsp_actions.apply(action, client, context)
+							else
+								vim.notify(e.code .. ": " .. e.message, vim.log.levels.ERROR)
+							end
+						else
+							lsp_actions.apply(resolved_action, client, context)
+						end
 					end, bufnr)
 				else
-					lsp_actions.apply(action)
+					lsp_actions.apply(action, client, context)
 				end
 			end)
 			return true

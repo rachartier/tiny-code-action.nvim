@@ -2,18 +2,29 @@ local M = {}
 
 local utils = require("tiny-code-action.utils")
 
-function M.apply(action, client)
+function M.apply(action, client, ctx)
 	if action == nil then
 		vim.notify("Error: No action to apply/action can't be applied", vim.log.levels.ERROR)
 		return
 	end
 
+	if not ctx then
+		ctx = {}
+	end
+
 	if action.edit then
-		vim.lsp.util.apply_workspace_edit(action.edit, "UTF-8")
-	elseif type(action.command) == "table" then
-		vim.lsp.buf.execute_command(action.command)
-	else
-		vim.lsp.buf.execute_command(action)
+		vim.lsp.util.apply_workspace_edit(action.edit, client.offset_encoding)
+	end
+
+	local a_cmd = action.command
+	if a_cmd then
+		local command
+		if type(a_cmd) == "table" then
+			command = a_cmd
+		else
+			command = action
+		end
+		client:_exec_cmd(command, ctx)
 	end
 end
 
@@ -41,7 +52,7 @@ function M.blocking_resolve(action, bufnr, client)
 end
 
 function M.action_is_not_complete(action)
-	return action.edit == nil and action.command == nil
+	return action.edit == nil
 end
 
 local function get_line_start_end(edit)
