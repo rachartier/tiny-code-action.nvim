@@ -1,7 +1,13 @@
 local M = {}
 
 local utils = require("tiny-code-action.utils")
+local apply_edit = require("tiny-code-action.edit").apply_edit
 
+--- Applies a given action in the context of a client and a context.
+-- @param action The action to be applied. If nil, an error message is displayed.
+-- @param client The client in which the action is applied. It is used to apply workspace edits and execute commands.
+-- @param ctx The context in which the action is applied. If not provided, an empty context is used.
+-- @return No return value. The function operates by side effects, applying the action in the given context.
 function M.apply(action, client, ctx)
 	if action == nil then
 		vim.notify("Error: No action to apply/action can't be applied", vim.log.levels.ERROR)
@@ -28,12 +34,29 @@ function M.apply(action, client, ctx)
 	end
 end
 
+--- This function resolves a code action and triggers a callback with the result.
+--- @param action table: The code action to be resolved. The structure and content of this table
+---                      depend on the specific language server protocol client in use.
+--- @param bufnr number: The buffer number where the action is to be applied.
+--- @param client table: The language server protocol client that will resolve the action.
+--- @param callback function: A function to be called with the result of the action resolution and
+---                           any error that occurred. The callback should accept two parameters:
+---                           the result and the error.
 function M.resolve(action, bufnr, client, callback)
 	client.request("codeAction/resolve", action, function(e, res)
 		callback(res, e)
 	end, bufnr)
 end
 
+--- This function resolves a code action in a blocking manner.
+--- @param action table: The code action to be resolved. The structure and content of this table
+---                      depend on the specific language server protocol client in use.
+--- @param bufnr number: The buffer number where the action is to be applied.
+--- @param client table: The language server protocol client that will resolve the action.
+--- @return table, string: The result of the action resolution and any error that occurred. The
+---                        structure of the result depends on the specific language server protocol
+---                        client in use. The error is a string describing the error, or nil if no
+---                        error occurred.
 function M.blocking_resolve(action, bufnr, client)
 	local result, err = nil, nil
 
@@ -55,207 +78,126 @@ function M.action_is_not_complete(action)
 	return action.edit == nil
 end
 
-local function get_line_start_end(edit)
-	if edit.range then
-		return edit.range.start.line + 1, edit.range["end"].line + 1
-	end
-
-	return edit.start.line + 1, edit["end"].line + 1
-end
-
-local function get_char_start_end(edit)
-	if edit.range then
-		if edit.range.start.character == nil then
-			return edit.range.start.offset, edit.range["end"].offset
-		end
-		return edit.range.start.character + 1, edit.range["end"].character + 1
-	end
-
-	if edit.start.character == nil then
-		return edit.start.offset, edit["end"].offset
-	end
-	return edit.start.character + 1, edit["end"].character + 1
-end
-
-local function apply_edit(lines, edits)
-	local index = 0
-
-	vim.tbl_map(function(edit)
-		index = index + 1
-		edit._index = index
-
-		if edit.range == nil then
-			if edit.start.offset ~= nil then
-				edit.range = {
-					start = {
-						line = edit.start.line - 1,
-						character = edit.start.offset - 1,
-					},
-					["end"] = {
-						line = edit["end"].line - 1,
-						character = edit["end"].offset - 1,
-					},
-				}
-			else
-				edit.range = {
-					start = {
-						line = edit.start.line,
-						character = edit.start.character,
-					},
-					["end"] = {
-						line = edit["end"].line,
-						character = edit["end"].character,
-					},
-				}
-			end
-		end
-
-		if
-			edit.range.start.line > edit.range["end"].line
-			or edit.range.start.line == edit.range["end"].line
-				and edit.range.start.character > edit.range["end"].character
-		then
-			local start = edit.range.start
-			edit.range.start = edit.range["end"]
-			edit.range["end"] = start
-		end
-		return edit
-	end, edits)
-
-	table.sort(edits, function(a, b)
-		local start_line_a, end_line_a = get_line_start_end(a)
-		local start_line_b, end_line_b = get_line_start_end(b)
-		local start_char_a, end_char_a = get_char_start_end(a)
-		local start_char_b, end_char_b = get_char_start_end(b)
-
-		if start_line_a ~= start_line_b then
-			return start_line_a > start_line_b
-		end
-
-		if start_char_a ~= start_char_b then
-			return start_char_a > start_char_b
-		end
-
-		return a._index > b._index
-	end)
-
-	for _, edit in ipairs(edits) do
-		local start_line, end_line = get_line_start_end(edit)
-		local start_char, end_char = get_char_start_end(edit)
-
-		for i = start_line, end_line do
-			if i > #lines then
-				table.insert(lines, "")
-			end
-		end
-
-		if edit.newText ~= "" then
-			if start_line == end_line then
-				local line = lines[start_line]
-				lines[start_line] = line:sub(1, start_char - 1) .. edit.newText .. line:sub(end_char)
-			else
-				local first_line = lines[start_line]
-				local last_line = lines[end_line]
-
-				lines[start_line] = first_line:sub(1, start_char - 1) .. edit.newText
-
-				for i = start_line + 1, end_line - 1 do
-					table.remove(lines, start_line + 1)
-				end
-
-				if end_line > start_line then
-					lines[start_line + 1] = last_line:sub(end_char)
-				end
-			end
-		else
-			local first = lines[start_line]
-			local last = lines[end_line]
-
-			if start_line == end_line then
-				lines[start_line] = first:sub(1, start_char - 1) .. last:sub(end_char)
-			else
-				end_line = end_line - 1
-
-				if start_char - 1 == 0 then
-					table.remove(lines, start_line)
-				else
-					lines[start_line] = first:sub(1, start_char - 1) .. last:sub(end_char)
-				end
-
-				for i = 1, (end_line - start_line) - 1 do
-					table.remove(lines, start_line)
-				end
-
-				if end_char - 1 == 0 then
-					table.remove(lines, start_line)
-				else
-					lines[start_line + 1] = last:sub(end_char)
-				end
-			end
-		end
-	end
-
-	return lines
-end
-
+--- This function generates a preview of the changes that a code action would make.
+--- @param opts table: A table of options for generating the preview. The structure and content of
+---                    this table depend on the specific backend in use.
+--- @param action table: The code action for which to generate a preview. The structure and content
+---                      of this table depend on the specific backend in use.
+--- @param backend table: The backend that will generate the preview.
+--- @param bufnr number: The buffer number where the action is to be applied.
+--- @return table: A table of strings representing the lines of the preview. If no preview can be
+---                generated, the table will contain a single string: "No preview available for this
+---                action".
 function M.preview(opts, action, backend, bufnr)
-	local found, _, changes_found = utils.find_key_in_table(action, "changes")
-	if not found or changes_found == nil then
-		found, _, changes_found = utils.find_key_in_table(action, "documentChanges")
-	end
+	local changes = M.find_changes(action)
 
-	if not action or not changes_found or not found or vim.tbl_isempty(changes_found or {}) then
+	if not changes then
 		return { "No preview available for this action" }
 	end
 
-	local changes = {}
-	if type(changes_found[1]) == "table" then
-		for _, change in ipairs(changes_found) do
-			if change.edits then
-				changes[change.textDocument.uri] = change.edits
-			elseif change.textChanges then
-				local uri = utils.path_to_uri(change.fileName)
-				changes[uri] = change.textChanges
-			end
-		end
-	else
-		changes = changes_found
-	end
+	local normalized_changes = M.normalize_changes(changes)
 
-	local preview_lines = {}
-	for uri, edits in pairs(changes) do
-		local current_bufnr = vim.uri_to_bufnr(uri)
-		local lines
-		if current_bufnr == bufnr then
-			lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-		else
-			local fname = vim.uri_to_fname(uri)
-			if not vim.loop.fs_stat(fname) then
-				lines = {}
-			else
-				lines = vim.fn.readfile(fname)
-			end
-		end
-
-		local new_lines = vim.deepcopy(lines)
-		new_lines = apply_edit(new_lines, edits)
-
-		local diff = backend.get_diff(lines, new_lines, opts)
-
-		if type(diff) == "string" then
-			diff = vim.split(diff, "\n")
-		end
-
-		for _, line in ipairs(diff) do
-			table.insert(preview_lines, line)
-		end
-	end
+	local preview_lines = M.generate_preview_lines(normalized_changes, opts, backend, bufnr)
 
 	if vim.tbl_isempty(preview_lines) then
 		return { "No preview available for this action" }
 	end
 
 	return preview_lines
+end
+
+--- This function finds the changes associated with a given code action.
+--- @param action table: The code action for which to find changes. The structure and content of this
+---                      table depend on the specific language server protocol client in use.
+--- @return table|nil: A table representing the changes associated with the action, or nil if no
+---                       changes are found. The structure of the table depends on the specific
+---                       language server protocol client in use.
+function M.find_changes(action)
+	local found, _, changes = utils.find_key_in_table(action, "changes")
+	if not found or changes == nil then
+		found, _, changes = utils.find_key_in_table(action, "documentChanges")
+	end
+
+	if not action or not changes or not found or vim.tbl_isempty(changes or {}) then
+		return nil
+	end
+
+	return changes
+end
+
+--- This function normalizes the changes associated with a code action.
+--- @param changes table: A table representing the changes to be normalized. The structure and
+---                       content of this table depend on the specific language server protocol
+---                       client in use.
+--- @return table: A table representing the normalized changes. The structure of the table depends
+---                on the specific language server protocol client in use.
+function M.normalize_changes(changes)
+	local normalized = {}
+
+	if type(changes[1]) == "table" then
+		for _, change in ipairs(changes) do
+			if change.edits then
+				normalized[change.textDocument.uri] = change.edits
+			elseif change.textChanges then
+				local uri = utils.path_to_uri(change.fileName)
+				normalized[uri] = change.textChanges
+			end
+		end
+	else
+		normalized = changes
+	end
+
+	return normalized
+end
+
+--- This function generates preview lines for a given set of changes.
+--- @param changes table: A table representing the changes for which to generate previews. The
+---                       structure and content of this table depend on the specific backend in use.
+--- @param opts table: A table of options for generating the previews. The structure and content of
+---                    this table depend on the specific backend in use.
+--- @param backend table: The backend that will generate the previews.
+--- @param bufnr number: The buffer number where the changes are to be applied.
+--- @return table: A table of strings representing the lines of the previews. If no previews can be
+---                generated for a change, the table will contain a single string: "No preview
+---                available for this change".
+function M.generate_preview_lines(changes, opts, backend, bufnr)
+	local preview_lines = {}
+
+	for uri, edits in pairs(changes) do
+		local lines = M.get_file_lines(uri, bufnr)
+		local new_lines = apply_edit(vim.deepcopy(lines), edits)
+		local diff = backend.get_diff(lines, new_lines, opts)
+
+		if type(diff) == "string" then
+			diff = vim.split(diff, "\n")
+		end
+
+		vim.list_extend(preview_lines, diff)
+	end
+
+	return preview_lines
+end
+
+--- This function retrieves the lines of a file identified by a given URI.
+--- @param uri string: The URI of the file to retrieve the lines from. The URI should be in a format
+---                    that can be converted to a buffer number or a file name by the
+---                    'vim.uri_to_bufnr' or 'vim.uri_to_fname' functions, respectively.
+--- @param bufnr number: The buffer number of the current file.
+--- @return table: A table of strings representing the lines of the file. If the file does not exist,
+---                an empty table is returned.
+function M.get_file_lines(uri, bufnr)
+	local current_bufnr = vim.uri_to_bufnr(uri)
+
+	if current_bufnr == bufnr then
+		return vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+	else
+		local fname = vim.uri_to_fname(uri)
+		if not vim.loop.fs_stat(fname) then
+			return {}
+		else
+			return vim.fn.readfile(fname)
+		end
+	end
 end
 
 return M
