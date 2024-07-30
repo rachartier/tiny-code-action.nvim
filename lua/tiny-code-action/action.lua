@@ -78,23 +78,65 @@ local function get_char_start_end(edit)
 end
 
 local function apply_edit(lines, edits)
+	local index = 0
+
+	vim.tbl_map(function(edit)
+		index = index + 1
+		edit._index = index
+
+		if edit.range == nil then
+			if edit.start.offset ~= nil then
+				edit.range = {
+					start = {
+						line = edit.start.line - 1,
+						character = edit.start.offset - 1,
+					},
+					["end"] = {
+						line = edit["end"].line - 1,
+						character = edit["end"].offset - 1,
+					},
+				}
+			else
+				edit.range = {
+					start = {
+						line = edit.start.line,
+						character = edit.start.character,
+					},
+					["end"] = {
+						line = edit["end"].line,
+						character = edit["end"].character,
+					},
+				}
+			end
+		end
+
+		if
+			edit.range.start.line > edit.range["end"].line
+			or edit.range.start.line == edit.range["end"].line
+				and edit.range.start.character > edit.range["end"].character
+		then
+			local start = edit.range.start
+			edit.range.start = edit.range["end"]
+			edit.range["end"] = start
+		end
+		return edit
+	end, edits)
+
 	table.sort(edits, function(a, b)
 		local start_line_a, end_line_a = get_line_start_end(a)
 		local start_line_b, end_line_b = get_line_start_end(b)
 		local start_char_a, end_char_a = get_char_start_end(a)
 		local start_char_b, end_char_b = get_char_start_end(b)
 
-		if start_line_a == start_line_b then
-			if start_char_a == start_char_b then
-				if end_line_a == end_line_b then
-					return end_char_a > end_char_b
-				end
-				return end_line_a > end_line_b
-			end
+		if start_line_a ~= start_line_b then
+			return start_line_a > start_line_b
+		end
+
+		if start_char_a ~= start_char_b then
 			return start_char_a > start_char_b
 		end
 
-		return start_line_a > start_line_b
+		return a._index > b._index
 	end)
 
 	for _, edit in ipairs(edits) do
@@ -107,29 +149,48 @@ local function apply_edit(lines, edits)
 			end
 		end
 
-		if start_line == end_line then
-			local line = lines[start_line]
-			lines[start_line] = line:sub(1, start_char - 1) .. edit.newText .. line:sub(end_char)
+		if edit.newText ~= "" then
+			if start_line == end_line then
+				local line = lines[start_line]
+				lines[start_line] = line:sub(1, start_char - 1) .. edit.newText .. line:sub(end_char)
+			else
+				local first_line = lines[start_line]
+				local last_line = lines[end_line]
+
+				lines[start_line] = first_line:sub(1, start_char - 1) .. edit.newText
+
+				for i = start_line + 1, end_line - 1 do
+					table.remove(lines, start_line + 1)
+				end
+
+				if end_line > start_line then
+					lines[start_line + 1] = last_line:sub(end_char)
+				end
+			end
 		else
-			local first_line = lines[start_line]
-			local last_line = lines[end_line]
+			local first = lines[start_line]
+			local last = lines[end_line]
 
-			lines[start_line] = first_line:sub(1, start_char - 1) .. edit.newText
+			if start_line == end_line then
+				lines[start_line] = first:sub(1, start_char - 1) .. last:sub(end_char)
+			else
+				end_line = end_line - 1
 
-			for i = start_line + 1, end_line - 1 do
-				table.remove(lines, start_line + 1)
-			end
+				if start_char - 1 == 0 then
+					table.remove(lines, start_line)
+				else
+					lines[start_line] = first:sub(1, start_char - 1) .. last:sub(end_char)
+				end
 
-			if end_line > start_line then
-				lines[start_line + 1] = last_line:sub(end_char)
-			end
-		end
+				for i = 1, (end_line - start_line) - 1 do
+					table.remove(lines, start_line)
+				end
 
-		-- Merge the last modified line with the previous line if newText is empty
-		if edit.newText == "" then
-			for i = start_line, end_line - 1 do
-				lines[i] = lines[i] .. lines[i + 1]
-				table.remove(lines, i + 1)
+				if end_char - 1 == 0 then
+					table.remove(lines, start_line)
+				else
+					lines[start_line + 1] = last:sub(end_char)
+				end
 			end
 		end
 	end
