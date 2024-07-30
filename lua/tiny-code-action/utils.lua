@@ -1,45 +1,14 @@
 local M = {}
 
----@param foreground string foreground color
----@param background string background color
----@param alpha number|string number between 0 and 1. 0 results in bg, 1 results in fg
-function M.blend(foreground, background, alpha)
-	alpha = type(alpha) == "string" and (tonumber(alpha, 16) / 0xff) or alpha
-
-	local fg = M.hex_to_rgb(foreground)
-	local bg = M.hex_to_rgb(background)
-
-	local blend_channel = function(i)
-		local ret = (alpha * fg[i] + ((1 - alpha) * bg[i]))
-		return math.floor(math.min(math.max(0, ret), 255) + 0.5)
-	end
-
-	return string.format("#%02x%02x%02x", blend_channel(1), blend_channel(2), blend_channel(3)):upper()
-end
-
-function M.hex_to_rgb(hex)
-	if hex == nil or hex == "None" then
-		return { 0, 0, 0 }
-	end
-
-	hex = hex:gsub("#", "")
-	hex = string.lower(hex)
-
-	return {
-		tonumber(hex:sub(1, 2), 16),
-		tonumber(hex:sub(3, 4), 16),
-		tonumber(hex:sub(5, 6), 16),
-	}
-end
-
-function M.int_to_hex(int)
-	if int == nil then
-		return "None"
-	end
-
-	return string.format("#%06X", int)
-end
-
+--- This function performs a recursive search in a table for a given key.
+--- @param tbl table: The table to search in.
+--- @param key_to_find any: The key to search for. This can be of any type that can be used as a key
+---                        in a Lua table.
+--- @return boolean, any, any: A boolean indicating whether the key was found, the key itself, and
+---                            the value associated with the key. If the key is not found, the
+---                            function returns false, nil, nil.
+--- @error This function does not explicitly throw any errors or exceptions. However, if the 'tbl'
+---        parameter is not a table, a Lua error may occur.
 function M.find_key_in_table(tbl, key_to_find)
 	local function recursive_search(t, key)
 		for k, v in pairs(t) do
@@ -58,6 +27,12 @@ function M.find_key_in_table(tbl, key_to_find)
 	return recursive_search(tbl, key_to_find)
 end
 
+--- This function converts a file path to a URI.
+--- @param path string: The file path to convert. This should be a string representing a valid file
+---                     path. The path can use either forward slashes or backslashes as separators.
+--- @return string: The URI corresponding to the given path. The URI is a string starting with
+---                 "file://" followed by the normalized path. If the path is absolute, it is
+---                 preceded by an additional slash.
 function M.path_to_uri(path)
 	path = path:gsub("\\", "/")
 
@@ -78,6 +53,12 @@ function M.path_to_uri(path)
 	return path
 end
 
+--- This function splits a string into a table of lines.
+--- @param line string: The string to split. This should be a string where lines are separated by
+---                     newline characters ("\n").
+--- @return table: A table of strings, each representing a line from the input string. If the input
+---                string does not contain any newline characters, the table will contain a single
+---                element: the input string itself.
 function M.split_lines_to_table(line)
 	local lines = {}
 	local current_line = ""
