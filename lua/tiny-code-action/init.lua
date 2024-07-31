@@ -21,6 +21,7 @@ local lsp_actions = require("tiny-code-action.action")
 
 M.config = {
 	backend = "vim",
+	lsp_timeout = 2000,
 	backend_opts = {
 		delta = {
 			header_lines_to_remove = 4,
@@ -105,7 +106,7 @@ local function code_action_finder(opts)
 		return nil
 	end
 
-	local all_results, err = vim.lsp.buf_request_sync(opts.bufnr, "textDocument/codeAction", params, 1000)
+	local all_results, err = vim.lsp.buf_request_sync(opts.bufnr, "textDocument/codeAction", params, opts.lsp_timeout)
 
 	if err then
 		vim.notify("Error getting code actions: " .. vim.inspect(err), vim.log.levels.ERROR)
