@@ -89,6 +89,10 @@ end
 ---                generated, the table will contain a single string: "No preview available for this
 ---                action".
 function M.preview(opts, action, backend, bufnr)
+	if action == nil then
+		return { "Action is not defined. It may come from your LSP." }
+	end
+
 	local changes = M.find_changes(action)
 
 	if not changes then
