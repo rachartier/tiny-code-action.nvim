@@ -90,7 +90,10 @@ end
 ---                action".
 function M.preview(opts, action, backend, bufnr)
 	if action == nil then
-		return { "Action is not defined. It may come from your LSP." }
+		return {
+			"No preview available for this action",
+			"This is due to limitations in the language server protocol client.",
+		}
 	end
 
 	local changes = M.find_changes(action)

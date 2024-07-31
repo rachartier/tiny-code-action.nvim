@@ -6,6 +6,8 @@ if not has_telescope then
 	error("This plugin requires telescope.nvim (https://github.com/nvim-telescope/telescope.nvim)")
 end
 
+local utils = require("tiny-code-action.utils")
+
 M.match_hl_kind = {}
 
 local async = require("plenary.async")
@@ -53,24 +55,35 @@ M.config = {
 	},
 }
 
-local function displayer(action_text, picker)
+local function displayer(width_message, picker)
 	local display = require("telescope.pickers.entry_display").create({
 		separator = " ",
 		items = {
 			{ width = 2 },
-			{ width = #action_text },
+			{ width = width_message },
 			{ remaining = true },
 		},
 	})
 	return display(picker)
 end
 
-local make_display = function(entry)
-	return displayer(entry.ordinal, {
-		{ entry.kind, entry.kind_hl },
-		{ entry.ordinal, "Text" },
-		{ "(" .. entry.client .. ")", "Comment" },
-	})
+local function make_make_display(values)
+	local max_width_message = 0
+
+	for _, entry in pairs(values) do
+		local action = entry.action
+		if #action.title > max_width_message then
+			max_width_message = #action.title
+		end
+	end
+
+	return function(entry)
+		return displayer(max_width_message, {
+			{ entry.kind, entry.kind_hl },
+			{ entry.ordinal, "Text" },
+			{ "(" .. entry.client .. ")", "Comment" },
+		})
+	end
 end
 
 local function code_action_finder(opts)
@@ -129,6 +142,8 @@ function M.code_action()
 		vim.notify("No code actions available.", vim.log.levels.INFO)
 		return
 	end
+
+	local make_display = make_make_display(results)
 
 	local picker_opts = {
 		prompt_title = "Code Actions",
