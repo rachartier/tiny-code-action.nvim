@@ -21,7 +21,6 @@ local lsp_actions = require("tiny-code-action.action")
 
 M.config = {
 	backend = "vim",
-	lsp_timeout = 2000,
 	backend_opts = {
 		delta = {
 			header_lines_to_remove = 4,
