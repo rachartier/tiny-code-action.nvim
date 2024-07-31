@@ -87,11 +87,13 @@ local function make_make_display(values)
 	end
 end
 
-local function code_action_finder(opts)
+local function code_action_finder(opts, callback)
 	local results = {}
 
 	local params = {
-		textDocument = vim.lsp.util.make_text_document_params(),
+		textDocument = {
+			uri = vim.uri_from_bufnr(opts.bufnr),
+		},
 		range = vim.lsp.util.make_range_params().range,
 	}
 
@@ -106,22 +108,24 @@ local function code_action_finder(opts)
 		return nil
 	end
 
-	local all_results, err = vim.lsp.buf_request_sync(opts.bufnr, "textDocument/codeAction", params, opts.lsp_timeout)
+	local client_count_done = 0
 
-	if err then
-		vim.notify("Error getting code actions: " .. vim.inspect(err), vim.log.levels.ERROR)
-		return
-	end
+	vim.lsp.buf_request(opts.bufnr, "textDocument/codeAction", params, function(err, req_results, ctx, _)
+		client_count_done = client_count_done + 1
 
-	if not all_results then
-		return nil
-	end
+		if err then
+			-- vim.notify("Error getting code actions: " .. vim.inspect(err), vim.log.levels.ERROR)
+			return
+		end
 
-	for client_id, buf_result in pairs(all_results) do
-		local client = vim.lsp.get_client_by_id(client_id)
+		if not req_results then
+			return
+		end
 
-		if buf_result and buf_result.result and #buf_result.result > 0 then
-			for _, action in ipairs(buf_result.result) do
+		for _, action in ipairs(req_results) do
+			local client = vim.lsp.get_client_by_id(ctx.client_id)
+
+			if action then
 				table.insert(results, {
 					client = client,
 					action = action,
@@ -129,96 +133,136 @@ local function code_action_finder(opts)
 				})
 			end
 		end
-	end
 
-	return results
+		if client_count_done == #clients then
+			callback(results)
+		end
+	end)
+end
+
+local function create_finder(results)
+	local make_display = make_make_display(results)
+
+	return finders.new_table({
+		results = results,
+		entry_maker = function(pair_client_action)
+			local action = pair_client_action.action
+			local client = pair_client_action.client
+			local context = pair_client_action.context
+
+			local kind = M.config.signs.others
+			local kind_hl = M.match_hl_kind.others
+			local last_k_len = 0
+
+			for _, k in pairs(vim.tbl_keys(M.config.signs)) do
+				if string.find(action.kind, k, 1, true) then
+					if #k > last_k_len then
+						last_k_len = #k
+						kind = M.config.signs[k]
+						kind_hl = M.match_hl_kind[k]
+					end
+				end
+			end
+
+			print("action :", vim.inspect(action))
+
+			return {
+				value = pair_client_action,
+				kind = kind[1],
+				kind_hl = kind_hl,
+				ordinal = action.title,
+				client = client.name or "unknown",
+				display = make_display,
+			}
+		end,
+	})
 end
 
 function M.code_action()
 	local bufnr = vim.api.nvim_get_current_buf()
 
-	local results = code_action_finder({ bufnr = bufnr })
+	code_action_finder({ bufnr = bufnr }, function(results)
+		if results == nil or vim.tbl_isempty(results) then
+			vim.notify("No code actions available.", vim.log.levels.INFO)
+			return
+		end
 
-	if results == nil or vim.tbl_isempty(results) then
-		vim.notify("No code actions available.", vim.log.levels.INFO)
-		return
-	end
+		local make_display = make_make_display(results)
 
-	local make_display = make_make_display(results)
+		local picker_opts = {
+			prompt_title = "Code Actions",
+			finder = finders.new_table({
+				results = results,
+				entry_maker = function(pair_client_action)
+					local action = pair_client_action.action
+					local client = pair_client_action.client
+					local context = pair_client_action.context
 
-	local picker_opts = {
-		prompt_title = "Code Actions",
-		finder = finders.new_table({
-			results = results,
-			entry_maker = function(pair_client_action)
-				local action = pair_client_action.action
-				local client = pair_client_action.client
-				local context = pair_client_action.context
+					local kind = M.config.signs.others
+					local kind_hl = M.match_hl_kind.others
+					local last_k_len = 0
 
-				local kind = M.config.signs.others
-				local kind_hl = M.match_hl_kind.others
-				local last_k_len = 0
-
-				for _, k in pairs(vim.tbl_keys(M.config.signs)) do
-					if string.find(action.kind, k, 1, true) then
-						if #k > last_k_len then
-							last_k_len = #k
-							kind = M.config.signs[k]
-							kind_hl = M.match_hl_kind[k]
+					for _, k in pairs(vim.tbl_keys(M.config.signs)) do
+						if string.find(action.kind, k, 1, true) then
+							if #k > last_k_len then
+								last_k_len = #k
+								kind = M.config.signs[k]
+								kind_hl = M.match_hl_kind[k]
+							end
 						end
 					end
-				end
 
-				return {
-					value = pair_client_action,
-					kind = kind[1],
-					kind_hl = kind_hl,
-					ordinal = action.title,
-					client = client.name or "unknown",
-					display = make_display,
-				}
-			end,
-		}),
-		sorter = conf.generic_sorter({}),
-		attach_mappings = function(prompt_bufnr, map)
-			actions.select_default:replace(function()
-				actions.close(prompt_bufnr)
+					return {
+						value = pair_client_action,
+						kind = kind[1],
+						kind_hl = kind_hl,
+						ordinal = action.title,
+						client = client.name or "unknown",
+						display = make_display,
+					}
+				end,
+			}),
+			sorter = conf.generic_sorter({}),
+			attach_mappings = function(prompt_bufnr, map)
+				actions.select_default:replace(function()
+					actions.close(prompt_bufnr)
 
-				local selection = action_state.get_selected_entry()
-				local action = selection.value.action
-				local client = selection.value.client
-				local context = selection.value.context
+					local selection = action_state.get_selected_entry()
+					local action = selection.value.action
+					local client = selection.value.client
+					local context = selection.value.context
 
-				local reg = client.dynamic_capabilities:get("textDocument/codeAction", { bufnr = bufnr })
-				local support_resolve = vim.tbl_get(reg or {}, "registerOptions", "resolveProvider")
-					or client.supports_method("codeAction/resolve")
+					local reg = client.dynamic_capabilities:get("textDocument/codeAction", { bufnr = bufnr })
+					local support_resolve = vim.tbl_get(reg or {}, "registerOptions", "resolveProvider")
+						or client.supports_method("codeAction/resolve")
 
-				if lsp_actions.action_is_not_complete(action) and client and support_resolve then
-					client.request("codeAction/resolve", action, function(e, resolved_action)
-						if e then
-							if action.command then
-								lsp_actions.apply(action, client, context)
+					if lsp_actions.action_is_not_complete(action) and client and support_resolve then
+						client.request("codeAction/resolve", action, function(e, resolved_action)
+							if e then
+								if action.command then
+									lsp_actions.apply(action, client, context)
+								else
+									vim.notify(e.code .. ": " .. e.message, vim.log.levels.ERROR)
+								end
 							else
-								vim.notify(e.code .. ": " .. e.message, vim.log.levels.ERROR)
+								lsp_actions.apply(resolved_action, client, context)
 							end
-						else
-							lsp_actions.apply(resolved_action, client, context)
-						end
-					end, bufnr)
-				else
-					lsp_actions.apply(action, client, context)
-				end
-			end)
-			return true
-		end,
-	}
+						end, bufnr)
+					else
+						lsp_actions.apply(action, client, context)
+					end
+				end)
+				return true
+			end,
+		}
 
-	picker_opts = vim.tbl_deep_extend("force", M.config.telescope_opts, picker_opts)
+		picker_opts = vim.tbl_deep_extend("force", M.config.telescope_opts, picker_opts)
 
-	local picker = pickers.new({}, picker_opts)
-	picker.previewer = M.backend.create_previewer(M.config, bufnr, M.backend, lsp_actions.preview)
+		local picker = pickers.new({}, picker_opts)
+		picker.previewer = M.backend.create_previewer(M.config, bufnr, M.backend, lsp_actions.preview)
 
-	picker:find()
+		picker:find()
+	end)
 end
 
 function M.setup(opts)
