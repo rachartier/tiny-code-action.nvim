@@ -163,8 +163,6 @@ local function create_finder(results)
 				end
 			end
 
-			print("action :", vim.inspect(action))
-
 			return {
 				value = pair_client_action,
 				kind = kind[1],
