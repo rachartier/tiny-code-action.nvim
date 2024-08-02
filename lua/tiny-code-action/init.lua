@@ -249,6 +249,10 @@ function M.code_action()
 						lsp_actions.apply(action, client, context)
 					end
 				end)
+
+				map("n", "<CR>", actions.select_default)
+				map("i", "<CR>", actions.select_default)
+
 				return true
 			end,
 		}
