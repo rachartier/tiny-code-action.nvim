@@ -59,10 +59,10 @@ function M.create_previewer(opts, bufnr, backend, preview_action_callback)
 
 				if err_action then
 					---@diagnostic disable-next-line: need-check-nil
-					if action_result.command then
+					if action_result ~= nil and action_result.command then
 						action = action_result
 					else
-						vim.notify("Error resolving action:" .. vim.inspect(err), vim.log.levels.ERROR)
+						vim.notify("Error resolving action:" .. vim.inspect(err_action), vim.log.levels.ERROR)
 					end
 				else
 					action = action_result
