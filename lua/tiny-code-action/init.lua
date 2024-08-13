@@ -200,7 +200,7 @@ function M.code_action()
 					local last_k_len = 0
 
 					for _, k in pairs(vim.tbl_keys(M.config.signs)) do
-						if string.find(action.kind, k, 1, true) then
+						if string.find(action.kind or "", k, 1, true) then
 							if #k > last_k_len then
 								last_k_len = #k
 								kind = M.config.signs[k]
