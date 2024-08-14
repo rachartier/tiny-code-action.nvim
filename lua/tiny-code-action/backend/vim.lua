@@ -18,10 +18,6 @@ function M.create_previewer(opts, bufnr, backend, preview_action_callback)
 			local action = entry.value.action
 			local client = entry.value.client
 
-			if not action then
-				return
-			end
-
 			vim.api.nvim_set_option_value("filetype", "diff", { buf = self.state.bufnr })
 
 			if lsp_actions.action_is_not_complete(action) then

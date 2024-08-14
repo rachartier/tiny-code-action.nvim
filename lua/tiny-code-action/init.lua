@@ -200,7 +200,7 @@ function M.code_action()
 					local last_k_len = 0
 
 					for _, k in pairs(vim.tbl_keys(M.config.signs)) do
-						if string.find(action.kind or "", k, 1, true) then
+						if string.find(action.kind or "?", k, 1, true) then
 							if #k > last_k_len then
 								last_k_len = #k
 								kind = M.config.signs[k]
@@ -209,11 +209,16 @@ function M.code_action()
 						end
 					end
 
+					print(vim.inspect(kind))
+
+					local ordinal = action.title:gsub("\n", " ")
+					ordinal = ordinal:gsub("\r", " ")
+
 					return {
 						value = pair_client_action,
 						kind = kind[1],
 						kind_hl = kind_hl,
-						ordinal = action.title,
+						ordinal = ordinal,
 						client = client.name or "unknown",
 						display = make_display,
 					}
