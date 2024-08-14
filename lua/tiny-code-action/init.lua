@@ -209,8 +209,6 @@ function M.code_action()
 						end
 					end
 
-					print(vim.inspect(kind))
-
 					local ordinal = action.title:gsub("\n", " ")
 					ordinal = ordinal:gsub("\r", " ")
 
