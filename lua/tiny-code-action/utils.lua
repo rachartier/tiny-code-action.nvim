@@ -79,4 +79,8 @@ function M.split_lines_to_table(line)
 	return lines
 end
 
+function M.is_string_empty_or_whitespaces(str)
+	return str == nil or str:match("^%s*$") ~= nil
+end
+
 return M

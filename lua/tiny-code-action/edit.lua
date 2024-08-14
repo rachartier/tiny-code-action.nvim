@@ -2,12 +2,12 @@ local M = {}
 
 --- This function retrieves the start and end line numbers of a given edit.
 --- @param edit table: A table representing an edit. The table should have either a 'range' field
---- with 'start' and 'end' subfields, each containing a 'line' field, or 'start'
---- and 'end' fields directly, each containing a 'line' field.
+---                    with 'start' and 'end' subfields, each containing a 'line' field, or 'start'
+---                    and 'end' fields directly, each containing a 'line' field.
 --- @return number, number: The start and end line numbers of the edit, incremented by 1. If the
---- 'range' field is present in the 'edit' table, its 'start' and 'end'
---- subfields are used. Otherwise, the 'start' and 'end' fields of the 'edit'
---- table are used.
+---                         'range' field is present in the 'edit' table, its 'start' and 'end'
+---                         subfields are used. Otherwise, the 'start' and 'end' fields of the 'edit'
+---                         table are used.
 local function get_line_start_end(edit)
 	if edit.range then
 		return edit.range.start.line + 1, edit.range["end"].line + 1
