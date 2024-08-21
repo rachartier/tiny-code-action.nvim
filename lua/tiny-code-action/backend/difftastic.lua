@@ -19,21 +19,17 @@ function M.get_diff(bufnr, old_lines, new_lines, opts)
 	local diff = {}
 	local args = {}
 
-	vim.list_extend(args, opts.backend_opts.delta.args)
+	vim.list_extend(args, opts.backend_opts.difftastic.args)
 
 	if vim.o.background == "dark" then
-		table.insert(args, "--dark")
+		table.insert(args, "--background=dark")
 	end
-
-	args = vim.list_extend(args, {
-		"--hunk-header-decoration-style=omit",
-	})
 
 	table.insert(args, old_file)
 	table.insert(args, new_file)
 
 	Job:new({
-		command = "delta",
+		command = "difft",
 		args = args,
 		on_exit = function(j)
 			diff = j:result()
@@ -43,7 +39,7 @@ function M.get_diff(bufnr, old_lines, new_lines, opts)
 	os.remove(old_file)
 	os.remove(new_file)
 
-	for i = 1, opts.backend_opts.delta.header_lines_to_remove do
+	for i = 1, opts.backend_opts.difftastic.header_lines_to_remove do
 		table.remove(diff, 1)
 	end
 	return diff

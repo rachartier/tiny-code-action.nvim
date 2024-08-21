@@ -28,6 +28,14 @@ M.config = {
 				"--line-numbers",
 			},
 		},
+		difftastic = {
+			header_lines_to_remove = 1,
+			args = {
+				"--color=always",
+				"--display=inline",
+				"--syntax-highlight=on",
+			},
+		},
 	},
 	telescope_opts = {
 		layout_strategy = "vertical",
@@ -275,7 +283,7 @@ function M.setup(opts)
 	if type(M.config.backend) ~= "string" then
 		error("Invalid backend type: " .. type(M.config.backend))
 	end
-	if M.config.backend ~= "delta" and M.config.backend ~= "vim" then
+	if M.config.backend ~= "delta" and M.config.backend ~= "vim" and M.config.backend ~= "difftastic" then
 		error("Invalid backend: " .. M.config.backend)
 	end
 

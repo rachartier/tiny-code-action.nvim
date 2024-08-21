@@ -75,6 +75,18 @@ require("tiny-code-action").setup({
 				"--line-numbers",
 			},
 		},
+		difftastic = {
+			-- Header from delta can be quite large.
+			-- You can remove them by setting this to the number of lines to remove
+			header_lines_to_remove = 1,
+
+			-- The arguments to pass to difftastic
+			args = {
+				"--color=always",
+				"--display=inline",
+				"--syntax-highlight=on",
+			},
+		},
 	},
 	telescope_opts = {
 		layout_strategy = "vertical",
