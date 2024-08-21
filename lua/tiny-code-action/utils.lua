@@ -83,4 +83,9 @@ function M.is_string_empty_or_whitespaces(str)
 	return str == nil or str:match("^%s*$") ~= nil
 end
 
+function M.get_file_extension(bufnr)
+	local filename = vim.api.nvim_buf_get_name(bufnr)
+	return filename:match("^.+%.(.+)$")
+end
+
 return M

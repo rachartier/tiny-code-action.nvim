@@ -4,7 +4,7 @@ local M = {}
 local previewers = require("telescope.previewers")
 local lsp_actions = require("tiny-code-action.action")
 
-function M.get_diff(old_lines, new_lines, opts)
+function M.get_diff(bufnr, old_lines, new_lines, opts)
 	return vim.diff(table.concat(old_lines, "\n"), table.concat(new_lines, "\n"), {
 		algorithm = "minimal",
 		ctxlen = 3,
