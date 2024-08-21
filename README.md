@@ -58,7 +58,7 @@ end, { noremap = true, silent = true })
 
 ```lua
 require("tiny-code-action").setup({
-	--- The backend to use, currently only "vim" and "delta" are supported
+	--- The backend to use, currently only "vim", "delta" and "difftastic" are supported
 	backend = "vim",
 	backend_opts = {
 		delta = {
