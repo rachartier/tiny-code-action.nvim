@@ -106,7 +106,20 @@ local function code_action_finder(opts, callback)
 
 	local context = {}
 	context.triggerKind = vim.lsp.protocol.CodeActionTriggerKind.Invoked
-	context.diagnostics = vim.lsp.diagnostic.get_line_diagnostics(opts.bufnr)
+
+	local diagnostics = vim.diagnostic.get(opts.bufnr)
+	local current_line = vim.api.nvim_win_get_cursor(0)[1] - 1
+	local for_lsp_diagnostics = {}
+
+	table.sort(diagnostics, function(a, b)
+		return math.abs(a.lnum - current_line) < math.abs(b.lnum - current_line)
+	end)
+
+	for _, diagnostic in ipairs(diagnostics) do
+		table.insert(for_lsp_diagnostics, diagnostic.user_data.lsp)
+	end
+
+	context.diagnostics = for_lsp_diagnostics
 	params.context = context
 
 	local clients = vim.lsp.get_clients({ bufnr = opts.bufnr, method = "textDocument/codeAction" })
