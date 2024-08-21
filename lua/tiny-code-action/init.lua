@@ -94,6 +94,26 @@ local function make_make_display(values)
 	end
 end
 
+local function get_diagnostics(bufnr)
+	if vim.fn.has("nvim-0.11") then
+		local diagnostics = vim.diagnostic.get(bufnr)
+		local current_line = vim.api.nvim_win_get_cursor(0)[1] - 1
+		local for_lsp_diagnostics = {}
+
+		table.sort(diagnostics, function(a, b)
+			return math.abs(a.lnum - current_line) < math.abs(b.lnum - current_line)
+		end)
+
+		for _, diagnostic in ipairs(diagnostics) do
+			table.insert(for_lsp_diagnostics, diagnostic.user_data.lsp)
+		end
+
+		return for_lsp_diagnostics
+	end
+
+	return vim.lsp.diagnostic.get_line_diagnostics(bufnr)
+end
+
 local function code_action_finder(opts, callback)
 	local results = {}
 
@@ -107,19 +127,7 @@ local function code_action_finder(opts, callback)
 	local context = {}
 	context.triggerKind = vim.lsp.protocol.CodeActionTriggerKind.Invoked
 
-	local diagnostics = vim.diagnostic.get(opts.bufnr)
-	local current_line = vim.api.nvim_win_get_cursor(0)[1] - 1
-	local for_lsp_diagnostics = {}
-
-	table.sort(diagnostics, function(a, b)
-		return math.abs(a.lnum - current_line) < math.abs(b.lnum - current_line)
-	end)
-
-	for _, diagnostic in ipairs(diagnostics) do
-		table.insert(for_lsp_diagnostics, diagnostic.user_data.lsp)
-	end
-
-	context.diagnostics = for_lsp_diagnostics
+	context.diagnostics = get_diagnostics(opts.bufnr)
 	params.context = context
 
 	local clients = vim.lsp.get_clients({ bufnr = opts.bufnr, method = "textDocument/codeAction" })
