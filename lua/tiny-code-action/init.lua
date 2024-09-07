@@ -95,9 +95,9 @@ local function make_make_display(values)
 end
 
 local function get_diagnostics(bufnr)
-	if vim.fn.has("nvim-0.11") then
+	local current_line = vim.api.nvim_win_get_cursor(0)[1] - 1
+	if utils.is_nvim_version_at_least("0.11.0") then
 		local diagnostics = vim.diagnostic.get(bufnr)
-		local current_line = vim.api.nvim_win_get_cursor(0)[1] - 1
 		local for_lsp_diagnostics = {}
 
 		table.sort(diagnostics, function(a, b)

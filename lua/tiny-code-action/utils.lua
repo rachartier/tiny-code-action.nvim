@@ -88,4 +88,21 @@ function M.get_file_extension(bufnr)
 	return filename:match("^.+%.(.+)$")
 end
 
+function M.is_nvim_version_at_least(version)
+	local nvim_version = vim.version()
+	local major, minor, patch = version:match("(%d+)%.(%d+)%.(%d+)")
+	major, minor, patch = tonumber(major), tonumber(minor), tonumber(patch)
+
+	if nvim_version.major > major then
+		return true
+	elseif nvim_version.major == major then
+		if nvim_version.minor > minor then
+			return true
+		elseif nvim_version.minor == minor then
+			return nvim_version.patch >= patch
+		end
+	end
+	return false
+end
+
 return M
