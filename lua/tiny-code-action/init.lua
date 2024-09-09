@@ -105,7 +105,9 @@ local function get_diagnostics(bufnr)
 		end)
 
 		for _, diagnostic in ipairs(diagnostics) do
-			table.insert(for_lsp_diagnostics, diagnostic.user_data.lsp)
+			if diagnostic.user_data and diagnostic.user_data.lsp then
+				table.insert(for_lsp_diagnostics, diagnostic.user_data.lsp)
+			end
 		end
 
 		return for_lsp_diagnostics
