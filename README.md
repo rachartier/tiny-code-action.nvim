@@ -11,12 +11,17 @@ The code action protocol is nearly fully implemented in this plugin, so you can 
 
 ### Delta
 
-![tinycodeaction_delta_cs](https://github.com/user-attachments/assets/dd0b3598-bef2-4add-a6ed-a6c3461f7da8)
+![tinycode_1](https://github.com/user-attachments/assets/d6906aef-0ef3-45d3-9a54-1249a9ea2d51)
+
 
 ### Vim
 
-![tinycodeaction_vim_cs](https://github.com/user-attachments/assets/96707370-4346-41a2-bc23-5abd7e57a84c)
+![tinycode_vimdiff_1](https://github.com/user-attachments/assets/d4797ffc-b85c-44de-a52e-cb85879b9f88)
 
+
+### Difftastic
+
+![tinycode_difftastic_1](https://github.com/user-attachments/assets/7fbdb52f-455f-4d4f-a2e6-434b14c4f21f)
 
 ### Installation
 
