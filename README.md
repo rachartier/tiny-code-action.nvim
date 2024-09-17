@@ -57,6 +57,9 @@ end, { noremap = true, silent = true })
 
 ## ⚙️ Options
 
+> [!NOTE]
+> To use the delta backend you must install delta ![dandavison/delta](https://github.com/dandavison/delta)
+
 > [!WARNING]
 > Due to some limitations, the `delta` backend can be slow if the action is really big.
 > If you want optimal performance, use the `vim` backend.
