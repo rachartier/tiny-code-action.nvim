@@ -303,6 +303,10 @@ end
 function M.setup(opts)
 	M.config = vim.tbl_deep_extend("force", M.config, opts or {})
 
+	if opts.telescope_opts then
+		M.config.telescope_opts = vim.tbl_extend("force", M.config.telescope_opts, opts.telescope_opts)
+	end
+
 	if type(M.config.backend) ~= "string" then
 		error("Invalid backend type: " .. type(M.config.backend))
 	end
