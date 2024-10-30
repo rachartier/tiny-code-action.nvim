@@ -30,7 +30,13 @@ function M.apply(action, client, ctx)
 		else
 			command = action
 		end
-		client:_exec_cmd(command, ctx)
+
+		-- Fix for nighly build
+		if client._exec_cmd then
+			client:_exec_cmd(command, ctx)
+		else
+			client:exec_cmd(command, ctx)
+		end
 	end
 end
 
