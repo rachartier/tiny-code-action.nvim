@@ -79,6 +79,18 @@ function M.create_previewer(opts, bufnr, backend, preview_action_callback)
 
 			return { "echo", table.concat(preview_lines, "\n") .. string.rep("\n", vim.o.lines) } -- HACK: to prevent `Process exited` message
 		end,
+		scroll_fn = function(self, direction)
+			if not self.state then
+				return
+			end
+
+			local input = vim.api.nvim_replace_termcodes(direction > 0 and "<C-e>" or "<C-y>", true, false, true)
+			local count = math.abs(direction)
+
+			vim.api.nvim_win_call(vim.fn.bufwinid(self.state.termopen_bufnr), function()
+				vim.cmd([[normal! ]] .. count .. input)
+			end)
+		end,
 	})
 end
 
