@@ -105,4 +105,63 @@ function M.is_nvim_version_at_least(version)
 	return false
 end
 
+local function filter_index(filtered_index, actions)
+	local filtered_actions = {}
+	for index, action in ipairs(actions) do
+		if vim.tbl_contains(filtered_index, index) then
+			table.insert(filtered_actions, action)
+		end
+	end
+
+	return filtered_actions
+end
+
+--- This function filters the code actions based on the given filters.
+--- @param actions table: The code actions to filter.
+--- @param filter Filter: The filters to apply to the code actions.
+function M.filter_code_actions(actions, filter)
+	if filter == nil or vim.tbl_isempty(filter) then
+		return actions
+	end
+
+	local filered_actions = {}
+	local filered_index = {}
+	if filter.client ~= nil then
+		for index, action in ipairs(actions) do
+			if action.client.config.name == filter.client then
+				table.insert(filered_index, index)
+			end
+		end
+	end
+
+	filered_actions = filter_index(filered_index, filered_actions)
+	filered_index = {}
+	if filter.kind ~= nil then
+		for index, action in ipairs(filered_actions) do
+			if action.action.kind == filter.kind then
+				table.insert(filered_index, index)
+			end
+		end
+	end
+
+	filered_actions = filter_index(filered_index, filered_actions)
+	filered_index = {}
+	if filter.str ~= nil then
+		for index, action in ipairs(actions) do
+			if action.action.title:find(filter.str, 1, true) ~= nil then
+				table.insert(filered_index, index)
+			end
+		end
+	end
+
+	local filtered_actions = {}
+	for index, action in ipairs(actions) do
+		if vim.tbl_contains(filered_index, index) then
+			table.insert(filtered_actions, action)
+		end
+	end
+
+	return filtered_actions
+end
+
 return M

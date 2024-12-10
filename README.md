@@ -126,6 +126,30 @@ require("tiny-code-action").setup({
 })
 ```
 
+
+### Filters
+
+You can filter the code actions by setting the `filter` option.
+
+```lua
+{
+    str = "..." -- Filter to title
+    kind = "refactor" -- Filter to the kind
+    client = "omnisharp" -- Filter to the client
+}
+
+```
+
+Example:
+```lua
+
+require("tiny-code-action").code_action({
+    kind = "refactor",
+    str = "Wrap"
+})
+```
+
+
 ## ❓ FAQ:
 - How to look like the preview?
 	- You can find my `delta` configuration here: ![rachartier/dotfiles/delta](https://github.com/rachartier/dotfiles/tree/main/.config/delta)

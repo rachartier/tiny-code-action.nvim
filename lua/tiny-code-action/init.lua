@@ -206,7 +206,14 @@ local function create_finder(results)
 	})
 end
 
-function M.code_action()
+--- @class Filter
+--- @field kind string
+--- @field str string
+--- @field client string
+
+--- Get the code actions for the current buffer
+--- @param filters Filter: The filters to apply to the code actions
+function M.code_action(filters)
 	local bufnr = vim.api.nvim_get_current_buf()
 
 	code_action_finder({ bufnr = bufnr }, function(results)
@@ -214,6 +221,8 @@ function M.code_action()
 			vim.notify("No code actions available.", vim.log.levels.INFO)
 			return
 		end
+
+		results = utils.filter_code_actions(results, filters)
 
 		local make_display = make_make_display(results)
 
