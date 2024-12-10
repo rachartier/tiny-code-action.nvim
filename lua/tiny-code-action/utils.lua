@@ -118,17 +118,17 @@ end
 
 --- This function filters the code actions based on the given filters.
 --- @param actions table: The code actions to filter.
---- @param filter Filter: The filters to apply to the code actions.
-function M.filter_code_actions(actions, filter)
-	if filter == nil or vim.tbl_isempty(filter) then
+--- @param filters Filters: The filters to apply to the code actions.
+function M.filter_code_actions(actions, filters)
+	if filters == nil or vim.tbl_isempty(filters) then
 		return actions
 	end
 
 	local filered_actions = {}
 	local filered_index = {}
-	if filter.client ~= nil then
+	if filters.client ~= nil then
 		for index, action in ipairs(actions) do
-			if action.client.config.name == filter.client then
+			if action.client.config.name == filters.client then
 				table.insert(filered_index, index)
 			end
 		end
@@ -136,9 +136,9 @@ function M.filter_code_actions(actions, filter)
 
 	filered_actions = filter_index(filered_index, filered_actions)
 	filered_index = {}
-	if filter.kind ~= nil then
+	if filters.kind ~= nil then
 		for index, action in ipairs(filered_actions) do
-			if action.action.kind == filter.kind then
+			if action.action.kind == filters.kind then
 				table.insert(filered_index, index)
 			end
 		end
@@ -146,9 +146,9 @@ function M.filter_code_actions(actions, filter)
 
 	filered_actions = filter_index(filered_index, filered_actions)
 	filered_index = {}
-	if filter.str ~= nil then
+	if filters.str ~= nil then
 		for index, action in ipairs(actions) do
-			if action.action.title:find(filter.str, 1, true) ~= nil then
+			if action.action.title:find(filters.str, 1, true) ~= nil then
 				table.insert(filered_index, index)
 			end
 		end
