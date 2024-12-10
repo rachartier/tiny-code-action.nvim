@@ -206,14 +206,17 @@ local function create_finder(results)
 	})
 end
 
---- @class Filter
+--- @class Filters
 --- @field kind string
 --- @field str string
 --- @field client string
 
+--- @class CodeActionOpts
+--- @field filters Filters
+
 --- Get the code actions for the current buffer
---- @param filters Filter: The filters to apply to the code actions
-function M.code_action(filters)
+--- @param opts table: The options for the code actions.
+function M.code_action(opts)
 	local bufnr = vim.api.nvim_get_current_buf()
 
 	code_action_finder({ bufnr = bufnr }, function(results)
@@ -222,7 +225,13 @@ function M.code_action(filters)
 			return
 		end
 
-		results = utils.filter_code_actions(results, filters)
+		if opts == nil then
+			opts = {}
+		end
+
+		if opts.filters ~= nil then
+			results = utils.filter_code_actions(results, opts.filters)
+		end
 
 		local make_display = make_make_display(results)
 

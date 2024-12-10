@@ -129,7 +129,7 @@ require("tiny-code-action").setup({
 
 ### Filters
 
-You can filter the code actions by setting the `filter` option.
+You can filter the code actions by setting the `filters` option.
 
 ```lua
 {
@@ -144,8 +144,10 @@ Example:
 ```lua
 
 require("tiny-code-action").code_action({
-    kind = "refactor",
-    str = "Wrap"
+        filters = {
+        kind = "refactor",
+        str = "Wrap"
+    }
 })
 ```
 
