@@ -10,7 +10,6 @@ local utils = require("tiny-code-action.utils")
 
 M.match_hl_kind = {}
 
-local async = require("plenary.async")
 local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
 local pickers = require("telescope.pickers")
@@ -37,7 +36,6 @@ M.config = {
 			},
 		},
 	},
-	merge_telescope_config = true,
 	telescope_opts = {
 		layout_strategy = "vertical",
 		layout_config = {
@@ -322,8 +320,8 @@ end
 function M.setup(opts)
 	M.config = vim.tbl_deep_extend("force", M.config, opts or {})
 
-	if opts and opts.telescope_opts and opts.merge_telescope_config then
-		M.config.telescope_opts = vim.tbl_extend("force", M.config.telescope_opts, opts.telescope_opts)
+	if opts and opts.telescope_opts then
+		M.config.telescope_opts = opts.telescope_opts
 	end
 
 	if type(M.config.backend) ~= "string" then
