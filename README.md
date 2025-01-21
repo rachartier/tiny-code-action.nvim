@@ -96,6 +96,7 @@ require("tiny-code-action").setup({
 			},
 		},
 	},
+    merge_telescope_config = true,
 	telescope_opts = {
 		layout_strategy = "vertical",
 		layout_config = {
