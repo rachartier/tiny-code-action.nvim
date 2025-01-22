@@ -117,12 +117,13 @@ end
 
 local function code_action_finder(opts, callback)
 	local results = {}
+	local position_encoding = vim.api.nvim_get_option_value("encoding", { scope = "local" })
 
 	local params = {
 		textDocument = {
 			uri = vim.uri_from_bufnr(opts.bufnr),
 		},
-		range = vim.lsp.util.make_range_params().range,
+		range = vim.lsp.util.make_range_params(0, position_encoding).range,
 	}
 
 	local context = {}
