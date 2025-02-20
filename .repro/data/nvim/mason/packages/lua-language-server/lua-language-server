@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+exec "/home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro//data/nvim/mason/packages/lua-language-server/libexec/bin/lua-language-server" "$@"

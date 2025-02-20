@@ -1,0 +1,28 @@
+!_TAG_FILE_ENCODING	utf-8	//
+nvim-web-devicons-additional-icons	nvim-web-devicons.md	/## Additional Icons
+nvim-web-devicons-case-sensitivity	nvim-web-devicons.md	/### Case Sensitivity
+nvim-web-devicons-contributing	nvim-web-devicons.md	/## Contributing
+nvim-web-devicons-get-all-icons	nvim-web-devicons.md	/### Get all icons
+nvim-web-devicons-get-icon	nvim-web-devicons.md	/### Get Icon
+nvim-web-devicons-get-icon-and-color-code	nvim-web-devicons.md	/### Get icon and color code
+nvim-web-devicons-getting-and-setting-icons-by-filetype	nvim-web-devicons.md	/### Getting and setting icons by filetype
+nvim-web-devicons-installation	nvim-web-devicons.md	/## Installation
+nvim-web-devicons-known-issues	nvim-web-devicons.md	/## Known Issues
+nvim-web-devicons-my-setup-overrides-are-not-applied	nvim-web-devicons.md	/### My `setup` Overrides Are Not Applied
+nvim-web-devicons-nvim-web-devicons	nvim-web-devicons.md	/# Nvim-web-devicons
+nvim-web-devicons-requirements	nvim-web-devicons.md	/## Requirements
+nvim-web-devicons-set-an-icon	nvim-web-devicons.md	/### Set an icon
+nvim-web-devicons-setup	nvim-web-devicons.md	/### Setup
+nvim-web-devicons-usage	nvim-web-devicons.md	/## Usage
+nvim-web-devicons-variants	nvim-web-devicons.md	/### Variants
+nvim-web-devicons-viewing	nvim-web-devicons.md	/### Viewing
+nvim-web-devicons-windows-and-wsl-not-rendering-icons-properly-on-some-terminals	nvim-web-devicons.md	/### Windows and WSL not rendering icons properly on some terminals
+tiny-code-actions.nvim-delta	tiny-code-actions.nvim.md	/### Delta
+tiny-code-actions.nvim-difftastic	tiny-code-actions.nvim.md	/### Difftastic
+tiny-code-actions.nvim-faq	tiny-code-actions.nvim.md	/## ❓ FAQ:
+tiny-code-actions.nvim-filters	tiny-code-actions.nvim.md	/### Filters
+tiny-code-actions.nvim-installation	tiny-code-actions.nvim.md	/## 📥 Installation
+tiny-code-actions.nvim-options	tiny-code-actions.nvim.md	/## ⚙️ Options
+tiny-code-actions.nvim-preview	tiny-code-actions.nvim.md	/## 🖼️ Preview
+tiny-code-actions.nvim-tiny-code-action-nvim	tiny-code-actions.nvim.md	/## 📇 tiny-code-action.nvim
+tiny-code-actions.nvim-vim	tiny-code-actions.nvim.md	/### Vim

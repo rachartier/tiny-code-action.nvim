@@ -1,0 +1,393 @@
+[19:31:02.154][info] [#0:/home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/main.lua:68]: Lua Lsp startup, root: 	/home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec
+[19:31:02.154][info] [#0:/home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/main.lua:69]: ROOT:	/home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec
+[19:31:02.154][info] [#0:/home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/main.lua:70]: LOGPATH:	/home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/log
+[19:31:02.154][info] [#0:/home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/main.lua:71]: METAPATH:	/home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta
+[19:31:02.155][info] [#0:/home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/main.lua:72]: VERSION:	3.13.5
+[19:31:02.179][info] [#0:script/proto/proto.lua:260]: Listen Mode: stdio
+[19:31:02.179][info] [#0:script/service/service.lua:145]: 
+========= Medical Examination Report =========
+    --------------- Memory ---------------
+        Total: 2.259 MB
+        # 00 : 2.259 MB
+        # 01 : 0.000 MB
+        # 02 : 0.000 MB
+        # 03 : 0.000 MB
+        # 04 : 0.000 MB
+    --------------- Coroutine ---------------
+        Total:     0
+        Running:   0
+        Suspended: 0
+        Normal:    0
+        Dead:      0
+    --------------- Cache ---------------
+        Total: 1
+        Dead:  0
+    ---------------  RPC  ---------------
+        Holdon:   0
+        Waiting:  0
+==============================================
+[19:31:02.286][info] [#0:script/client.lua:657]: Client init	{
+  capabilities = {
+    general = {
+      positionEncodings = { "utf-8", "utf-16", "utf-32" }
+    },
+    textDocument = {
+      callHierarchy = {
+        dynamicRegistration = false
+      },
+      codeAction = {
+        codeActionLiteralSupport = {
+          codeActionKind = {
+            valueSet = { "", "quickfix", "refactor", "refactor.extract", "refactor.inline", "refactor.rewrite", "source", "source.organizeImports" }
+          }
+        },
+        dataSupport = true,
+        dynamicRegistration = true,
+        isPreferredSupport = true,
+        resolveSupport = {
+          properties = { "edit" }
+        }
+      },
+      codeLens = {
+        dynamicRegistration = false,
+        resolveSupport = {
+          properties = { "command" }
+        }
+      },
+      completion = {
+        completionItem = {
+          commitCharactersSupport = false,
+          deprecatedSupport = true,
+          documentationFormat = { "markdown", "plaintext" },
+          preselectSupport = false,
+          resolveSupport = {
+            properties = { "additionalTextEdits", "command" }
+          },
+          snippetSupport = true,
+          tagSupport = {
+            valueSet = { 1 }
+          }
+        },
+        completionItemKind = {
+          valueSet = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 }
+        },
+        completionList = {
+          itemDefaults = { "editRange", "insertTextFormat", "insertTextMode", "data" }
+        },
+        contextSupport = false,
+        dynamicRegistration = false
+      },
+      declaration = {
+        linkSupport = true
+      },
+      definition = {
+        dynamicRegistration = true,
+        linkSupport = true
+      },
+      diagnostic = {
+        dynamicRegistration = false
+      },
+      documentHighlight = {
+        dynamicRegistration = false
+      },
+      documentSymbol = {
+        dynamicRegistration = false,
+        hierarchicalDocumentSymbolSupport = true,
+        symbolKind = {
+          valueSet = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 }
+        }
+      },
+      foldingRange = {
+        dynamicRegistration = false,
+        foldingRange = {
+          collapsedText = true
+        },
+        lineFoldingOnly = true
+      },
+      formatting = {
+        dynamicRegistration = true
+      },
+      hover = {
+        contentFormat = { "markdown", "plaintext" },
+        dynamicRegistration = true
+      },
+      implementation = {
+        linkSupport = true
+      },
+      inlayHint = {
+        dynamicRegistration = true,
+        resolveSupport = {
+          properties = { "textEdits", "tooltip", "location", "command" }
+        }
+      },
+      publishDiagnostics = {
+        dataSupport = true,
+        relatedInformation = true,
+        tagSupport = {
+          valueSet = { 1, 2 }
+        }
+      },
+      rangeFormatting = {
+        dynamicRegistration = true,
+        rangesSupport = true
+      },
+      references = {
+        dynamicRegistration = false
+      },
+      rename = {
+        dynamicRegistration = true,
+        prepareSupport = true
+      },
+      semanticTokens = {
+        augmentsSyntaxTokens = true,
+        dynamicRegistration = false,
+        formats = { "relative" },
+        multilineTokenSupport = false,
+        overlappingTokenSupport = true,
+        requests = {
+          full = {
+            delta = true
+          },
+          range = false
+        },
+        serverCancelSupport = false,
+        tokenModifiers = { "declaration", "definition", "readonly", "static", "deprecated", "abstract", "async", "modification", "documentation", "defaultLibrary" },
+        tokenTypes = { "namespace", "type", "class", "enum", "interface", "struct", "typeParameter", "parameter", "variable", "property", "enumMember", "event", "function", "method", "macro", "keyword", "modifier", "comment", "string", "number", "regexp", "operator", "decorator" }
+      },
+      signatureHelp = {
+        dynamicRegistration = false,
+        signatureInformation = {
+          activeParameterSupport = true,
+          documentationFormat = { "markdown", "plaintext" },
+          parameterInformation = {
+            labelOffsetSupport = true
+          }
+        }
+      },
+      synchronization = {
+        didSave = true,
+        dynamicRegistration = false,
+        willSave = true,
+        willSaveWaitUntil = true
+      },
+      typeDefinition = {
+        linkSupport = true
+      }
+    },
+    window = {
+      showDocument = {
+        support = true
+      },
+      showMessage = {
+        messageActionItem = {
+          additionalPropertiesSupport = true
+        }
+      },
+      workDoneProgress = true
+    },
+    workspace = {
+      applyEdit = true,
+      configuration = true,
+      didChangeConfiguration = {
+        dynamicRegistration = false
+      },
+      didChangeWatchedFiles = {
+        dynamicRegistration = false,
+        relativePatternSupport = true
+      },
+      inlayHint = {
+        refreshSupport = true
+      },
+      semanticTokens = {
+        refreshSupport = true
+      },
+      symbol = {
+        dynamicRegistration = false,
+        symbolKind = {
+          valueSet = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 }
+        }
+      },
+      workspaceEdit = {
+        resourceOperations = { "rename", "create", "delete" }
+      },
+      workspaceFolders = true
+    }
+  },
+  clientInfo = {
+    name = "Neovim",
+    version = "0.11.0-dev+gbd0a65bc15"
+  },
+  initializationOptions = {},
+  processId = 113964,
+  trace = "off",
+  workDoneToken = "1"
+}
+[19:31:02.286][info] [#0:script/language.lua:137]: VSC language: nil
+[19:31:02.286][info] [#0:script/language.lua:138]: LS  language: en-us
+[19:31:02.491][info] [#0:script/workspace/workspace.lua:48]: Workspace create: 	file:///tmp
+[19:31:02.592][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[19:31:02.592][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[19:31:02.592][info] [#0:script/provider/provider.lua:66]: nil
+[19:31:02.592][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[19:31:02.702][info] [#0:script/library.lua:212]: Init builtin library at:	nil
+[19:31:02.713][warn] [#0:script/config/loader.lua:116]: No config?	{}
+[19:31:02.713][info] [#0:script/provider/provider.lua:65]: Load config from client	fallback
+[19:31:02.713][info] [#0:script/provider/provider.lua:66]: nil
+[19:31:02.815][info] [#0:script/workspace/workspace.lua:324]: Preload start:	<fallback>
+[19:31:02.817][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/basic.lua
+[19:31:02.817][info] [#0:script/library.lua:212]: Init builtin library at:	file:///tmp
+[19:31:02.826][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/coroutine.lua
+[19:31:02.826][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/builtin.lua
+[19:31:02.826][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/package.lua
+[19:31:02.826][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/string.lua
+[19:31:02.827][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/math.lua
+[19:31:02.827][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/utf8.lua
+[19:31:02.827][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/debug.lua
+[19:31:02.827][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/os.lua
+[19:31:02.827][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/table.lua
+[19:31:02.833][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/io.lua
+[19:31:02.934][info] [#0:script/workspace/workspace.lua:324]: Preload start:	file:///tmp
+[19:31:02.936][info] [#0:script/workspace/workspace.lua:330]: Scan files at:	file:///tmp
+[19:31:02.938][info] [#0:script/workspace/workspace.lua:379]: Found 11 files at:	<fallback>
+[19:31:02.938][info] [#0:script/workspace/loading.lua:160]: Load files from disk:	<fallback>
+[19:31:02.939][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/io.lua , size = 6.364 KB
+[19:31:02.944][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/io.lua
+[19:31:02.944][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/os.lua , size = 5.600 KB
+[19:31:02.950][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/os.lua
+[19:31:02.950][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/table.lua , size = 4.445 KB
+[19:31:02.952][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/table.lua
+[19:31:02.953][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/debug.lua , size = 7.637 KB
+[19:31:02.957][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/debug.lua
+[19:31:02.957][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/basic.lua
+[19:31:02.957][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/utf8.lua , size = 2.386 KB
+[19:31:02.962][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/utf8.lua
+[19:31:02.962][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/coroutine.lua
+[19:31:02.962][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/math.lua , size = 8.509 KB
+[19:31:02.967][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/math.lua
+[19:31:02.967][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/builtin.lua
+[19:31:02.968][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/string.lua , size = 6.327 KB
+[19:31:02.970][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/string.lua
+[19:31:02.970][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/package.lua
+[19:31:02.971][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/package.lua , size = 2.944 KB
+[19:31:02.973][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/package.lua
+[19:31:02.973][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/string.lua
+[19:31:02.974][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/builtin.lua , size = 0.302 KB
+[19:31:02.974][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/builtin.lua
+[19:31:02.974][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/math.lua
+[19:31:02.974][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/coroutine.lua , size = 2.590 KB
+[19:31:02.976][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/coroutine.lua
+[19:31:02.976][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/utf8.lua
+[19:31:02.976][info] [#0:script/workspace/loading.lua:100]: Preload file at: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/basic.lua , size = 15.841 KB
+[19:31:02.988][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/basic.lua
+[19:31:02.988][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/debug.lua
+[19:31:02.988][info] [#0:script/workspace/loading.lua:172]: Loaded files takes [0.049] sec: <fallback>
+[19:31:02.988][info] [#0:script/workspace/loading.lua:181]: Compile files takes [0.000] sec: <fallback>
+[19:31:02.988][info] [#0:script/workspace/loading.lua:182]: Loaded finish:	<fallback>
+[19:31:02.988][info] [#0:script/workspace/workspace.lua:381]: Preload finish at:	<fallback>
+[19:31:02.991][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/os.lua
+[19:31:02.991][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/table.lua
+[19:31:02.991][info] [#0:script/workspace/workspace.lua:353]: Scan library at:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/io.lua
+[19:31:03.094][info] [#0:script/workspace/workspace.lua:379]: Found 11 files at:	file:///tmp
+[19:31:03.094][info] [#0:script/workspace/loading.lua:160]: Load files from disk:	file:///tmp
+[19:31:03.094][info] [#0:script/workspace/loading.lua:88]: Skip loaded file: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/io.lua
+[19:31:03.094][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/io.lua
+[19:31:03.094][info] [#0:script/workspace/loading.lua:88]: Skip loaded file: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/table.lua
+[19:31:03.094][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/table.lua
+[19:31:03.094][info] [#0:script/workspace/loading.lua:88]: Skip loaded file: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/os.lua
+[19:31:03.094][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/os.lua
+[19:31:03.095][info] [#0:script/workspace/loading.lua:88]: Skip loaded file: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/debug.lua
+[19:31:03.095][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/debug.lua
+[19:31:03.095][info] [#0:script/workspace/loading.lua:88]: Skip loaded file: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/utf8.lua
+[19:31:03.095][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/utf8.lua
+[19:31:03.095][info] [#0:script/workspace/loading.lua:88]: Skip loaded file: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/math.lua
+[19:31:03.095][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/math.lua
+[19:31:03.095][info] [#0:script/workspace/loading.lua:88]: Skip loaded file: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/string.lua
+[19:31:03.095][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/string.lua
+[19:31:03.095][info] [#0:script/workspace/loading.lua:88]: Skip loaded file: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/package.lua
+[19:31:03.095][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/package.lua
+[19:31:03.095][info] [#0:script/workspace/loading.lua:88]: Skip loaded file: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/builtin.lua
+[19:31:03.095][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/builtin.lua
+[19:31:03.095][info] [#0:script/workspace/loading.lua:88]: Skip loaded file: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/coroutine.lua
+[19:31:03.095][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/coroutine.lua
+[19:31:03.096][info] [#0:script/workspace/loading.lua:88]: Skip loaded file: file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/basic.lua
+[19:31:03.096][info] [#0:script/workspace/loading.lua:112]: ++++As library of:	file:///home/rachartier/dev/nvim_plugins/tiny-code-actions.nvim/.repro/data/nvim/mason/packages/lua-language-server/libexec/meta/Lua%205.4%20en-us%20utf8/basic.lua
+[19:31:03.096][info] [#0:script/workspace/loading.lua:172]: Loaded files takes [0.001] sec: file:///tmp
+[19:31:03.096][info] [#0:script/workspace/loading.lua:181]: Compile files takes [0.000] sec: file:///tmp
+[19:31:03.096][info] [#0:script/workspace/loading.lua:182]: Loaded finish:	file:///tmp
+[19:31:03.096][info] [#0:script/workspace/workspace.lua:381]: Preload finish at:	file:///tmp
+[19:31:03.099][info] [#0:script/provider/diagnostic.lua:560]: Diagnostics scope [file:///tmp], files count:[12]
+[19:31:03.112][info] [#0:script/provider/diagnostic.lua:577]: Diagnostics scope [file:///tmp] finished, takes [0.007] sec.
+[19:31:12.344][warn] [#0:script/proto/proto.lua:170]: Recieved unknown proto: codeAction/resolve
+[19:31:13.704][warn] [#0:script/proto/proto.lua:170]: Recieved unknown proto: codeAction/resolve
+[19:31:15.206][info] [#0:script/workspace/workspace.lua:284]: Scan files at:	file:///tmp/nvim.rachartier/ntIaFR
+[19:31:15.206][info] [#0:script/workspace/loading.lua:160]: Load files from disk:	file:///tmp/nvim.rachartier/ntIaFR
+[19:31:15.206][info] [#0:script/workspace/loading.lua:172]: Loaded files takes [0.000] sec: file:///tmp/nvim.rachartier/ntIaFR
+[19:31:15.206][info] [#0:script/workspace/loading.lua:181]: Compile files takes [0.000] sec: file:///tmp/nvim.rachartier/ntIaFR
+[19:31:15.206][info] [#0:script/workspace/loading.lua:182]: Loaded finish:	file:///tmp/nvim.rachartier/ntIaFR
+[19:31:19.213][info] [#0:script/workspace/workspace.lua:284]: Scan files at:	file:///tmp/lazygit-2750535979
+[19:31:19.213][info] [#0:script/workspace/loading.lua:160]: Load files from disk:	file:///tmp/lazygit-2750535979
+[19:31:19.213][info] [#0:script/workspace/loading.lua:172]: Loaded files takes [0.000] sec: file:///tmp/lazygit-2750535979
+[19:31:19.213][info] [#0:script/workspace/loading.lua:181]: Compile files takes [0.000] sec: file:///tmp/lazygit-2750535979
+[19:31:19.213][info] [#0:script/workspace/loading.lua:182]: Loaded finish:	file:///tmp/lazygit-2750535979
+[19:32:04.657][warn] [#0:script/proto/proto.lua:170]: Recieved unknown proto: codeAction/resolve
+[19:32:05.173][warn] [#0:script/proto/proto.lua:170]: Recieved unknown proto: codeAction/resolve
+[19:33:34.677][info] [#0:script/workspace/workspace.lua:284]: Scan files at:	file:///tmp/lazygit-1067642579
+[19:33:34.677][info] [#0:script/workspace/loading.lua:160]: Load files from disk:	file:///tmp/lazygit-1067642579
+[19:33:34.677][info] [#0:script/workspace/loading.lua:172]: Loaded files takes [0.000] sec: file:///tmp/lazygit-1067642579
+[19:33:34.677][info] [#0:script/workspace/loading.lua:181]: Compile files takes [0.000] sec: file:///tmp/lazygit-1067642579
+[19:33:34.677][info] [#0:script/workspace/loading.lua:182]: Loaded finish:	file:///tmp/lazygit-1067642579
+[19:33:45.678][info] [#0:script/workspace/workspace.lua:284]: Scan files at:	file:///tmp/_MEIIcTNF8
+[19:33:45.686][info] [#0:script/workspace/loading.lua:160]: Load files from disk:	file:///tmp/_MEIIcTNF8
+[19:33:45.687][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/charset_normalizer/md.cpython-311-x86_64-linux-gnu.so , size = 15.688 KB
+[19:33:45.687][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/charset_normalizer/md__mypyc.cpython-311-x86_64-linux-gnu.so , size = 258.195 KB
+[19:33:45.796][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/yaml/_yaml.cpython-311-x86_64-linux-gnu.so , size = 2408.320 KB
+[19:33:45.813][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_pickle.cpython-311-x86_64-linux-gnu.so , size = 615.141 KB
+[19:33:45.817][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_multibytecodec.cpython-311-x86_64-linux-gnu.so , size = 211.039 KB
+[19:33:45.818][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_sha256.cpython-311-x86_64-linux-gnu.so , size = 94.289 KB
+[19:33:45.819][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_socket.cpython-311-x86_64-linux-gnu.so , size = 271.180 KB
+[19:33:45.821][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_sha512.cpython-311-x86_64-linux-gnu.so , size = 96.797 KB
+[19:33:45.821][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_opcode.cpython-311-x86_64-linux-gnu.so , size = 29.156 KB
+[19:33:45.822][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_zoneinfo.cpython-311-x86_64-linux-gnu.so , size = 149.484 KB
+[19:33:45.823][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_ssl.cpython-311-x86_64-linux-gnu.so , size = 493.680 KB
+[19:33:45.830][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/termios.cpython-311-x86_64-linux-gnu.so , size = 72.195 KB
+[19:33:45.831][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_posixsubprocess.cpython-311-x86_64-linux-gnu.so , size = 84.727 KB
+[19:33:45.831][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_statistics.cpython-311-x86_64-linux-gnu.so , size = 29.031 KB
+[19:33:45.831][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_sha1.cpython-311-x86_64-linux-gnu.so , size = 57.938 KB
+[19:33:45.832][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/math.cpython-311-x86_64-linux-gnu.so , size = 317.156 KB
+[19:33:45.834][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/zlib.cpython-311-x86_64-linux-gnu.so , size = 129.906 KB
+[19:33:45.834][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/array.cpython-311-x86_64-linux-gnu.so , size = 275.734 KB
+[19:33:45.836][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_codecs_tw.cpython-311-x86_64-linux-gnu.so , size = 140.070 KB
+[19:33:45.837][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_contextvars.cpython-311-x86_64-linux-gnu.so , size = 25.008 KB
+[19:33:45.839][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/pydantic_core/_pydantic_core.cpython-311-x86_64-linux-gnu.so , size = 4864.367 KB
+[19:33:45.871][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_hashlib.cpython-311-x86_64-linux-gnu.so , size = 201.078 KB
+[19:33:45.872][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_struct.cpython-311-x86_64-linux-gnu.so , size = 219.828 KB
+[19:33:45.873][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_json.cpython-311-x86_64-linux-gnu.so , size = 237.633 KB
+[19:33:45.876][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_codecs_hk.cpython-311-x86_64-linux-gnu.so , size = 187.594 KB
+[19:33:45.877][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/resource.cpython-311-x86_64-linux-gnu.so , size = 49.805 KB
+[19:33:45.877][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_lzma.cpython-311-x86_64-linux-gnu.so , size = 158.195 KB
+[19:33:45.878][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_random.cpython-311-x86_64-linux-gnu.so , size = 65.109 KB
+[19:33:45.879][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_codecs_iso2022.cpython-311-x86_64-linux-gnu.so , size = 72.625 KB
+[19:33:45.879][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_uuid.cpython-311-x86_64-linux-gnu.so , size = 24.656 KB
+[19:33:45.879][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/select.cpython-311-x86_64-linux-gnu.so , size = 107.219 KB
+[19:33:45.880][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/binascii.cpython-311-x86_64-linux-gnu.so , size = 147.141 KB
+[19:33:45.881][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_queue.cpython-311-x86_64-linux-gnu.so , size = 54.930 KB
+[19:33:45.881][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_blake2.cpython-311-x86_64-linux-gnu.so , size = 282.148 KB
+[19:33:45.883][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_typing.cpython-311-x86_64-linux-gnu.so , size = 23.914 KB
+[19:33:45.883][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_bz2.cpython-311-x86_64-linux-gnu.so , size = 97.609 KB
+[19:33:45.883][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_codecs_jp.cpython-311-x86_64-linux-gnu.so , size = 317.609 KB
+[19:33:45.885][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/grp.cpython-311-x86_64-linux-gnu.so , size = 52.586 KB
+[19:33:45.886][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_csv.cpython-311-x86_64-linux-gnu.so , size = 109.961 KB
+[19:33:45.886][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_codecs_kr.cpython-311-x86_64-linux-gnu.so , size = 172.898 KB
+[19:33:45.887][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_heapq.cpython-311-x86_64-linux-gnu.so , size = 132.102 KB
+[19:33:45.888][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_ctypes.cpython-311-x86_64-linux-gnu.so , size = 592.602 KB
+[19:33:45.891][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_bisect.cpython-311-x86_64-linux-gnu.so , size = 59.766 KB
+[19:33:45.892][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_md5.cpython-311-x86_64-linux-gnu.so , size = 60.055 KB
+[19:33:45.892][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/unicodedata.cpython-311-x86_64-linux-gnu.so , size = 1208.961 KB
+[19:33:45.899][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/fcntl.cpython-311-x86_64-linux-gnu.so , size = 51.766 KB
+[19:33:45.899][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_sha3.cpython-311-x86_64-linux-gnu.so , size = 84.344 KB
+[19:33:45.900][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_decimal.cpython-311-x86_64-linux-gnu.so , size = 1526.477 KB
+[19:33:45.909][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_codecs_cn.cpython-311-x86_64-linux-gnu.so , size = 192.727 KB
+[19:33:45.910][info] [#0:script/workspace/loading.lua:139]: Preload dll at: file:///tmp/_MEIIcTNF8/lib-dynload/_datetime.cpython-311-x86_64-linux-gnu.so , size = 681.578 KB
+[19:33:46.015][info] [#0:script/workspace/loading.lua:172]: Loaded files takes [0.158] sec: file:///tmp/_MEIIcTNF8
+[19:33:46.015][info] [#0:script/workspace/loading.lua:181]: Compile files takes [0.000] sec: file:///tmp/_MEIIcTNF8
+[19:33:46.015][info] [#0:script/workspace/loading.lua:182]: Loaded finish:	file:///tmp/_MEIIcTNF8

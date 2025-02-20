@@ -1,0 +1,29 @@
+---@meta
+
+--
+--A raw data representation of a screenshot.
+--
+---@source UnityEngine.CoreModule.dll
+---@class UnityEngine.Profiling.Experimental.DebugScreenCapture: System.ValueType
+--
+--A non-owning reference to the image data.
+--
+---@source UnityEngine.CoreModule.dll
+---@field rawImageDataReference Unity.Collections.NativeArray<byte>
+--
+--The format in which the image was captured.
+--
+---@source UnityEngine.CoreModule.dll
+---@field imageFormat UnityEngine.TextureFormat
+--
+--Width of the image.
+--
+---@source UnityEngine.CoreModule.dll
+---@field width int
+--
+--Height of the image.
+--
+---@source UnityEngine.CoreModule.dll
+---@field height int
+---@source UnityEngine.CoreModule.dll
+CS.UnityEngine.Profiling.Experimental.DebugScreenCapture = {}
