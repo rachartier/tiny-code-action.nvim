@@ -95,7 +95,7 @@ end
 ---                generated, the table will contain a single string: "No preview available for this
 ---                action".
 function M.preview(opts, action, backend, bufnr)
-	if action == nil then
+	if action == nil or vim.tbl_isempty(action) then
 		return {
 			"No preview available for this action",
 			"This is due to limitations in the language server protocol client.",
