@@ -1,22 +1,8 @@
 local M = {}
 
-local has_telescope, telescope = pcall(require, "telescope")
-
-if not has_telescope then
-	error("This plugin requires telescope.nvim (https://github.com/nvim-telescope/telescope.nvim)")
-end
-
 local utils = require("tiny-code-action.utils")
 
 M.match_hl_kind = {}
-
-local actions = require("telescope.actions")
-local action_state = require("telescope.actions.state")
-local pickers = require("telescope.pickers")
-local finders = require("telescope.finders")
-local conf = require("telescope.config").values
-
-local lsp_actions = require("tiny-code-action.action")
 
 M.config = {
 	backend = "vim",
@@ -170,42 +156,6 @@ local function code_action_finder(opts, callback)
 	end)
 end
 
-local function create_finder(results)
-	local make_display = make_make_display(results)
-
-	return finders.new_table({
-		results = results,
-		entry_maker = function(pair_client_action)
-			local action = pair_client_action.action
-			local client = pair_client_action.client
-			local context = pair_client_action.context
-
-			local kind = M.config.signs.others
-			local kind_hl = M.match_hl_kind.others
-			local last_k_len = 0
-
-			for _, k in pairs(vim.tbl_keys(M.config.signs)) do
-				if string.find(action.kind, k, 1, true) then
-					if #k > last_k_len then
-						last_k_len = #k
-						kind = M.config.signs[k]
-						kind_hl = M.match_hl_kind[k]
-					end
-				end
-			end
-
-			return {
-				value = pair_client_action,
-				kind = kind[1],
-				kind_hl = kind_hl,
-				ordinal = action.title,
-				client = client.name or "unknown",
-				display = make_display,
-			}
-		end,
-	})
-end
-
 --- @class Filters
 --- @field kind string
 --- @field str string
@@ -233,98 +183,56 @@ function M.code_action(opts)
 			results = utils.filter_code_actions(results, opts.filters)
 		end
 
-		local make_display = make_make_display(results)
+		-- Get the configured or default picker module
+		local picker_name = M.config.picker or "telescope"
+		local has_picker, picker_module = pcall(require, "tiny-code-action.pickers." .. picker_name)
 
-		local picker_opts = {
-			prompt_title = "Code Actions",
-			finder = finders.new_table({
-				results = results,
-				entry_maker = function(pair_client_action)
-					local action = pair_client_action.action
-					local client = pair_client_action.client
-					local context = pair_client_action.context
+		if not has_picker then
+			vim.notify(
+				"Selected picker '" .. picker_name .. "' is not available. Falling back to telescope.",
+				vim.log.levels.WARN
+			)
+			picker_module = require("tiny-code-action.pickers.telescope")
+		end
 
-					local kind = M.config.signs.others
-					local kind_hl = M.match_hl_kind.others
-					local last_k_len = 0
+		-- Set the highlight kinds for the picker
+		picker_module.match_hl_kind = M.match_hl_kind
 
-					for _, k in pairs(vim.tbl_keys(M.config.signs)) do
-						if string.find(action.kind or "?", k, 1, true) then
-							if #k > last_k_len then
-								last_k_len = #k
-								kind = M.config.signs[k]
-								kind_hl = M.match_hl_kind[k]
-							end
-						end
-					end
+		-- Pass the backend to the picker module
+		picker_module.backend = M.backend
 
-					local ordinal = action.title:gsub("\n", " ")
-					ordinal = ordinal:gsub("\r", " ")
-
-					return {
-						value = pair_client_action,
-						kind = kind[1],
-						kind_hl = kind_hl,
-						ordinal = ordinal,
-						client = client.name or "unknown",
-						display = make_display,
-					}
-				end,
-			}),
-			sorter = conf.generic_sorter({}),
-			attach_mappings = function(prompt_bufnr, map)
-				actions.select_default:replace(function()
-					actions.close(prompt_bufnr)
-
-					local selection = action_state.get_selected_entry()
-					local action = selection.value.action
-					local client = selection.value.client
-					local context = selection.value.context
-
-					local reg = client.dynamic_capabilities:get("textDocument/codeAction", { bufnr = bufnr })
-					local support_resolve = vim.tbl_get(reg or {}, "registerOptions", "resolveProvider")
-						or client.supports_method("codeAction/resolve")
-
-					if lsp_actions.action_is_not_complete(action) and client and support_resolve then
-						client.request("codeAction/resolve", action, function(e, resolved_action)
-							if e then
-								if action.command then
-									lsp_actions.apply(action, client, context)
-								else
-									vim.notify(e.code .. ": " .. e.message, vim.log.levels.ERROR)
-								end
-							else
-								lsp_actions.apply(resolved_action, client, context)
-							end
-						end, bufnr)
-					else
-						lsp_actions.apply(action, client, context)
-					end
-				end)
-
-				map("n", "<CR>", actions.select_default)
-				map("i", "<CR>", actions.select_default)
-
-				return true
-			end,
-		}
-
-		picker_opts = vim.tbl_deep_extend("force", M.config.telescope_opts, picker_opts)
-
-		local picker = pickers.new({}, picker_opts)
-		picker.previewer = M.backend.create_previewer(M.config, bufnr, M.backend, lsp_actions.preview)
-
-		picker:find()
+		-- Create and show the picker
+		picker_module.create_picker(M.config, results, bufnr)
 	end)
 end
 
 function M.setup(opts)
 	M.config = vim.tbl_deep_extend("force", M.config, opts or {})
 
-	if opts and opts.telescope_opts then
-		M.config.telescope_opts = opts.telescope_opts
+	-- Validate the picker option
+	if M.config.picker and M.config.picker ~= "telescope" and M.config.picker ~= "snacks" then
+		vim.notify("Invalid picker: " .. M.config.picker .. ". Using default 'telescope'.", vim.log.levels.WARN)
+		M.config.picker = "telescope"
 	end
 
+	-- Check if the selected picker is available
+	if M.config.picker == "snacks" then
+		local has_snacks, _ = pcall(require, "snacks.picker")
+		if not has_snacks then
+			vim.notify("snacks.nvim is not installed. Falling back to telescope.", vim.log.levels.WARN)
+			M.config.picker = "telescope"
+		end
+	elseif M.config.picker == "telescope" then
+		local has_telescope, _ = pcall(require, "telescope")
+		if not has_telescope then
+			vim.notify(
+				"telescope.nvim is not installed. Please install telescope.nvim or snacks.nvim to use this plugin.",
+				vim.log.levels.ERROR
+			)
+		end
+	end
+
+	-- Validate the backend option
 	if type(M.config.backend) ~= "string" then
 		error("Invalid backend type: " .. type(M.config.backend))
 	end
@@ -332,8 +240,10 @@ function M.setup(opts)
 		error("Invalid backend: " .. M.config.backend)
 	end
 
+	-- Load the backend module
 	M.backend = require("tiny-code-action.backend." .. M.config.backend)
 
+	-- Set up highlighting for code action kinds
 	for kind_name, sign in pairs(M.config.signs) do
 		vim.api.nvim_set_hl(0, "TinyCodeActionKind" .. kind_name, sign[2])
 		M.match_hl_kind[kind_name] = "TinyCodeActionKind" .. kind_name

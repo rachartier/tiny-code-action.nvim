@@ -1,8 +1,8 @@
 ---@diagnostic disable: missing-fields
 local M = {}
 
-local previewers = require("telescope.previewers")
 local lsp_actions = require("tiny-code-action.action")
+local has_telescope, telescope_previewers = pcall(require, "telescope.previewers")
 
 function M.get_diff(bufnr, old_lines, new_lines, opts)
 	return vim.diff(table.concat(old_lines, "\n"), table.concat(new_lines, "\n"), {
@@ -12,27 +12,33 @@ function M.get_diff(bufnr, old_lines, new_lines, opts)
 end
 
 function M.create_previewer(opts, bufnr, backend, preview_action_callback)
-	return previewers.new_buffer_previewer({
-		title = "Action Preview",
-		define_preview = function(self, entry, status)
-			local action = entry.value.action
-			local client = entry.value.client
+	-- Use the previewer from the appropriate module based on the picker type
+	if opts.picker == "telescope" then
+		local previewer_module = require("tiny-code-action.previewers.telescope")
+		return previewer_module.create_previewer(opts, bufnr, backend, preview_action_callback)
+	elseif opts.picker == "snacks" then
+		-- For Snacks, we delegate to its own previewer module
+		local has_snacks_previewer, snacks_previewer = pcall(require, "tiny-code-action.previewers.snacks")
+		if has_snacks_previewer then
+			return snacks_previewer.term_previewer({
+				preview_fn = function(item)
+					local action = item.action
+					local client = item.client
 
-			vim.api.nvim_set_option_value("filetype", "diff", { buf = self.state.bufnr })
+					-- For non-complete actions, return a placeholder
+					if not action or lsp_actions.action_is_not_complete(action) then
+						return { "Loading preview..." }
+					end
 
-			if lsp_actions.action_is_not_complete(action) then
-				lsp_actions.resolve(action, bufnr, client, function(res, err)
-					local preview_lines = preview_action_callback(opts, res, backend, bufnr)
+					-- Get the preview lines for the action
+					return preview_action_callback(opts, action, backend, bufnr)
+				end,
+			})
+		end
+	end
 
-					vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, preview_lines)
-				end)
-			else
-				local preview_lines = preview_action_callback(opts, action, backend, bufnr)
-
-				vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, preview_lines)
-			end
-		end,
-	})
+	-- Return nil if no appropriate previewer was found
+	return nil
 end
 
 return M
