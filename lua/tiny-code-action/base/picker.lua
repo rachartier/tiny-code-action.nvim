@@ -11,12 +11,10 @@ function M.new(opts)
 		match_hl_kind = {},
 	}
 
-	-- Methods that all pickers should implement
 	picker.create = function(config, results, bufnr)
 		error("create must be implemented by picker")
 	end
 
-	-- Format a code action for display (can be overridden by specific pickers)
 	picker.format_code_action = function(item)
 		local action = item.action
 		local client = item.client
@@ -46,11 +44,9 @@ function M.new(opts)
 		}
 	end
 
-	-- Apply the selected action
 	picker.apply_action = function(action, client, context, bufnr)
 		local lsp_actions = require("tiny-code-action.action")
 
-		-- Check if the action needs to be resolved
 		local reg = client.dynamic_capabilities
 				and client.dynamic_capabilities:get("textDocument/codeAction", { bufnr = bufnr })
 			or {}

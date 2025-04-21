@@ -44,10 +44,10 @@ function M.get_diff(bufnr, old_lines, new_lines, opts)
 	for i = 1, opts.backend_opts.delta.header_lines_to_remove do
 		table.remove(diff, 1)
 	end
+
 	return diff
 end
 
--- Add helper function to check if content looks like a diff
 function M.is_diff_content(lines)
 	return require("tiny-code-action.terminal").is_diff_content(lines)
 end

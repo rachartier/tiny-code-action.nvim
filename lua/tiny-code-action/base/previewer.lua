@@ -11,16 +11,16 @@ function M.new(opts)
 		backend = nil,
 	}
 
-	-- Process the preview content
 	previewer.process_preview_content = function(content, buf)
-		-- Clean the preview lines to avoid potential issues
 		local cleaned_lines = {}
 		local has_colors = false
 
+		-- TODO: do something better with "No preview available" message
+		if string.find(content[1], "No preview") then
+			content[1] = "\27[37m" .. content[1]
+		end
 		for _, line in ipairs(content) do
-			-- Replace null bytes and other potential problem characters
 			local cleaned = line:gsub("%z", ""):gsub("[\128-\255]", function(c)
-				-- Only keep valid UTF-8 sequences
 				if vim.fn.strdisplaywidth(c) > 0 then
 					return c
 				else
@@ -30,30 +30,27 @@ function M.new(opts)
 
 			table.insert(cleaned_lines, cleaned)
 
-			if cleaned:match("\27%[") then
+			-- Check for ANSI color codes (escape sequence: ESC[ or \e[ or \033[)
+			if cleaned:match("\27%[") or cleaned:match("e%[") or cleaned:match("\033%[") then
 				has_colors = true
 			end
 		end
 
-		-- Apply the cleaned content to the buffer
 		utils.safe_buf_op(function()
 			if not buf or not vim.api.nvim_buf_is_valid(buf) then
 				return
 			end
 
-			-- Set the content
 			utils.set_buf_option(buf, "modifiable", true)
 			vim.api.nvim_buf_set_lines(buf, 0, -1, false, cleaned_lines)
 
-			-- Set filetype based on content type
 			if terminal.is_diff_content(cleaned_lines) then
 				utils.set_buf_option(buf, "filetype", "diff")
 			elseif has_colors then
 				utils.set_buf_option(buf, "filetype", "ansi")
 			end
 
-			-- Apply colorization if terminal colors are supported
-			if has_colors and vim.fn.has("termguicolors") == 1 and vim.o.termguicolors then
+			if has_colors then
 				terminal.colorize(buf)
 			end
 			utils.set_buf_option(buf, "modifiable", false)
@@ -62,7 +59,6 @@ function M.new(opts)
 		return cleaned_lines
 	end
 
-	-- Generate preview for a code action
 	previewer.generate_preview = function(action, bufnr)
 		if not action then
 			return { "No action selected" }
@@ -70,7 +66,6 @@ function M.new(opts)
 
 		local lsp_actions = require("tiny-code-action.action")
 
-		-- Fallback to vim backend if none is set
 		if not previewer.backend then
 			previewer.backend = require("tiny-code-action.backend.vim")
 		end
