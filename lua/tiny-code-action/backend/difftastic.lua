@@ -1,8 +1,4 @@
-local M = {}
-
 local Job = require("plenary.job")
-local lsp_actions = require("tiny-code-action.action")
-local has_telescope, telescope_previewers = pcall(require, "telescope.previewers")
 
 function M.get_diff(bufnr, old_lines, new_lines, opts)
 	local ext = require("tiny-code-action.utils").get_file_extension(bufnr)
@@ -45,59 +41,7 @@ function M.get_diff(bufnr, old_lines, new_lines, opts)
 	return diff
 end
 
-function M.create_previewer(opts, bufnr, backend, preview_action_callback)
-	-- We're using Telescope
-	if opts.picker == "telescope" and has_telescope then
-		return telescope_previewers.new_termopen_previewer({
-			title = "Action Preview",
-			get_command = function(entry)
-				local action = entry.value.action
-				local client = entry.value.client
-
-				if lsp_actions.action_is_not_complete(action) then
-					local action_result, err_action = lsp_actions.blocking_resolve(action, bufnr, client)
-
-					if err_action then
-						---@diagnostic disable-next-line: need-check-nil
-						if action_result ~= nil and action_result.command then
-							action = action_result
-						else
-							return {
-								"echo",
-								"Unable to preview code action.\nThe code action cannot be completed by your Language Server Protocol (LSP).",
-								string.rep("\n", vim.o.lines),
-							}
-						end
-					else
-						action = action_result
-					end
-				end
-
-				local preview_lines = preview_action_callback(opts, action, backend, bufnr)
-
-				return { "echo", table.concat(preview_lines, "\n") .. string.rep("\n", vim.o.lines) } -- HACK: to prevent `Process exited` message
-			end,
-			scroll_fn = function(self, direction)
-				if not self.state then
-					return
-				end
-
-				local input = vim.api.nvim_replace_termcodes(direction > 0 and "<C-e>" or "<C-y>", true, false, true)
-				local count = math.abs(direction)
-
-				vim.api.nvim_win_call(vim.fn.bufwinid(self.state.termopen_bufnr), function()
-					vim.cmd([[normal! ]] .. count .. input)
-				end)
-			end,
-		})
-	end
-
-	-- For Snacks or any other picker, we'll just return the backend data
-	-- The actual preview rendering is handled by the picker
-	return nil
-end
-
--- Use the terminal utility's helper function to check if content looks like a diff
+-- Add helper function to check if content looks like a diff
 function M.is_diff_content(lines)
 	return require("tiny-code-action.terminal").is_diff_content(lines)
 end

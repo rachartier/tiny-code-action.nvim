@@ -202,7 +202,7 @@ function M.code_action(opts)
 		picker_module.backend = M.backend
 
 		-- Create and show the picker
-		picker_module.create_picker(M.config, results, bufnr)
+		picker_module.create(M.config, results, bufnr)
 	end)
 end
 
@@ -240,7 +240,6 @@ function M.setup(opts)
 		error("Invalid backend: " .. M.config.backend)
 	end
 
-	-- Load the backend module
 	M.backend = require("tiny-code-action.backend." .. M.config.backend)
 
 	-- Set up highlighting for code action kinds
@@ -248,6 +247,11 @@ function M.setup(opts)
 		vim.api.nvim_set_hl(0, "TinyCodeActionKind" .. kind_name, sign[2])
 		M.match_hl_kind[kind_name] = "TinyCodeActionKind" .. kind_name
 	end
+
+	-- Register extension with telescope if available
+	pcall(function()
+		require("telescope").load_extension("tiny-code-action")
+	end)
 end
 
 return M
