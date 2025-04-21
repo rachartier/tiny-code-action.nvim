@@ -123,6 +123,14 @@ function M.set_buf_option(bufnr, name, value)
 	end
 end
 
+function M.set_win_option(winid, name, value)
+	if M.is_nvim_version_at_least("0.9.0") then
+		vim.api.nvim_set_option_value(name, value, { win = winid })
+	else
+		vim.api.nvim_win_set_option(winid, name, value)
+	end
+end
+
 local function filter_index(filtered_index, actions)
 	local filtered_actions = {}
 	for index, action in ipairs(actions) do

@@ -1,12 +1,12 @@
 --- Terminal utilities for tiny-code-action
 local M = {}
+local utils = require("tiny-code-action.utils")
 
 --- Colorize a buffer with ANSI color codes
 --- This is used to display colorized diff output from tools like difftastic and delta
 --- @param buf number: buffer number to colorize
 --- @param opts? table: options for colorization
 function M.colorize(buf, opts)
-	local utils = require("tiny-code-action.utils")
 	opts = opts or {}
 
 	if not buf or not vim.api.nvim_buf_is_valid(buf) then
@@ -18,10 +18,10 @@ function M.colorize(buf, opts)
 
 		local win = vim.fn.bufwinid(buf)
 		if win ~= -1 and vim.api.nvim_win_is_valid(win) then
-			vim.api.nvim_win_set_option(win, "number", false)
-			vim.api.nvim_win_set_option(win, "relativenumber", false)
-			vim.api.nvim_win_set_option(win, "signcolumn", "no")
-			vim.api.nvim_win_set_option(win, "cursorline", false)
+			utils.set_win_option(win, "number", false)
+			utils.set_win_option(win, "relativenumber", false)
+			utils.set_win_option(win, "signcolumn", "no")
+			utils.set_win_option(win, "cursorline", false)
 		end
 
 		local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
@@ -72,8 +72,8 @@ end
 --- @return number: buffer handle
 function M.scratch_buffer()
 	local buf = vim.api.nvim_create_buf(false, true)
-	vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
-	vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
+	utils.set_buf_option(buf, "bufhidden", "wipe")
+	utils.set_buf_option(buf, "buftype", "nofile")
 	return buf
 end
 
