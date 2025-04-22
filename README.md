@@ -76,7 +76,7 @@ end, { noremap = true, silent = true })
 require("tiny-code-action").setup({
 	--- The backend to use, currently only "vim", "delta" and "difftastic" are supported
 	backend = "vim",
-  pickers = "telescope" -- The picker to use, "telescope", "snacks", "select" are supported
+  pickers = "snacks" -- The picker to use, "telescope", "snacks", "select" are supported
 	backend_opts = {
 		delta = {
 			-- Header from delta can be quite large.
@@ -127,8 +127,8 @@ require("tiny-code-action").setup({
 		refactor = { "", { link = "DiagnosticWarning" } },
 		["refactor.move"] = { "󰪹", { link = "DiagnosticInfo" } },
 		["refactor.extract"] = { "", { link = "DiagnosticError" } },
-		["source.organizeImports"] = { "", { link = "DiagnosticInfo" } },
-		["source.fixAll"] = { "", { link = "DiagnosticInfo" } },
+		["source.organizeImports"] = { "", { link = "DiagnosticWarning" } },
+		["source.fixAll"] = { "", { link = "DiagnosticError" } },
 		["source"] = { "", { link = "DiagnosticError" } },
 		["rename"] = { "󰑕", { link = "DiagnosticWarning" } },
 		["codeAction"] = { "", { link = "DiagnosticError" } },

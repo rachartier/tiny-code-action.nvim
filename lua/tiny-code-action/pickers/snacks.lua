@@ -38,8 +38,18 @@ function M.create(config, results, bufnr)
 		})
 	end
 
+	-- Ensure all items have the same width for better UI alignment
 	for _, item in ipairs(items) do
 		item.action.title = item.action.title .. (" "):rep(max_width_message - #item.action.title)
+	end
+
+	-- Add a bit more metadata to improve snacks integration
+	for _, item in ipairs(items) do
+		-- Add cwd for terminal preview
+		item.cwd = vim.fn.getcwd()
+
+		-- Add title for preview window
+		item.title = "Code Action"
 	end
 
 	local picker_opts = {
@@ -50,6 +60,7 @@ function M.create(config, results, bufnr)
 		end,
 		preview = previewer.term_previewer({
 			bufnr = bufnr,
+			cwd = vim.fn.getcwd(),
 		}),
 		confirm = function(picker, item)
 			picker:close()
@@ -64,16 +75,22 @@ function M.create(config, results, bufnr)
 			input = {
 				keys = {
 					["<CR>"] = { "confirm", mode = { "n", "i" } },
+					["<Esc>"] = { "close", mode = { "n", "i" } },
 				},
 			},
 			list = {
 				keys = {
 					["<CR>"] = "confirm",
+					["<Esc>"] = "close",
 				},
+			},
+			preview = {
+				title = "Code Action Preview",
 			},
 		},
 	}
 
+	-- Allow user configuration to override our defaults
 	picker_opts = vim.tbl_deep_extend("force", config.picker and config.picker.snacks or {}, picker_opts)
 
 	local picker = snacks.pick(picker_opts)

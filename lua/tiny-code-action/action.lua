@@ -105,7 +105,7 @@ function M.preview(opts, action, backend, bufnr)
 	local changes = M.find_changes(action)
 
 	if not changes or vim.tbl_isempty(action) then
-		return { "No changes." }
+		return { "No preview available for this action" }
 	end
 
 	local normalized_changes = M.normalize_changes(changes)
