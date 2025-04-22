@@ -1,9 +1,8 @@
-local has_snacks, snacks = pcall(require, "snacks.picker")
 local BasePicker = require("tiny-code-action.base.picker")
-local util = require("tiny-code-action.utils")
 
 local M = BasePicker.new()
 
+-- Format code action for snacks UI
 local function format_code_action(item)
 	local formatted = M.format_code_action(item)
 
@@ -16,16 +15,13 @@ local function format_code_action(item)
 end
 
 function M.create(config, results, bufnr)
-	if not has_snacks then
-		vim.notify("snacks.nvim is not installed. Please install it to use this picker.", vim.log.levels.ERROR)
+	if not M.has_dependency("snacks.nvim", "snacks.picker") then
 		return
 	end
+	local snacks = require("snacks.picker")
 
 	M.config = config
-
-	local previewer = require("tiny-code-action.previewers.snacks")
-	previewer.config = config
-	previewer.backend = M.backend
+	local previewer = M.init_previewer("snacks", config)
 
 	local items = {}
 	local max_width_message = 0

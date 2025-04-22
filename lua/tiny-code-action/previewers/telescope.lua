@@ -59,7 +59,6 @@ function M.create_previewer(bufnr)
 			end,
 		})
 	else
-		-- For other backends that might use terminal features (colors, etc), use termopen previewer
 		return telescope_previewers.new_termopen_previewer({
 			title = "Code Action Preview",
 			get_command = function(entry)

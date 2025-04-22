@@ -1,4 +1,3 @@
-local utils = require("tiny-code-action.utils")
 local BasePicker = require("tiny-code-action.base.picker")
 
 local M = BasePicker.new()
@@ -9,6 +8,8 @@ local M = BasePicker.new()
 -- @param bufnr number: The buffer number
 function M.create(config, results, bufnr)
 	M.config = config
+
+	-- We don't need to check for dependencies since vim.ui.select is built into Neovim
 
 	local items = {}
 	local actions = {}

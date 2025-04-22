@@ -1,5 +1,19 @@
 --- Base picker class that all pickers should extend
 local M = {}
+local utils = require("tiny-code-action.utils")
+
+--- Helper function to check if a picker dependency is available
+-- @param name string: Name of the picker
+-- @param module_path string: Path to the module to check
+-- @return boolean: True if the dependency is available
+local function has_dependency(name, module_path)
+	local has_module, _ = pcall(require, module_path)
+	if not has_module then
+		vim.notify(name .. " is not installed. Please install it to use this picker.", vim.log.levels.ERROR)
+		return false
+	end
+	return true
+end
 
 --- Initialize a new picker base
 -- @param opts table: Options to configure the picker
@@ -11,10 +25,12 @@ function M.new(opts)
 		match_hl_kind = {},
 	}
 
+	-- Each picker must implement its own create method
 	picker.create = function(config, results, bufnr)
 		error("create must be implemented by picker")
 	end
 
+	-- Format a code action for display
 	picker.format_code_action = function(item)
 		local action = item.action
 		local client = item.client
@@ -44,6 +60,7 @@ function M.new(opts)
 		}
 	end
 
+	-- Standard way to apply a code action
 	picker.apply_action = function(action, client, context, bufnr)
 		local lsp_actions = require("tiny-code-action.action")
 
@@ -68,6 +85,19 @@ function M.new(opts)
 		else
 			lsp_actions.apply(action, client, context)
 		end
+	end
+
+	-- Check if a specific picker dependency is available
+	picker.has_dependency = function(name, module_path)
+		return has_dependency(name, module_path)
+	end
+
+	-- Initialize previewer for the picker
+	picker.init_previewer = function(name, config)
+		local previewer_module = require("tiny-code-action.previewers." .. name)
+		previewer_module.config = config
+		previewer_module.backend = picker.backend
+		return previewer_module
 	end
 
 	return picker

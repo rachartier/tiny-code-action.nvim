@@ -1,17 +1,21 @@
-local has_telescope, telescope = pcall(require, "telescope")
-local utils = require("tiny-code-action.utils")
 local BasePicker = require("tiny-code-action.base.picker")
 
+local M = BasePicker.new()
+
+-- Initialize telescope modules
 local actions, action_state, pickers, finders, conf
-if has_telescope then
+local function init_telescope()
+	if not M.has_dependency("Telescope.nvim", "telescope") then
+		return false
+	end
+
 	actions = require("telescope.actions")
 	action_state = require("telescope.actions.state")
 	pickers = require("telescope.pickers")
 	finders = require("telescope.finders")
 	conf = require("telescope.config").values
+	return true
 end
-
-local M = BasePicker.new()
 
 local function create_displayer(width_message)
 	local display = require("telescope.pickers.entry_display").create({
@@ -45,16 +49,12 @@ local function prepare_entry_display(values)
 end
 
 function M.create(config, results, bufnr)
-	if not has_telescope then
-		vim.notify("Telescope.nvim is not installed. Please install it to use this picker.", vim.log.levels.ERROR)
+	if not init_telescope() then
 		return
 	end
 
 	M.config = config
-
-	local previewer_module = require("tiny-code-action.previewers.telescope")
-	previewer_module.config = config
-
+	local previewer_module = M.init_previewer("telescope", config)
 	local make_display = prepare_entry_display(results)
 
 	local picker_opts = {
@@ -109,7 +109,6 @@ function M.create(config, results, bufnr)
 	picker_opts = vim.tbl_deep_extend("force", M.config.telescope_opts or {}, picker_opts)
 
 	if picker_opts.previewer == nil then
-		previewer_module.backend = M.backend
 		picker_opts.previewer = previewer_module.create_previewer(bufnr)
 	end
 

@@ -16,6 +16,7 @@ local VALID_BACKENDS = {
 	difftastic = true,
 }
 
+-- Default configuration
 M.config = {
 	backend = "vim",
 	backend_opts = {
@@ -49,17 +50,20 @@ M.config = {
 	signs = {
 		quickfix = { "󰁨", { link = "DiagnosticInfo" } },
 		others = { "?", { link = "DiagnosticWarning" } },
-		refactor = { "", { link = "DiagnosticWarning" } },
+		refactor = { "", { link = "DiagnosticWarning" } },
 		["refactor.move"] = { "󰪹", { link = "DiagnosticInfo" } },
-		["refactor.extract"] = { "", { link = "DiagnosticError" } },
-		["source.organizeImports"] = { "", { link = "DiagnosticInfo" } },
-		["source.fixAll"] = { "", { link = "DiagnosticInfo" } },
-		["source"] = { "", { link = "DiagnosticError" } },
+		["refactor.extract"] = { "", { link = "DiagnosticError" } },
+		["source.organizeImports"] = { "", { link = "DiagnosticInfo" } },
+		["source.fixAll"] = { "", { link = "DiagnosticInfo" } },
+		["source"] = { "", { link = "DiagnosticError" } },
 		["rename"] = { "󰑕", { link = "DiagnosticWarning" } },
-		["codeAction"] = { "", { link = "DiagnosticError" } },
+		["codeAction"] = { "", { link = "DiagnosticError" } },
 	},
 }
 
+-- Get diagnostics for the current buffer
+-- @param bufnr number: Buffer number
+-- @return table: Diagnostics
 local function get_diagnostics(bufnr)
 	local current_line = vim.api.nvim_win_get_cursor(0)[1] - 1
 	if utils.is_nvim_version_at_least("0.11.0") then
@@ -82,6 +86,9 @@ local function get_diagnostics(bufnr)
 	return vim.lsp.diagnostic.get_line_diagnostics(bufnr)
 end
 
+-- Find code actions from all LSP clients
+-- @param opts table: Options for the finder
+-- @param callback function: Callback to call with results
 local function code_action_finder(opts, callback)
 	local results = {}
 	local position_encoding = vim.api.nvim_get_option_value("encoding", { scope = "local" })
@@ -95,7 +102,6 @@ local function code_action_finder(opts, callback)
 
 	local context = {}
 	context.triggerKind = vim.lsp.protocol.CodeActionTriggerKind.Invoked
-
 	context.diagnostics = get_diagnostics(opts.bufnr)
 	params.context = context
 
@@ -137,6 +143,34 @@ local function code_action_finder(opts, callback)
 	end)
 end
 
+-- Get a picker module by name, with fallbacks
+-- @param picker_name string: Name of the picker to get
+-- @return module or nil: The picker module
+local function get_picker_module(picker_name)
+	if not VALID_PICKERS[picker_name] then
+		vim.notify("Invalid picker: " .. picker_name .. ". Using default 'telescope'.", vim.log.levels.WARN)
+		return get_picker_module("telescope")
+	end
+
+	local has_picker, picker_module = pcall(require, "tiny-code-action.pickers." .. picker_name)
+
+	if has_picker then
+		return picker_module
+	end
+
+	-- Apply fallback logic
+	if picker_name == "telescope" then
+		vim.notify("Telescope picker is not available. Falling back to vim.ui.select.", vim.log.levels.WARN)
+		return get_picker_module("select")
+	elseif picker_name == "snacks" then
+		vim.notify("Snacks picker is not available. Falling back to telescope.", vim.log.levels.WARN)
+		return get_picker_module("telescope")
+	else
+		-- If we're already at select and it fails, something is very wrong
+		error("Could not load any picker module. This should not happen.")
+	end
+end
+
 --- @class Filters
 --- @field kind string
 --- @field str string
@@ -166,22 +200,7 @@ function M.code_action(opts)
 
 		-- Get the configured or default picker module
 		local picker_name = M.config.picker or "telescope"
-		local has_picker, picker_module = pcall(require, "tiny-code-action.pickers." .. picker_name)
-
-		if not has_picker then
-			vim.notify(
-				"Selected picker '" .. picker_name .. "' is not available. Trying telescope.",
-				vim.log.levels.WARN
-			)
-
-			-- Try telescope as fallback
-			has_picker, picker_module = pcall(require, "tiny-code-action.pickers.telescope")
-
-			if not has_picker then
-				vim.notify("Telescope picker is not available. Falling back to vim.ui.select.", vim.log.levels.WARN)
-				picker_module = require("tiny-code-action.pickers.select")
-			end
-		end
+		local picker_module = get_picker_module(picker_name)
 
 		picker_module.match_hl_kind = M.match_hl_kind
 		picker_module.backend = M.backend
@@ -191,34 +210,22 @@ end
 
 -- Initialize the picker module
 -- @param picker_name string: Name of the picker to initialize
--- @return module or nil
+-- @return boolean: True if successful
 local function init_picker(picker_name)
 	if not VALID_PICKERS[picker_name] then
 		vim.notify("Invalid picker: " .. picker_name .. ". Using default 'telescope'.", vim.log.levels.WARN)
 		return init_picker("telescope")
 	end
 
-	-- Check for dependencies based on picker type
-	if picker_name == "select" then
-		-- vim.ui.select is built into Neovim, so no dependency check needed
-		return true
-	elseif picker_name == "snacks" then
-		local has_snacks, _ = pcall(require, "snacks.picker")
-		if not has_snacks then
-			vim.notify("snacks.nvim is not installed. Falling back to telescope.", vim.log.levels.WARN)
-			return init_picker("telescope")
-		end
-	elseif picker_name == "telescope" then
+	-- Special case for telescope extension
+	if picker_name == "telescope" then
 		local has_telescope, _ = pcall(require, "telescope")
-		if not has_telescope then
-			vim.notify("telescope.nvim is not installed. Falling back to vim.ui.select.", vim.log.levels.WARN)
-			return init_picker("select")
+		if has_telescope then
+			-- Load telescope extension
+			pcall(function()
+				require("telescope").load_extension("tiny-code-action")
+			end)
 		end
-
-		-- Load telescope extension
-		pcall(function()
-			require("telescope").load_extension("tiny-code-action")
-		end)
 	end
 
 	M.config.picker = picker_name
@@ -227,7 +234,7 @@ end
 
 -- Initialize the backend module
 -- @param backend_name string: Name of the backend to initialize
--- @return module or nil
+-- @return module or nil: The backend module
 local function init_backend(backend_name)
 	if type(backend_name) ~= "string" then
 		error("Invalid backend type: " .. type(backend_name))
@@ -252,14 +259,14 @@ local function setup_highlights(signs)
 	end
 end
 
+-- Setup the plugin
+-- @param opts table: Options to configure the plugin
 function M.setup(opts)
 	M.config = vim.tbl_deep_extend("force", M.config, opts or {})
 	M.config.picker = M.config.picker or "telescope"
 
 	init_picker(M.config.picker)
-
 	M.backend = init_backend(M.config.backend)
-
 	setup_highlights(M.config.signs)
 end
 
