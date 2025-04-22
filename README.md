@@ -6,6 +6,7 @@ A Neovim plugin that provides a simple way to run and visualize code actions.
 
 Supported pickers:
 - `vim.ui.select`
+- `fzf-lua` (with `select`)
 - `telescope.nvim`
 - `snacks.nvim`
 
@@ -46,6 +47,8 @@ With Lazy.nvim:
 
         -- optional picker via telescope
         {"nvim-telescope/telescope.nvim"},
+        -- optional picker via fzf-lua
+        {"ibhagwan/fzf-lua"},
         -- .. or via snacks
         {
           "folke/snacks.nvim",
