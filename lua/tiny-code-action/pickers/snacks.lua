@@ -2,7 +2,6 @@ local BasePicker = require("tiny-code-action.base.picker")
 
 local M = BasePicker.new()
 
--- Format code action for snacks UI
 local function format_code_action(item)
 	local formatted = M.format_code_action(item)
 
@@ -38,17 +37,12 @@ function M.create(config, results, bufnr)
 		})
 	end
 
-	-- Ensure all items have the same width for better UI alignment
 	for _, item in ipairs(items) do
 		item.action.title = item.action.title .. (" "):rep(max_width_message - #item.action.title)
 	end
 
-	-- Add a bit more metadata to improve snacks integration
 	for _, item in ipairs(items) do
-		-- Add cwd for terminal preview
 		item.cwd = vim.fn.getcwd()
-
-		-- Add title for preview window
 		item.title = "Code Action"
 	end
 
@@ -90,7 +84,6 @@ function M.create(config, results, bufnr)
 		},
 	}
 
-	-- Allow user configuration to override our defaults
 	picker_opts = vim.tbl_deep_extend("force", config.picker and config.picker.snacks or {}, picker_opts)
 
 	local picker = snacks.pick(picker_opts)

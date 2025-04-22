@@ -46,7 +46,12 @@ With Lazy.nvim:
 
         -- optional
         {"nvim-telescope/telescope.nvim"},
-        {"folke/snacks.nvim",}
+        {
+          "folke/snacks.nvim",
+          opts = {
+            terminal = {},
+          }
+        }
     },
     event = "LspAttach",
     config = function()

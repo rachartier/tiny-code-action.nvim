@@ -9,8 +9,6 @@ local M = BasePicker.new()
 function M.create(config, results, bufnr)
 	M.config = config
 
-	-- We don't need to check for dependencies since vim.ui.select is built into Neovim
-
 	local items = {}
 	local actions = {}
 
