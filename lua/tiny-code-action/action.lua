@@ -111,7 +111,7 @@ function M.preview(opts, action, backend, bufnr)
 	local normalized_changes = M.normalize_changes(changes)
 	local preview_lines = M.generate_preview_lines(normalized_changes, opts, backend, bufnr)
 
-	if vim.tbl_isempty(preview_lines) then
+	if vim.tbl_isempty(preview_lines) or preview_lines == nil then
 		return { "No preview available for this action" }
 	end
 

@@ -105,6 +105,32 @@ function M.is_nvim_version_at_least(version)
 	return false
 end
 
+-- Safe wrapper for buffer operations
+function M.safe_buf_op(fn)
+	local ok, err = pcall(fn)
+	if not ok then
+		vim.notify("Buffer operation failed: " .. tostring(err), vim.log.levels.DEBUG)
+	end
+	return ok
+end
+
+-- Set buffer option with version compatibility
+function M.set_buf_option(bufnr, name, value)
+	if M.is_nvim_version_at_least("0.9.0") then
+		vim.api.nvim_set_option_value(name, value, { buf = bufnr })
+	else
+		vim.api.nvim_buf_set_option(bufnr, name, value)
+	end
+end
+
+function M.set_win_option(winid, name, value)
+	if M.is_nvim_version_at_least("0.9.0") then
+		vim.api.nvim_set_option_value(name, value, { win = winid })
+	else
+		vim.api.nvim_win_set_option(winid, name, value)
+	end
+end
+
 local function filter_index(filtered_index, actions)
 	local filtered_actions = {}
 	for index, action in ipairs(actions) do
