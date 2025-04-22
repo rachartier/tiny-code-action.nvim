@@ -16,7 +16,7 @@ function M.new(opts)
 		local has_colors = false
 
 		-- TODO: do something better with "No preview available" message
-		if string.find(content[1], "No preview") then
+		if string.find(content[1], "No") then
 			content[1] = "\27[37m" .. content[1]
 		end
 		for _, line in ipairs(content) do

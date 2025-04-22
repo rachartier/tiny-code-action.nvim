@@ -50,14 +50,14 @@ M.config = {
 	signs = {
 		quickfix = { "󰁨", { link = "DiagnosticInfo" } },
 		others = { "?", { link = "DiagnosticWarning" } },
-		refactor = { "", { link = "DiagnosticWarning" } },
+		refactor = { "", { link = "DiagnosticWarning" } },
 		["refactor.move"] = { "󰪹", { link = "DiagnosticInfo" } },
-		["refactor.extract"] = { "", { link = "DiagnosticError" } },
-		["source.organizeImports"] = { "", { link = "DiagnosticInfo" } },
-		["source.fixAll"] = { "", { link = "DiagnosticInfo" } },
-		["source"] = { "", { link = "DiagnosticError" } },
+		["refactor.extract"] = { "", { link = "DiagnosticError" } },
+		["source.organizeImports"] = { "", { link = "DiagnosticWarning" } },
+		["source.fixAll"] = { "", { link = "DiagnosticError" } },
+		["source"] = { "", { link = "DiagnosticError" } },
 		["rename"] = { "󰑕", { link = "DiagnosticWarning" } },
-		["codeAction"] = { "", { link = "DiagnosticError" } },
+		["codeAction"] = { "", { link = "DiagnosticError" } },
 	},
 }
 

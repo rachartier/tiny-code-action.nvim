@@ -1,5 +1,6 @@
 local BasePreviewer = require("tiny-code-action.base.previewer")
 local utils = require("tiny-code-action.utils")
+local lsp_actions = require("tiny-code-action.action")
 
 local M = BasePreviewer.new()
 
@@ -24,7 +25,33 @@ function M.term_previewer(opts)
 		end)
 
 		if opts and opts.preview_fn and ctx.buf and vim.api.nvim_buf_is_valid(ctx.buf) then
-			local content = opts.preview_fn(ctx.item)
+			local action = ctx.item.action
+			local client = ctx.item.client
+			local bufnr = ctx.item.bufnr or vim.api.nvim_get_current_buf()
+
+			-- Check if the action needs to be resolved first
+			if lsp_actions.action_is_not_complete(action) then
+				local action_result, err_action = lsp_actions.blocking_resolve(action, bufnr, client)
+
+				if err_action then
+					if action_result ~= nil and action_result.command then
+						action = action_result
+					else
+						safe_buf_op(function()
+							utils.set_buf_option(ctx.buf, "modifiable", true)
+							vim.api.nvim_buf_set_lines(ctx.buf, 0, -1, false, {
+								"Unable to preview code action.",
+								"The code action cannot be completed by your LSP.",
+							})
+						end)
+						return true
+					end
+				else
+					action = action_result
+				end
+			end
+
+			local content = opts.preview_fn(action, bufnr, client)
 
 			if not content or vim.tbl_isempty(content) then
 				safe_buf_op(function()
@@ -34,7 +61,10 @@ function M.term_previewer(opts)
 				return true
 			end
 
-			M.process_preview_content(content, ctx.buf)
+			vim.schedule(function()
+				utils.set_buf_option(ctx.buf, "modifiable", true)
+				M.process_preview_content(content, ctx.buf)
+			end)
 			return true
 		end
 

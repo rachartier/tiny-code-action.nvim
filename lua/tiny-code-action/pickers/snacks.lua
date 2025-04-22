@@ -48,22 +48,14 @@ function M.create(config, results, bufnr)
 		format = function(item)
 			return format_code_action(item)
 		end,
-		preview = function(ctx)
-			local item = ctx.item
-			if not item then
-				return false
-			end
-
-			local action = item.action
-
-			local preview_lines = previewer.generate_preview(action, bufnr)
-
-			vim.schedule(function()
-				previewer.process_preview_content(preview_lines, ctx.buf)
-			end)
-
-			return true
-		end,
+		preview = previewer.term_previewer({
+			preview_fn = function(action, buf, client)
+				if not action then
+					return { "No action selected" }
+				end
+				return previewer.generate_preview(action, bufnr)
+			end,
+		}),
 		confirm = function(picker, item)
 			picker:close()
 
