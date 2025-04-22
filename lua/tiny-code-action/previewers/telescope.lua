@@ -1,5 +1,5 @@
 local utils = require("tiny-code-action.utils")
-local lsp_actions = require("tiny-code-action.action")
+
 local base_previewer = require("tiny-code-action.base.previewer")
 
 local M = base_previewer.new({})
@@ -24,37 +24,13 @@ function M.create_previewer(bufnr)
 				local action = entry.value.action
 				local client = entry.value.client
 
-				if not action then
-					vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, { "No action selected" })
-					return
-				end
-
-				if lsp_actions.action_is_not_complete(action) then
-					local action_result, err_action = lsp_actions.blocking_resolve(action, bufnr, client)
-
-					if err_action then
-						if action_result ~= nil and action_result.command then
-							action = action_result
-						else
-							vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, {
-								"Unable to preview code action.",
-								"The code action cannot be completed by your LSP.",
-							})
-							return
-						end
-					else
-						action = action_result
-					end
-				end
-
-				local preview_content = M.generate_preview(action, bufnr)
+				local preview_content = M.preview_with_resolve(action, bufnr, client)
 
 				if not preview_content or vim.tbl_isempty(preview_content) then
 					preview_content = { "No preview available for this action" }
 				end
 
 				vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, preview_content)
-
 				utils.set_buf_option(self.state.bufnr, "filetype", "diff")
 			end,
 		})
@@ -65,35 +41,13 @@ function M.create_previewer(bufnr)
 				local action = entry.value.action
 				local client = entry.value.client
 
-				if not action then
-					return { "echo", "No action selected" }
-				end
-
-				if lsp_actions.action_is_not_complete(action) then
-					local action_result, err_action = lsp_actions.blocking_resolve(action, bufnr, client)
-
-					if err_action then
-						if action_result ~= nil and action_result.command then
-							action = action_result
-						else
-							return {
-								"echo",
-								"Unable to preview code action.\nThe code action cannot be completed by your Language Server Protocol (LSP).",
-							}
-						end
-					else
-						action = action_result
-					end
-				end
-
-				local preview_content = M.generate_preview(action, bufnr)
+				local preview_content = M.preview_with_resolve(action, bufnr, client)
 
 				if not preview_content or vim.tbl_isempty(preview_content) then
 					preview_content = { "No preview available for this action" }
 				end
 
 				local text = table.concat(preview_content, "\n")
-
 				return { "echo", text }
 			end,
 			scroll_fn = function(self, direction)

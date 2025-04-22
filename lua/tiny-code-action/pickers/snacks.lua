@@ -49,12 +49,7 @@ function M.create(config, results, bufnr)
 			return format_code_action(item)
 		end,
 		preview = previewer.term_previewer({
-			preview_fn = function(action, buf, client)
-				if not action then
-					return { "No action selected" }
-				end
-				return previewer.generate_preview(action, bufnr)
-			end,
+			bufnr = bufnr,
 		}),
 		confirm = function(picker, item)
 			picker:close()

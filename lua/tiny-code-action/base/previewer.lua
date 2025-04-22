@@ -2,6 +2,7 @@
 local M = {}
 local utils = require("tiny-code-action.utils")
 local terminal = require("tiny-code-action.terminal")
+local lsp_actions = require("tiny-code-action.action")
 
 --- Initialize a new previewer base
 -- @param opts table: Options to configure the previewer
@@ -64,8 +65,6 @@ function M.new(opts)
 			return { "No action selected" }
 		end
 
-		local lsp_actions = require("tiny-code-action.action")
-
 		if not previewer.backend then
 			previewer.backend = require("tiny-code-action.backend.vim")
 		end
@@ -77,6 +76,45 @@ function M.new(opts)
 		end
 
 		return preview_lines
+	end
+
+	-- Resolve an action if needed before generating a preview
+	previewer.resolve_action = function(action, bufnr, client)
+		if not action then
+			return action, false, nil
+		end
+
+		if lsp_actions.action_is_not_complete(action) then
+			local action_result, err_action = lsp_actions.blocking_resolve(action, bufnr, client)
+
+			if err_action then
+				if action_result ~= nil and action_result.command then
+					return action_result, false, nil
+				else
+					return action,
+						true,
+						{
+							"Unable to preview code action.",
+							"The code action cannot be completed by your LSP.",
+						}
+				end
+			else
+				return action_result, false, nil
+			end
+		end
+
+		return action, false, nil
+	end
+
+	-- Generate preview with action resolution
+	previewer.preview_with_resolve = function(action, bufnr, client)
+		local resolved_action, has_error, error_message = previewer.resolve_action(action, bufnr, client)
+
+		if has_error then
+			return error_message
+		end
+
+		return previewer.generate_preview(resolved_action, bufnr)
 	end
 
 	return previewer
