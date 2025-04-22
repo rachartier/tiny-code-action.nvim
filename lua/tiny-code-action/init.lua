@@ -19,6 +19,7 @@ local VALID_BACKENDS = {
 -- Default configuration
 M.config = {
 	backend = "vim",
+	picker = "telescope",
 	backend_opts = {
 		delta = {
 			header_lines_to_remove = 4,
