@@ -1,6 +1,11 @@
 ## 📇 tiny-code-action.nvim
 
-A Neovim plugin that provides a simple way to run and visualize code actions with Telescope.
+A Neovim plugin that provides a simple way to run and visualize code actions.
+
+Supported pickers:
+- `vim.ui.select`
+- `telescope.nvim`
+- `snacks.nvim`
 
 The code action protocol is nearly fully implemented in this plugin, so you can use it with any language server, even with, like in the preview, Omnisharp which uses partial code actions.
 
@@ -38,7 +43,10 @@ With Lazy.nvim:
     "rachartier/tiny-code-action.nvim",
     dependencies = {
         {"nvim-lua/plenary.nvim"},
+
+        -- optional
         {"nvim-telescope/telescope.nvim"},
+        {"folke/snacks.nvim",}
     },
     event = "LspAttach",
     config = function()
@@ -68,6 +76,7 @@ end, { noremap = true, silent = true })
 require("tiny-code-action").setup({
 	--- The backend to use, currently only "vim", "delta" and "difftastic" are supported
 	backend = "vim",
+  pickers = "snacks" -- The picker to use, "telescope", "snacks", "select" are supported
 	backend_opts = {
 		delta = {
 			-- Header from delta can be quite large.
@@ -96,6 +105,7 @@ require("tiny-code-action").setup({
 			},
 		},
 	},
+  -- Will be removed in future versions
 	telescope_opts = {
 		layout_strategy = "vertical",
 		layout_config = {
@@ -117,8 +127,8 @@ require("tiny-code-action").setup({
 		refactor = { "", { link = "DiagnosticWarning" } },
 		["refactor.move"] = { "󰪹", { link = "DiagnosticInfo" } },
 		["refactor.extract"] = { "", { link = "DiagnosticError" } },
-		["source.organizeImports"] = { "", { link = "TelescopeResultVariable" } },
-		["source.fixAll"] = { "", { link = "TelescopeResultVariable" } },
+		["source.organizeImports"] = { "", { link = "DiagnosticWarning" } },
+		["source.fixAll"] = { "", { link = "DiagnosticError" } },
 		["source"] = { "", { link = "DiagnosticError" } },
 		["rename"] = { "󰑕", { link = "DiagnosticWarning" } },
 		["codeAction"] = { "", { link = "DiagnosticError" } },
