@@ -19,7 +19,21 @@ local VALID_BACKENDS = {
 -- Default configuration
 M.config = {
 	backend = "vim",
-	picker = "telescope",
+	picker = {
+		"telescope",
+		opts = {
+			layout_strategy = "vertical",
+			layout_config = {
+				width = 0.7,
+				height = 0.9,
+				preview_cutoff = 1,
+				preview_height = function(_, _, max_lines)
+					local h = math.floor(max_lines * 0.5)
+					return math.max(h, 10)
+				end,
+			},
+		},
+	},
 	backend_opts = {
 		delta = {
 			header_lines_to_remove = 4,
@@ -34,18 +48,6 @@ M.config = {
 				"--display=inline",
 				"--syntax-highlight=on",
 			},
-		},
-	},
-	telescope_opts = {
-		layout_strategy = "vertical",
-		layout_config = {
-			width = 0.7,
-			height = 0.9,
-			preview_cutoff = 1,
-			preview_height = function(_, _, max_lines)
-				local h = math.floor(max_lines * 0.5)
-				return math.max(h, 10)
-			end,
 		},
 	},
 	signs = {
@@ -200,7 +202,14 @@ function M.code_action(opts)
 		end
 
 		-- Get the configured or default picker module
-		local picker_name = M.config.picker or "telescope"
+		local picker_name
+
+		if type(M.config.picker) == "table" then
+			picker_name = M.config.picker[1]
+		else
+			picker_name = M.config.picker or "telescope"
+		end
+
 		local picker_module = get_picker_module(picker_name)
 
 		picker_module.match_hl_kind = M.match_hl_kind
@@ -213,6 +222,10 @@ end
 -- @param picker_name string: Name of the picker to initialize
 -- @return boolean: True if successful
 local function init_picker(picker_name)
+	if type(picker_name) == "table" then
+		picker_name = picker_name[1]
+	end
+
 	if not VALID_PICKERS[picker_name] then
 		vim.notify("Invalid picker: " .. picker_name .. ". Using default 'telescope'.", vim.log.levels.WARN)
 		return init_picker("telescope")
@@ -229,7 +242,6 @@ local function init_picker(picker_name)
 		end
 	end
 
-	M.config.picker = picker_name
 	return true
 end
 
@@ -264,7 +276,6 @@ end
 -- @param opts table: Options to configure the plugin
 function M.setup(opts)
 	M.config = vim.tbl_deep_extend("force", M.config, opts or {})
-	M.config.picker = M.config.picker or "telescope"
 
 	init_picker(M.config.picker)
 	M.backend = init_backend(M.config.backend)

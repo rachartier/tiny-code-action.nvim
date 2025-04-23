@@ -84,7 +84,9 @@ function M.create(config, results, bufnr)
 		},
 	}
 
-	picker_opts = vim.tbl_deep_extend("force", config.picker and config.picker.snacks or {}, picker_opts)
+	if type(config.picker) == "table" then
+		picker_opts = vim.tbl_deep_extend("force", config.picker.opts or {}, picker_opts)
+	end
 
 	local picker = snacks.pick(picker_opts)
 	return picker

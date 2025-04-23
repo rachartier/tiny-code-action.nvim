@@ -106,7 +106,9 @@ function M.create(config, results, bufnr)
 		end,
 	}
 
-	picker_opts = vim.tbl_deep_extend("force", M.config.telescope_opts or {}, picker_opts)
+	if type(config.picker) == "table" then
+		picker_opts = vim.tbl_deep_extend("force", config.picker.opts or {}, picker_opts)
+	end
 
 	if picker_opts.previewer == nil then
 		picker_opts.previewer = previewer_module.create_previewer(bufnr)

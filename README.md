@@ -89,9 +89,27 @@ end, { noremap = true, silent = true })
     opts = {
       --- The backend to use, currently only "vim", "delta" and "difftastic" are supported
       backend = "vim",
+
       -- The picker to use, "telescope", "snacks", "select" are supported
+      -- And it's opts that will be passed at the picker's creation, optional
       -- If you want to use the `fzf-lua` picker, you can simply set it to `select`
-      picker = "telescope"
+      --
+      -- You can also set `picker = "telescope"` without any opts.
+      picker = {
+        "telescope",
+        opts = {
+          layout_strategy = "vertical",
+          layout_config = {
+            width = 0.7,
+            height = 0.9,
+            preview_cutoff = 1,
+            preview_height = function(_, _, max_lines)
+              local h = math.floor(max_lines * 0.5)
+              return math.max(h, 10)
+            end,
+          },
+        },
+      },
       backend_opts = {
         delta = {
           -- Header from delta can be quite large.
