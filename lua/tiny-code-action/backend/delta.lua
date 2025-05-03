@@ -1,55 +1,42 @@
 local M = {}
 
 local Job = require("plenary.job")
+local BaseBackendFiles = require("tiny-code-action.base.backend").BaseBackendFiles
+
+local DeltaBackend = BaseBackendFiles:new("delta")
 
 function M.get_diff(bufnr, old_lines, new_lines, opts)
-	local ext = require("tiny-code-action.utils").get_file_extension(bufnr)
+    local old_file, new_file = DeltaBackend:prepare_files(bufnr, old_lines, new_lines)
+    local diff = {}
+    local args = {}
 
-	local old_file = vim.fn.tempname() .. "." .. ext
-	local new_file = vim.fn.tempname() .. "." .. ext
+    vim.list_extend(args, opts.backend_opts.delta.args)
 
-	old_lines = vim.split(table.concat(old_lines, "\n"), "\n")
-	new_lines = vim.split(table.concat(new_lines, "\n"), "\n")
+    if vim.o.background == "dark" then
+        table.insert(args, "--dark")
+    end
 
-	vim.fn.writefile(old_lines, old_file)
-	vim.fn.writefile(new_lines, new_file)
+    args = vim.list_extend(args, {
+        "--hunk-header-decoration-style=omit",
+    })
 
-	local diff = {}
-	local args = {}
+    table.insert(args, old_file)
+    table.insert(args, new_file)
 
-	vim.list_extend(args, opts.backend_opts.delta.args)
+    Job:new({
+        command = DeltaBackend.command,
+        args = args,
+        on_exit = function(j)
+            diff = j:result()
+        end,
+    }):sync()
 
-	if vim.o.background == "dark" then
-		table.insert(args, "--dark")
-	end
-
-	args = vim.list_extend(args, {
-		"--hunk-header-decoration-style=omit",
-	})
-
-	table.insert(args, old_file)
-	table.insert(args, new_file)
-
-	Job:new({
-		command = "delta",
-		args = args,
-		on_exit = function(j)
-			diff = j:result()
-		end,
-	}):sync()
-
-	os.remove(old_file)
-	os.remove(new_file)
-
-	for i = 1, opts.backend_opts.delta.header_lines_to_remove do
-		table.remove(diff, 1)
-	end
-
-	return diff
+    DeltaBackend:cleanup_files(old_file, new_file)
+    return DeltaBackend:remove_header_lines(diff, opts.backend_opts.delta.header_lines_to_remove)
 end
 
 function M.is_diff_content(lines)
-	return require("tiny-code-action.terminal").is_diff_content(lines)
+    return DeltaBackend:is_diff_content(lines)
 end
 
 return M
