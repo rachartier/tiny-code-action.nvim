@@ -125,6 +125,7 @@ local function code_action_finder(opts, callback)
 		end
 
 		if not req_results then
+			vim.notify("No code actions found.", vim.log.levels.INFO)
 			return
 		end
 
@@ -188,11 +189,6 @@ function M.code_action(opts)
 	local bufnr = vim.api.nvim_get_current_buf()
 
 	code_action_finder({ bufnr = bufnr }, function(results)
-		if results == nil or vim.tbl_isempty(results) then
-			vim.notify("No code actions available.", vim.log.levels.INFO)
-			return
-		end
-
 		if opts == nil then
 			opts = {}
 		end
