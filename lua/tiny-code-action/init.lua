@@ -14,6 +14,7 @@ local VALID_BACKENDS = {
 	vim = true,
 	delta = true,
 	difftastic = true,
+	diffsofancy = true,
 }
 
 -- Default configuration
@@ -48,6 +49,9 @@ M.config = {
 				"--display=inline",
 				"--syntax-highlight=on",
 			},
+		},
+		diffsofancy = {
+			header_lines_to_remove = 4,
 		},
 	},
 	signs = {

@@ -87,7 +87,7 @@ end, { noremap = true, silent = true })
     },
     event = "LspAttach",
     opts = {
-      --- The backend to use, currently only "vim", "delta" and "difftastic" are supported
+      --- The backend to use, currently only "vim", "delta", "difftastic", "diffsofancy" are supported
       backend = "vim",
 
       -- The picker to use, "telescope", "snacks", "select" are supported
@@ -126,8 +126,6 @@ end, { noremap = true, silent = true })
           },
         },
         difftastic = {
-          -- Header from delta can be quite large.
-          -- You can remove them by setting this to the number of lines to remove
           header_lines_to_remove = 1,
 
           -- The arguments to pass to difftastic
@@ -137,6 +135,9 @@ end, { noremap = true, silent = true })
             "--syntax-highlight=on",
           },
         },
+        diffsofancy = {
+          header_lines_to_remove = 4,
+        }
       },
       -- Will be removed in future versions
       telescope_opts = {
