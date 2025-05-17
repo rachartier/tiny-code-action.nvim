@@ -57,6 +57,7 @@ function M.new(opts)
 			kind_hl = kind_hl,
 			ordinal = ordinal,
 			client = client.name or "unknown",
+			isPreferred = action.isPreferred == true,
 		}
 	end
 

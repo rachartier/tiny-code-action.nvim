@@ -187,6 +187,31 @@ end
 --- @class CodeActionOpts
 --- @field filters Filters
 
+--- Sort code actions based on priority with isPreferred at the top
+--- @param results table: The code actions to sort
+--- @return table: The sorted code actions
+local function sort_by_preferred(results)
+	if not results or #results == 0 then
+		return results
+	end
+
+	table.sort(results, function(a, b)
+		-- Sort preferred actions to the top
+		local a_preferred = a.action and a.action.isPreferred == true
+		local b_preferred = b.action and b.action.isPreferred == true
+
+		if a_preferred and not b_preferred then
+			return true
+		elseif not a_preferred and b_preferred then
+			return false
+		end
+		-- If both are preferred or both are not preferred, maintain original order
+		return false
+	end)
+
+	return results
+end
+
 --- Get the code actions for the current buffer
 --- @param opts table: The options for the code actions.
 function M.code_action(opts)
@@ -200,6 +225,9 @@ function M.code_action(opts)
 		if opts.filters ~= nil then
 			results = utils.filter_code_actions(results, opts.filters)
 		end
+
+		-- Sort actions with isPreferred to the top
+		results = sort_by_preferred(results)
 
 		-- Get the configured or default picker module
 		local picker_name
