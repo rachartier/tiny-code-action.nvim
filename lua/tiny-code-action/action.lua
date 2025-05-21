@@ -80,6 +80,16 @@ function M.blocking_resolve(action, bufnr, client)
 	return result, err
 end
 
+function M.support_resolve(client, bufnr)
+	local reg = client.dynamic_capabilities
+			and client.dynamic_capabilities:get("textDocument/codeAction", { bufnr = bufnr })
+		or {}
+	local support_resolve = vim.tbl_get(reg, "registerOptions", "resolveProvider")
+		or (client.supports_method and client.supports_method("codeAction/resolve"))
+
+	return support_resolve
+end
+
 function M.action_is_not_complete(action)
 	return action.edit == nil
 end

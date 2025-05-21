@@ -20,6 +20,7 @@ function M.new(opts)
 		if string.find(content[1], "No") then
 			content[1] = "\27[37m" .. content[1]
 		end
+
 		for _, line in ipairs(content) do
 			local cleaned = line:gsub("%z", ""):gsub("[\128-\255]", function(c)
 				if vim.fn.strdisplaywidth(c) > 0 then
@@ -84,7 +85,7 @@ function M.new(opts)
 			return action, false, nil
 		end
 
-		if lsp_actions.action_is_not_complete(action) then
+		if lsp_actions.action_is_not_complete(action) and lsp_actions.support_resolve(client, bufnr) then
 			local action_result, err_action = lsp_actions.blocking_resolve(action, bufnr, client)
 
 			if err_action then
