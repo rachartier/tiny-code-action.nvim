@@ -128,15 +128,9 @@ local function code_action_finder(opts, callback)
 			return
 		end
 
-		if not req_results then
-			vim.notify("No code actions found.", vim.log.levels.INFO)
-			return
-		end
-
-		for _, action in ipairs(req_results) do
+		if req_results then
 			local client = vim.lsp.get_client_by_id(ctx.client_id)
-
-			if action then
+			for _, action in ipairs(req_results) do
 				table.insert(results, {
 					client = client,
 					action = action,
@@ -146,6 +140,10 @@ local function code_action_finder(opts, callback)
 		end
 
 		if client_count_done == #clients then
+			if vim.tbl_isempty(results) then
+				vim.notify("No code actions found.", vim.log.levels.INFO)
+			end
+
 			callback(results)
 		end
 	end)
