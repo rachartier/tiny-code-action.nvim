@@ -139,19 +139,7 @@ end, { noremap = true, silent = true })
           header_lines_to_remove = 4,
         }
       },
-      -- Will be removed in future versions
-      telescope_opts = {
-        layout_strategy = "vertical",
-        layout_config = {
-          width = 0.7,
-          height = 0.9,
-          preview_cutoff = 1,
-          preview_height = function(_, _, max_lines)
-            local h = math.floor(max_lines * 0.5)
-            return math.max(h, 10)
-          end,
-        },
-      },
+
       -- The icons to use for the code actions
       -- You can add your own icons, you just need to set the exact action's kind of the code action
       -- You can set the highlight like so: { link = "DiagnosticError" } or  like nvim_set_hl ({ fg ..., bg..., bold..., ...})
