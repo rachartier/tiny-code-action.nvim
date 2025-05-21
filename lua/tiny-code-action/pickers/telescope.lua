@@ -40,8 +40,9 @@ local function prepare_entry_display(values)
 
 	for _, entry in pairs(values) do
 		local action = entry.action
-		if #action.title > max_width_message then
-			max_width_message = #action.title
+		local width = vim.fn.strdisplaywidth(action.title)
+		if width > max_width_message then
+			max_width_message = width
 		end
 	end
 

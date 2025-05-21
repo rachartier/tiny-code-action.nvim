@@ -25,8 +25,9 @@ function M.create(config, results, bufnr)
 	local items = {}
 	local max_width_message = 0
 	for _, pair_client_action in ipairs(results) do
-		if #pair_client_action.action.title > max_width_message then
-			max_width_message = #pair_client_action.action.title
+		local width = vim.fn.strdisplaywidth(pair_client_action.action.title)
+		if width > max_width_message then
+			max_width_message = width
 		end
 
 		table.insert(items, {
@@ -38,7 +39,8 @@ function M.create(config, results, bufnr)
 	end
 
 	for _, item in ipairs(items) do
-		item.action.title = item.action.title .. (" "):rep(max_width_message - #item.action.title)
+		item.action.title = item.action.title
+			.. (" "):rep(max_width_message - vim.fn.strdisplaywidth(item.action.title))
 	end
 
 	for _, item in ipairs(items) do
