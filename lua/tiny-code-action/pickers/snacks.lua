@@ -50,6 +50,7 @@ function M.create(config, results, bufnr)
 
 	local picker_opts = {
 		prompt_title = "Code Actions",
+		layout = "dropdown",
 		items = items,
 		format = function(item)
 			return format_code_action(item)
