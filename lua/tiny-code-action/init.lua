@@ -260,7 +260,7 @@ local function init_picker(picker)
 		picker_name = picker[1]
 	end
 
-	if not VALID_PICKERS[picker] then
+	if not VALID_PICKERS[picker_name] then
 		vim.notify("Invalid picker: " .. picker_name .. ". Using default 'telescope'.", vim.log.levels.WARN)
 		return init_picker("telescope")
 	end
