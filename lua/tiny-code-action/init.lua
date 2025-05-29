@@ -148,6 +148,7 @@ local function code_action_finder(opts, callback)
 		if client_count_done == #clients then
 			if vim.tbl_isempty(results) then
 				vim.notify("No code actions found.", vim.log.levels.INFO)
+				return
 			end
 
 			callback(results)
