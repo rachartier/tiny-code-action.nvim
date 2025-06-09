@@ -131,17 +131,6 @@ function M.set_win_option(winid, name, value)
 	end
 end
 
-local function filter_index(filtered_index, actions)
-	local filtered_actions = {}
-	for index, action in ipairs(actions) do
-		if vim.tbl_contains(filtered_index, index) then
-			table.insert(filtered_actions, action)
-		end
-	end
-
-	return filtered_actions
-end
-
 --- This function filters the code actions based on the given filters.
 --- @param actions table: The code actions to filter.
 --- @param filters Filters: The filters to apply to the code actions.
@@ -150,41 +139,51 @@ function M.filter_code_actions(actions, filters)
 		return actions
 	end
 
-	local filered_actions = {}
-	local filered_index = {}
+	local filtered_actions = actions
+
 	if filters.client ~= nil then
-		for index, action in ipairs(actions) do
+		local temp_actions = {}
+		for _, action in ipairs(filtered_actions) do
 			if action.client.config.name == filters.client then
-				table.insert(filered_index, index)
+				table.insert(temp_actions, action)
 			end
 		end
+		filtered_actions = temp_actions
 	end
 
-	filered_actions = filter_index(filered_index, filered_actions)
-	filered_index = {}
 	if filters.kind ~= nil then
-		for index, action in ipairs(filered_actions) do
+		local temp_actions = {}
+		for _, action in ipairs(filtered_actions) do
 			if action.action.kind == filters.kind then
-				table.insert(filered_index, index)
+				table.insert(temp_actions, action)
 			end
 		end
+		filtered_actions = temp_actions
 	end
 
-	filered_actions = filter_index(filered_index, filered_actions)
-	filered_index = {}
 	if filters.str ~= nil then
-		for index, action in ipairs(actions) do
+		local temp_actions = {}
+		for _, action in ipairs(filtered_actions) do
 			if action.action.title:find(filters.str, 1, true) ~= nil then
-				table.insert(filered_index, index)
+				table.insert(temp_actions, action)
 			end
 		end
+		filtered_actions = temp_actions
 	end
 
-	local filtered_actions = {}
-	for index, action in ipairs(actions) do
-		if vim.tbl_contains(filered_index, index) then
-			table.insert(filtered_actions, action)
+	if filters.line ~= nil then
+		local temp_actions = {}
+
+		for _, action in ipairs(filtered_actions) do
+			local found, _, start = M.find_key_in_table(action, "start")
+			if found and start ~= nil then
+				local start_line = start.line or start[1] or start[2] or 0
+				if start_line == filters.line then
+					table.insert(temp_actions, action)
+				end
+			end
 		end
+		filtered_actions = temp_actions
 	end
 
 	return filtered_actions

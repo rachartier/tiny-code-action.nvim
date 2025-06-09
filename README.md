@@ -169,6 +169,7 @@ You can filter the code actions by setting the `filters` option.
     str = "..." -- Filter to title
     kind = "refactor" -- Filter to the kind
     client = "omnisharp" -- Filter to the client
+    line = 10 -- Filter to the line number
 }
 ```
 
