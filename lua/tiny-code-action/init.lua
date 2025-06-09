@@ -19,7 +19,6 @@ local VALID_BACKENDS = {
 
 M.picker_config = {
 	telescope = {
-
 		layout_strategy = "vertical",
 		layout_config = {
 			width = 0.7,
@@ -188,6 +187,7 @@ end
 --- @field kind string
 --- @field str string
 --- @field client string
+--- @field line int
 
 --- @class CodeActionOpts
 --- @field filters Filters

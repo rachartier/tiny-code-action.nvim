@@ -135,6 +135,9 @@ end
 ---                       changes are found. The structure of the table depends on the specific
 ---                       language server protocol client in use.
 function M.find_changes(action)
+	if not action or vim.tbl_isempty(action) then
+		return nil
+	end
 	local found, _, changes = utils.find_key_in_table(action, "changes")
 	if not found or changes == nil then
 		found, _, changes = utils.find_key_in_table(action, "documentChanges")
