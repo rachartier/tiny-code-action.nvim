@@ -7,47 +7,47 @@ local M = BasePicker.new()
 -- @param results table: The code action results
 -- @param bufnr number: The buffer number
 function M.create(config, results, bufnr)
-	M.config = config
+  M.config = config
 
-	local items = {}
-	local actions = {}
+  local items = {}
+  local actions = {}
 
-	for i, result in ipairs(results) do
-		local action = result.action
-		local client = result.client
-		local context = result.context
+  for i, result in ipairs(results) do
+    local action = result.action
+    local client = result.client
+    local context = result.context
 
-		local formatted = M.format_code_action({
-			action = action,
-			client = client,
-		})
+    local formatted = M.format_code_action({
+      action = action,
+      client = client,
+    })
 
-		table.insert(items, formatted.kind .. " " .. formatted.ordinal)
-		actions[i] = {
-			client = client,
-			action = action,
-			context = context,
-		}
-	end
+    table.insert(items, formatted.kind .. " " .. formatted.ordinal)
+    actions[i] = {
+      client = client,
+      action = action,
+      context = context,
+    }
+  end
 
-	vim.ui.select(items, {
-		prompt = "Code Actions:",
-		format_item = function(item)
-			return item
-		end,
-	}, function(_, idx)
-		if not idx then
-			return
-		end
+  vim.ui.select(items, {
+    prompt = "Code Actions:",
+    format_item = function(item)
+      return item
+    end,
+  }, function(_, idx)
+    if not idx then
+      return
+    end
 
-		local selected = actions[idx]
+    local selected = actions[idx]
 
-		if not selected then
-			return
-		end
+    if not selected then
+      return
+    end
 
-		M.apply_action(selected.action, selected.client, selected.context, bufnr)
-	end)
+    M.apply_action(selected.action, selected.client, selected.context, bufnr)
+  end)
 end
 
 return M
