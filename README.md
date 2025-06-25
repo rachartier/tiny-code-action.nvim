@@ -9,6 +9,7 @@ Supported pickers:
 - `fzf-lua` (with `select`)
 - `telescope.nvim`
 - `snacks.nvim`
+- `minimal` (a minimal picker that uses buffer)
 
 The code action protocol is nearly fully implemented in this plugin, so you can use it with any language server, even with, like in the preview, Omnisharp which uses partial code actions.
 
@@ -90,26 +91,12 @@ end, { noremap = true, silent = true })
       --- The backend to use, currently only "vim", "delta", "difftastic", "diffsofancy" are supported
       backend = "vim",
 
-      -- The picker to use, "telescope", "snacks", "select" are supported
+      -- The picker to use, "telescope", "snacks", "select", "minimal" are supported
       -- And it's opts that will be passed at the picker's creation, optional
       -- If you want to use the `fzf-lua` picker, you can simply set it to `select`
       --
       -- You can also set `picker = "telescope"` without any opts.
-      picker = {
-        "telescope",
-        opts = {
-          layout_strategy = "vertical",
-          layout_config = {
-            width = 0.7,
-            height = 0.9,
-            preview_cutoff = 1,
-            preview_height = function(_, _, max_lines)
-              local h = math.floor(max_lines * 0.5)
-              return math.max(h, 10)
-            end,
-          },
-        },
-      },
+      picker = "telescope",
       backend_opts = {
         delta = {
           -- Header from delta can be quite large.
@@ -144,16 +131,16 @@ end, { noremap = true, silent = true })
       -- You can add your own icons, you just need to set the exact action's kind of the code action
       -- You can set the highlight like so: { link = "DiagnosticError" } or  like nvim_set_hl ({ fg ..., bg..., bold..., ...})
       signs = {
-        quickfix = { "󰁨", { link = "DiagnosticInfo" } },
-        others = { "?", { link = "DiagnosticWarning" } },
-        refactor = { "", { link = "DiagnosticWarning" } },
+        quickfix = { "", { link = "DiagnosticWarning" } },
+        others = { "", { link = "DiagnosticWarning" } },
+        refactor = { "", { link = "DiagnosticInfo" } },
         ["refactor.move"] = { "󰪹", { link = "DiagnosticInfo" } },
-        ["refactor.extract"] = { "", { link = "DiagnosticError" } },
+        ["refactor.extract"] = { "", { link = "DiagnosticError" } },
         ["source.organizeImports"] = { "", { link = "DiagnosticWarning" } },
-        ["source.fixAll"] = { "", { link = "DiagnosticError" } },
+        ["source.fixAll"] = { "󰃢", { link = "DiagnosticError" } },
         ["source"] = { "", { link = "DiagnosticError" } },
         ["rename"] = { "󰑕", { link = "DiagnosticWarning" } },
-        ["codeAction"] = { "", { link = "DiagnosticError" } },
+        ["codeAction"] = { "", { link = "DiagnosticWarning" } },
       },
    }
 }

@@ -8,6 +8,7 @@ local VALID_PICKERS = {
   telescope = true,
   snacks = true,
   select = true,
+  minimal = true,
 }
 
 local VALID_BACKENDS = {
@@ -34,6 +35,7 @@ M.picker_config = {
     layout = "vertical",
   },
   select = {},
+  minimal = {},
 }
 
 -- Default configuration
@@ -60,16 +62,16 @@ M.config = {
     },
   },
   signs = {
-    quickfix = { "󰁨", { link = "DiagnosticInfo" } },
-    others = { "?", { link = "DiagnosticWarning" } },
-    refactor = { "", { link = "DiagnosticWarning" } },
+    quickfix = { "", { link = "DiagnosticWarning" } },
+    others = { "", { link = "DiagnosticWarning" } },
+    refactor = { "", { link = "DiagnosticInfo" } },
     ["refactor.move"] = { "󰪹", { link = "DiagnosticInfo" } },
-    ["refactor.extract"] = { "", { link = "DiagnosticError" } },
+    ["refactor.extract"] = { "", { link = "DiagnosticError" } },
     ["source.organizeImports"] = { "", { link = "DiagnosticWarning" } },
-    ["source.fixAll"] = { "", { link = "DiagnosticError" } },
+    ["source.fixAll"] = { "󰃢", { link = "DiagnosticError" } },
     ["source"] = { "", { link = "DiagnosticError" } },
     ["rename"] = { "󰑕", { link = "DiagnosticWarning" } },
-    ["codeAction"] = { "", { link = "DiagnosticError" } },
+    ["codeAction"] = { "", { link = "DiagnosticWarning" } },
   },
 }
 
@@ -188,9 +190,15 @@ local function get_picker_module(picker_name)
   elseif picker_name == "snacks" then
     vim.notify("Snacks picker is not available. Falling back to telescope.", vim.log.levels.WARN)
     return get_picker_module("telescope")
+  elseif picker_name == "select" then
+    vim.notify("Select picker is not available. Falling back to minimal.", vim.log.levels.WARN)
+    return get_picker_module("minimal")
+  elseif picker_name == "minimal" then
+    vim.notify("Minimal picker is not available. No picker could be loaded.", vim.log.levels.ERROR)
+    return nil
   else
-    -- If we're already at select and it fails, something is very wrong
-    error("Could not load any picker module. This should not happen.")
+    vim.notify("Could not load any picker module. This should not happen.", vim.log.levels.ERROR)
+    return nil
   end
 end
 
@@ -255,6 +263,13 @@ function M.code_action(opts)
     end
 
     local picker_module = get_picker_module(picker_name)
+    if not picker_module then
+      vim.notify(
+        "No picker module could be loaded. Aborting code action display.",
+        vim.log.levels.ERROR
+      )
+      return
+    end
 
     picker_module.match_hl_kind = M.match_hl_kind
     picker_module.backend = M.backend
