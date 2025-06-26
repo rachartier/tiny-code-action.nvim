@@ -101,7 +101,10 @@ end, { noremap = true, silent = true })
       -- {
       --    hotkeys = true -- Enable hotkeys for the buffer picker to quickly select an action
       --
-      --    hotkeys_mode = "text_based" | "sequential" -- sequential = a, b, c..., text_based = "Fix all" => "f", "Fix others" => "fi" ...
+      --    hotkeys_mode = "text_based" | "text_diff_based" | "sequential"
+      --    -- sequential = a, b, c...
+      --    -- text_based = "Fix all" => "f", "Fix others" => "o" (first non assigned letter of the action)
+      --    -- text_diff_based = "Fix all" => "fa", "Fix others" => "fo" smarter than text_based
       -- }
       picker = "telescope",
       backend_opts = {
