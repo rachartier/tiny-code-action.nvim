@@ -12,6 +12,14 @@ local CATEGORIES = {
   others = { order = 99, label = "More actions ..." },
 }
 
+local RESERVED_HOTKEYS = {
+  k = true,
+  q = true,
+  h = true,
+  l = true,
+  j = true,
+}
+
 local function get_action_category(action_item)
   local kind = action_item.action and action_item.action.kind or ""
 
@@ -59,14 +67,41 @@ local function get_sorted_categories(groups)
   return categories
 end
 
+local function is_reserved_hotkey(hotkey)
+  return RESERVED_HOTKEYS[hotkey] or false
+end
+
 local function num_to_hotkey(n)
+  -- Generate the nth non-reserved hotkey (1-based)
+  local count = 0
+  local i = 0
   local hotkey = ""
-  n = n - 1
-  repeat
-    hotkey = string.char(97 + (n % 26)) .. hotkey
-    n = math.floor(n / 26) - 1
-  until n < 0
+  while count < n do
+    local candidate = ""
+    local idx = i
+    repeat
+      candidate = string.char(97 + (idx % 26)) .. candidate
+      idx = math.floor(idx / 26) - 1
+    until idx < 0
+    if not is_reserved_hotkey(candidate) then
+      count = count + 1
+      hotkey = candidate
+    end
+    i = i + 1
+  end
   return hotkey
+end
+
+local function next_non_reserved_hotkey_idx(start_idx)
+  -- Returns the next index >= start_idx that is not reserved
+  local idx = start_idx
+  while true do
+    local hotkey = num_to_hotkey(idx)
+    if not is_reserved_hotkey(hotkey) then
+      return idx
+    end
+    idx = idx + 1
+  end
 end
 
 local function build_display_content(groups, config_signs)
@@ -90,6 +125,7 @@ local function build_display_content(groups, config_signs)
 
     for _, action_item in ipairs(groups[category]) do
       local title = action_item.action and action_item.action.title or ""
+      hotkey_idx = next_non_reserved_hotkey_idx(hotkey_idx)
       local hotkey = num_to_hotkey(hotkey_idx)
       local display_line = string.format("  [%s] %s", hotkey, title)
       table.insert(lines, display_line)
@@ -273,15 +309,11 @@ local function create_main_window(
     for line, hotkey in pairs(line_to_hotkey) do
       hotkey_to_line[hotkey] = line
     end
-    for i = 1, hotkey_count do
-      local hotkey = ""
-      do
-        local n = i - 1
-        repeat
-          hotkey = string.char(97 + (n % 26)) .. hotkey
-          n = math.floor(n / 26) - 1
-        until n < 0
-      end
+    local assigned = 0
+    local i = 1
+    while assigned < hotkey_count do
+      i = next_non_reserved_hotkey_idx(i)
+      local hotkey = num_to_hotkey(i)
       local line = hotkey_to_line[hotkey]
       if line then
         local function jumpto()
@@ -289,7 +321,9 @@ local function create_main_window(
         end
         vim.keymap.set("n", hotkey, jumpto, keymap_opts)
         vim.keymap.set("n", hotkey:upper(), jumpto, keymap_opts)
+        assigned = assigned + 1
       end
+      i = i + 1
     end
   end
 end
