@@ -9,7 +9,7 @@ Supported pickers:
 - `fzf-lua` (with `select`)
 - `telescope.nvim`
 - `snacks.nvim`
-- `minimal` (a minimal picker that uses buffer)
+- `buffer` (a minimal picker that uses buffer)
 
 The code action protocol is nearly fully implemented in this plugin, so you can use it with any language server, even with, like in the preview, Omnisharp which uses partial code actions.
 
@@ -91,7 +91,7 @@ end, { noremap = true, silent = true })
       --- The backend to use, currently only "vim", "delta", "difftastic", "diffsofancy" are supported
       backend = "vim",
 
-      -- The picker to use, "telescope", "snacks", "select", "minimal" are supported
+      -- The picker to use, "telescope", "snacks", "select", "buffer" are supported
       -- And it's opts that will be passed at the picker's creation, optional
       -- If you want to use the `fzf-lua` picker, you can simply set it to `select`
       --

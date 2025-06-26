@@ -2,6 +2,8 @@ local BasePicker = require("tiny-code-action.base.picker")
 
 local M = BasePicker.new()
 
+local ns = vim.api.nvim_create_namespace("tiny_code_action_buffer")
+
 local CATEGORIES = {
   quickfix = { order = 1, label = "Quick fix" },
   refactor = { order = 2, label = "Refactor" },
@@ -77,7 +79,7 @@ local function build_display_content(groups, config_signs)
     local icon = config_signs and config_signs[category] and config_signs[category][1] or ""
 
     -- Add icon only to category title
-    local category_line = icon ~= "" and string.format("## %s %s", icon, category_label)
+    local category_line = icon ~= "" and string.format("## %s  %s", icon, category_label)
       or "## " .. category_label
     table.insert(lines, category_line)
     line_number = line_number + 1
@@ -94,9 +96,6 @@ local function build_display_content(groups, config_signs)
     table.insert(lines, "")
     line_number = line_number + 1
   end
-
-  -- Add footer with action count and key hints
-  local total_actions = count_total_actions(groups)
 
   return lines, line_to_action
 end
@@ -125,13 +124,12 @@ local function add_icon_highlighting(buf, lines, config_signs, match_hl_kind)
         local icon = sign_config[1]
         if icon and line:find(icon, 1, true) and match_hl_kind[category] then
           local icon_start = line:find(icon, 1, true) - 1
-          vim.api.nvim_buf_add_highlight(
+          vim.hl.range(
             buf,
-            -1,
+            ns,
             match_hl_kind[category],
-            line_idx - 1,
-            icon_start,
-            icon_start + #icon
+            { line_idx - 1, icon_start },
+            { line_idx - 1, icon_start + #icon }
           )
           break
         end
@@ -198,7 +196,6 @@ local function create_main_window(bufnr, lines, line_to_action, previewer, confi
   local col = 2
 
   local buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
 
   add_icon_highlighting(buf, lines, config.signs, M.match_hl_kind)
@@ -222,6 +219,8 @@ local function create_main_window(bufnr, lines, line_to_action, previewer, confi
   local win = vim.api.nvim_open_win(buf, true, win_config)
   vim.api.nvim_win_set_cursor(win, { 2, 0 })
   vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
+  vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
+  vim.api.nvim_set_option_value("spell", false, { win = win })
 
   vim.api.nvim_set_option_value("number", false, { win = win })
   vim.api.nvim_set_option_value("relativenumber", false, { win = win })
@@ -261,7 +260,7 @@ function M.create(config, results, bufnr)
   local lines, line_to_action = build_display_content(grouped_actions, config.signs)
 
   M.config = config
-  local previewer = M.init_previewer("minimal", config)
+  local previewer = M.init_previewer("buffer", config)
 
   create_main_window(bufnr, lines, line_to_action, previewer, config)
 end
