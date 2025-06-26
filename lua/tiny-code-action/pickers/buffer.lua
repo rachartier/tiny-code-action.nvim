@@ -284,12 +284,11 @@ local function create_main_window(
       end
       local line = hotkey_to_line[hotkey]
       if line then
-        local function jump_and_apply()
+        local function jumpto()
           vim.api.nvim_win_set_cursor(win, { line, 0 })
-          handle_selection()
         end
-        vim.keymap.set("n", hotkey, jump_and_apply, keymap_opts)
-        vim.keymap.set("n", hotkey:upper(), jump_and_apply, keymap_opts)
+        vim.keymap.set("n", hotkey, jumpto, keymap_opts)
+        vim.keymap.set("n", hotkey:upper(), jumpto, keymap_opts)
       end
     end
   end
