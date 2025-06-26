@@ -32,6 +32,11 @@ The code action protocol is nearly fully implemented in this plugin, so you can 
 
 ![tinycode_difftastic_1](https://github.com/user-attachments/assets/7fbdb52f-455f-4d4f-a2e6-434b14c4f21f)
 
+## Buffer Picker (can be used with hotkeys)
+
+![tiny_code_action_buffer](https://github.com/user-attachments/assets/2ae62822-90c5-4314-b334-905b08e1cd43)
+
+
 ## 📥 Installation
 
 > [!NOTE]
