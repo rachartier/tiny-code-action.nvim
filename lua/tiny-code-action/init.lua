@@ -37,6 +37,7 @@ M.picker_config = {
   select = {},
   buffer = {
     hotkeys = false,
+    hotkeys_mode = "text_based",
   },
 }
 
