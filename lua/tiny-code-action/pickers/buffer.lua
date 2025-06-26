@@ -4,6 +4,17 @@ local M = BasePicker.new()
 
 local ns = vim.api.nvim_create_namespace("tiny_code_action_buffer")
 
+-- Preview window state
+local preview_state = {
+  win = nil,
+  buf = nil,
+  action_item = nil,
+  main_win = nil,
+  main_win_config = nil,
+  bufnr = nil,
+  previewer = nil,
+}
+
 local CATEGORIES = {
   quickfix = { order = 1, label = "Quick fix" },
   refactor = { order = 2, label = "Refactor" },
@@ -327,57 +338,111 @@ local function add_icon_highlighting(buf, lines, config_signs, match_hl_kind)
     end
   end
 end
+local function close_preview()
+  if preview_state.win and vim.api.nvim_win_is_valid(preview_state.win) then
+    vim.api.nvim_win_close(preview_state.win, true)
+  end
+  preview_state.win = nil
+  preview_state.buf = nil
+  preview_state.action_item = nil
+end
 
-local function show_preview(action_item, bufnr, previewer, main_win_config)
+local function show_preview(action_item, bufnr, previewer, main_win_config, focus)
   if not action_item or not action_item.action then
     vim.notify("No code action selected", vim.log.levels.WARN)
     return
   end
+  local need_new_win = false
+  if not (preview_state.win and vim.api.nvim_win_is_valid(preview_state.win)) then
+    need_new_win = true
+  end
+  if need_new_win or focus then
+    -- Close previous preview if open
+    close_preview()
+    local nvim_width = vim.o.columns
+    local nvim_height = vim.o.lines
+    local preview_width = math.floor(nvim_width * 0.4)
+    local preview_height = math.floor(nvim_height * 0.4)
+    local preview_row = main_win_config.row
+    local preview_col = main_win_config.col + main_win_config.width + 2
+    local preview_buf = vim.api.nvim_create_buf(false, true)
+    local preview_win = vim.api.nvim_open_win(preview_buf, not not focus, {
+      relative = "editor",
+      row = preview_row,
+      col = preview_col,
+      width = preview_width,
+      height = preview_height,
+      style = "minimal",
+      border = "single",
+      title = " Previewer ",
+      title_pos = "center",
+      noautocmd = true,
+      anchor = "NW",
+    })
+    -- Close preview window with <Esc> or q
+    vim.api.nvim_buf_set_keymap(
+      preview_buf,
+      "n",
+      "<Esc>",
+      "<cmd>bd!<CR>",
+      { nowait = true, noremap = true, silent = true }
+    )
+    vim.api.nvim_buf_set_keymap(
+      preview_buf,
+      "n",
+      "q",
+      "<cmd>bd!<CR>",
+      { nowait = true, noremap = true, silent = true }
+    )
+    -- Accept action with <CR> in preview window
+    vim.api.nvim_buf_set_keymap(
+      preview_buf,
+      "n",
+      "<CR>",
+      string.format(
+        [[<cmd>lua require("tiny-code-action.pickers.buffer")._accept_action_from_preview()<CR>]]
+      ),
+      { nowait = true, noremap = true, silent = true }
+    )
+    preview_state.win = preview_win
+    preview_state.buf = preview_buf
+    preview_state.main_win = main_win_config.win
+    preview_state.main_win_config = main_win_config
+    preview_state.bufnr = bufnr
+    preview_state.previewer = previewer
+  end
 
-  local nvim_width = vim.o.columns
-  local nvim_height = vim.o.lines
+  -- Only update if action changed or buffer is new
+  if preview_state.action_item ~= action_item or need_new_win then
+    preview_state.action_item = action_item
 
-  local preview_width = math.floor(nvim_width * 0.4)
-  local preview_height = math.floor(nvim_height * 0.4)
-  local preview_row = main_win_config.row
-  local preview_col = main_win_config.col + main_win_config.width + 2
+    vim.api.nvim_set_option_value("modifiable", true, { buf = preview_state.buf })
+    vim.api.nvim_buf_set_lines(preview_state.buf, 0, -1, false, {})
+    previewer.term_previewer(bufnr, {
+      item = action_item,
+      buf = preview_state.buf,
+      win = preview_state.win,
+    })
+    vim.api.nvim_set_option_value("modifiable", false, { buf = preview_state.buf })
+  end
+  if focus and preview_state.win and vim.api.nvim_win_is_valid(preview_state.win) then
+    vim.api.nvim_set_current_win(preview_state.win)
+  end
+end
 
-  local preview_buf = vim.api.nvim_create_buf(false, true)
-  local preview_win = vim.api.nvim_open_win(preview_buf, true, {
-    relative = "editor",
-    row = preview_row,
-    col = preview_col,
-    width = preview_width,
-    height = preview_height,
-    style = "minimal",
-    border = "single",
-    title = " Previewer ",
-    title_pos = "center",
-    noautocmd = true,
-    anchor = "NW",
-  })
-
-  -- Close preview window with <Esc> or q
-  vim.api.nvim_buf_set_keymap(
-    preview_buf,
-    "n",
-    "<Esc>",
-    "<cmd>bd!<CR>",
-    { nowait = true, noremap = true, silent = true }
-  )
-  vim.api.nvim_buf_set_keymap(
-    preview_buf,
-    "n",
-    "q",
-    "<cmd>bd!<CR>",
-    { nowait = true, noremap = true, silent = true }
-  )
-
-  previewer.term_previewer(bufnr, {
-    item = action_item,
-    buf = preview_buf,
-    win = preview_win,
-  })
+function M._accept_action_from_preview()
+  if preview_state.action_item then
+    M.apply_action(
+      preview_state.action_item.action,
+      preview_state.action_item.client,
+      preview_state.action_item.context,
+      preview_state.bufnr
+    )
+  end
+  if preview_state.main_win and vim.api.nvim_win_is_valid(preview_state.main_win) then
+    vim.api.nvim_win_close(preview_state.main_win, true)
+  end
+  close_preview()
 end
 
 local function create_main_window(
@@ -415,6 +480,7 @@ local function create_main_window(
   }
 
   local win = vim.api.nvim_open_win(buf, true, win_config)
+  win_config.win = win
   vim.api.nvim_win_set_cursor(win, { 2, 0 })
   vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
   vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
@@ -434,18 +500,26 @@ local function create_main_window(
       M.apply_action(action_item.action, action_item.client, action_item.context, bufnr)
     end
     vim.api.nvim_win_close(win, true)
+    close_preview()
   end
 
-  -- Handle preview of a code action
+  -- Handle preview of a code action (K key)
   local function handle_preview()
     local cursor_line = vim.api.nvim_win_get_cursor(win)[1]
     local action_item = line_to_action[cursor_line]
-    show_preview(action_item, bufnr, previewer, win_config)
+    -- If preview is not open, open it (do not focus)
+    -- If preview is open, focus it
+    if preview_state.win and vim.api.nvim_win_is_valid(preview_state.win) then
+      vim.api.nvim_set_current_win(preview_state.win)
+    else
+      show_preview(action_item, bufnr, previewer, win_config, false)
+    end
   end
 
   -- Close the picker window
   local function close_window()
     vim.api.nvim_win_close(win, true)
+    close_preview()
   end
 
   local keymap_opts = { buffer = buf, nowait = true }
@@ -469,6 +543,34 @@ local function create_main_window(
         vim.keymap.set("n", hotkey:upper(), jumpto, keymap_opts)
       end
     end
+  end
+
+  -- Auto-preview: update preview on cursor move if enabled
+  if config.picker and config.picker.opts and config.picker.opts.auto_preview then
+    local function auto_preview()
+      local cursor_line = vim.api.nvim_win_get_cursor(win)[1]
+      local action_item = line_to_action[cursor_line]
+      if action_item then
+        show_preview(action_item, bufnr, previewer, win_config, false)
+      else
+        close_preview()
+      end
+    end
+    vim.api.nvim_create_autocmd("CursorMoved", {
+      buffer = buf,
+      callback = function()
+        auto_preview()
+      end,
+    })
+  else
+    vim.api.nvim_create_autocmd("CursorMoved", {
+      buffer = buf,
+      callback = function()
+        if preview_state.win and vim.api.nvim_win_is_valid(preview_state.win) then
+          close_preview()
+        end
+      end,
+    })
   end
 end
 

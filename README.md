@@ -100,16 +100,17 @@ end, { noremap = true, silent = true })
       -- And it's opts that will be passed at the picker's creation, optional
       -- If you want to use the `fzf-lua` picker, you can simply set it to `select`
       --
-      -- You can also set `picker = "telescope"` without any opts.
+      -- You can also set `picker = "<picker>"` without any opts.
       --
       -- For "buffer" picker, you can set the `opts` to the following:
       -- {
       --    hotkeys = true -- Enable hotkeys for the buffer picker to quickly select an action
       --
-      --    hotkeys_mode = "text_based" | "text_diff_based" | "sequential"
+      --    hotkeys_mode = "text_diff_based" | "text_based" | "sequential"
       --    -- sequential = a, b, c...
       --    -- text_based = "Fix all" => "f", "Fix others" => "o" (first non assigned letter of the action)
       --    -- text_diff_based = "Fix all" => "fa", "Fix others" => "fo" smarter than text_based
+      --    auto_preview = false -- Enable auto preview of the code action
       -- }
       picker = "telescope",
       backend_opts = {
