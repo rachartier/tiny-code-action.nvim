@@ -100,6 +100,8 @@ end, { noremap = true, silent = true })
       -- For "buffer" picker, you can set the `opts` to the following:
       -- {
       --    hotkeys = true -- Enable hotkeys for the buffer picker to quickly select an action
+      --
+      --    hotkeys_mode = "text_based" | "sequential" -- sequential = a, b, c..., text_based = "Fix all" => "f", "Fix others" => "fi" ...
       -- }
       picker = "telescope",
       backend_opts = {

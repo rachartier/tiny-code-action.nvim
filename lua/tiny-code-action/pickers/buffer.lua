@@ -104,11 +104,22 @@ local function next_non_reserved_hotkey_idx(start_idx)
   end
 end
 
-local function build_display_content(groups, config_signs)
+local function get_text_based_hotkey(title, used_hotkeys)
+  for i = 1, #title do
+    local c = title:sub(1, i):lower()
+    if c:match("[a-z]") and not is_reserved_hotkey(c) and not used_hotkeys[c] then
+      return c
+    end
+  end
+  return nil
+end
+
+local function build_display_content(groups, config_signs, hotkey_mode)
   local lines = {}
   local line_to_action = {}
   local line_to_hotkey = {}
   local line_number = 1
+  local used_hotkeys = {}
 
   local sorted_categories = get_sorted_categories(groups)
 
@@ -125,13 +136,24 @@ local function build_display_content(groups, config_signs)
 
     for _, action_item in ipairs(groups[category]) do
       local title = action_item.action and action_item.action.title or ""
-      hotkey_idx = next_non_reserved_hotkey_idx(hotkey_idx)
-      local hotkey = num_to_hotkey(hotkey_idx)
+      local hotkey
+      if hotkey_mode == "text_based" then
+        hotkey = get_text_based_hotkey(title, used_hotkeys)
+        if not hotkey then
+          hotkey_idx = next_non_reserved_hotkey_idx(hotkey_idx)
+          hotkey = num_to_hotkey(hotkey_idx)
+          hotkey_idx = hotkey_idx + 1
+        end
+      else
+        hotkey_idx = next_non_reserved_hotkey_idx(hotkey_idx)
+        hotkey = num_to_hotkey(hotkey_idx)
+        hotkey_idx = hotkey_idx + 1
+      end
+      used_hotkeys[hotkey] = true
       local display_line = string.format("  [%s] %s", hotkey, title)
       table.insert(lines, display_line)
       line_to_action[line_number] = action_item
       line_to_hotkey[line_number] = hotkey
-      hotkey_idx = hotkey_idx + 1
       line_number = line_number + 1
     end
 
@@ -139,7 +161,7 @@ local function build_display_content(groups, config_signs)
     line_number = line_number + 1
   end
 
-  return lines, line_to_action, line_to_hotkey, hotkey_idx - 1
+  return lines, line_to_action, line_to_hotkey, line_number - 2
 end
 
 local function calculate_window_size(lines)
@@ -309,29 +331,26 @@ local function create_main_window(
     for line, hotkey in pairs(line_to_hotkey) do
       hotkey_to_line[hotkey] = line
     end
-    local assigned = 0
-    local i = 1
-    while assigned < hotkey_count do
-      i = next_non_reserved_hotkey_idx(i)
-      local hotkey = num_to_hotkey(i)
-      local line = hotkey_to_line[hotkey]
-      if line then
-        local function jumpto()
-          vim.api.nvim_win_set_cursor(win, { line, 0 })
-        end
-        vim.keymap.set("n", hotkey, jumpto, keymap_opts)
-        vim.keymap.set("n", hotkey:upper(), jumpto, keymap_opts)
-        assigned = assigned + 1
+    for hotkey, line in pairs(hotkey_to_line) do
+      local function jumpto()
+        vim.api.nvim_win_set_cursor(win, { line, 0 })
       end
-      i = i + 1
+      vim.keymap.set("n", hotkey, jumpto, keymap_opts)
+      vim.keymap.set("n", hotkey:upper(), jumpto, keymap_opts)
     end
   end
 end
 
 function M.create(config, results, bufnr)
   local grouped_actions = group_actions_by_category(results)
+  local hotkeys_mode = "sequential"
+
+  if config.picker and config.picker.opts and config.picker.opts.hotkeys_mode then
+    hotkeys_mode = config.picker.opts.hotkeys_mode
+  end
+
   local lines, line_to_action, line_to_hotkey, hotkey_count =
-    build_display_content(grouped_actions, config.signs)
+    build_display_content(grouped_actions, config.signs, hotkeys_mode)
 
   M.config = config
   local previewer = M.init_previewer("buffer", config)
