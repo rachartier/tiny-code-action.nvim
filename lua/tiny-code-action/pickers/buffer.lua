@@ -279,7 +279,7 @@ local function build_display_content(groups, config_signs, hotkey_mode)
         line_number = line_number + 1
       end
     else
-      for i, action_item in ipairs(actions) do
+      for _, action_item in ipairs(actions) do
         local title = action_item.action and action_item.action.title or ""
         local display_line = string.format("  • %s", title)
         table.insert(lines, display_line)
@@ -357,14 +357,43 @@ local function show_preview(action_item, bufnr, previewer, main_win_config, focu
     need_new_win = true
   end
   if need_new_win or focus then
-    -- Close previous preview if open
     close_preview()
+
     local nvim_width = vim.o.columns
     local nvim_height = vim.o.lines
-    local preview_width = math.floor(nvim_width * 0.4)
-    local preview_height = math.floor(nvim_height * 0.4)
-    local preview_row = main_win_config.row
-    local preview_col = main_win_config.col + main_win_config.width + 2
+
+    -- Prefer placing preview to the right if there is enough space
+    local main_row = main_win_config.row
+    local main_col = main_win_config.col
+    local main_height = main_win_config.height
+    local main_width = main_win_config.width
+    local orig_preview_width = math.floor(nvim_width * 0.4)
+    local orig_preview_height = math.floor(nvim_height * 0.4)
+    local preview_row, preview_col, preview_width, preview_height
+
+    -- Check if there is enough space to the right (east)
+    if main_col + main_width + 2 + orig_preview_width <= nvim_width then
+      preview_width = orig_preview_width
+      preview_height = orig_preview_height
+      preview_row = main_row
+      preview_col = main_col + main_width + 2
+    else
+      -- Calculate available space south (below) and north (above) the main window
+      local south_space = nvim_height - (main_row + main_height) - 2
+      local north_space = main_row - 2
+      preview_width = main_width
+      preview_height = main_height
+      if south_space >= north_space then
+        -- Place preview south (below) the main window
+        preview_row = main_row + main_height + 2
+        preview_col = main_col
+      else
+        -- Place preview north (above) the main window
+        preview_row = math.max(0, main_row - preview_height - 2)
+        preview_col = main_col
+      end
+    end
+
     local preview_buf = vim.api.nvim_create_buf(false, true)
     local preview_win = vim.api.nvim_open_win(preview_buf, not not focus, {
       relative = "editor",
