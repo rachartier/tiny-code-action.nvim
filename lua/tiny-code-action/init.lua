@@ -8,7 +8,7 @@ local VALID_PICKERS = {
   telescope = true,
   snacks = true,
   select = true,
-  minimal = true,
+  buffer = true,
 }
 
 local VALID_BACKENDS = {
@@ -35,7 +35,7 @@ M.picker_config = {
     layout = "vertical",
   },
   select = {},
-  minimal = {},
+  buffer = {},
 }
 
 -- Default configuration
@@ -191,10 +191,10 @@ local function get_picker_module(picker_name)
     vim.notify("Snacks picker is not available. Falling back to telescope.", vim.log.levels.WARN)
     return get_picker_module("telescope")
   elseif picker_name == "select" then
-    vim.notify("Select picker is not available. Falling back to minimal.", vim.log.levels.WARN)
-    return get_picker_module("minimal")
-  elseif picker_name == "minimal" then
-    vim.notify("Minimal picker is not available. No picker could be loaded.", vim.log.levels.ERROR)
+    vim.notify("Select picker is not available. Falling back to buffer.", vim.log.levels.WARN)
+    return get_picker_module("buffer")
+  elseif picker_name == "buffer" then
+    vim.notify("Buffer picker is not available. No picker could be loaded.", vim.log.levels.ERROR)
     return nil
   else
     vim.notify("Could not load any picker module. This should not happen.", vim.log.levels.ERROR)
