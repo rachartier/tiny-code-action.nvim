@@ -38,6 +38,7 @@ M.picker_config = {
   buffer = {
     hotkeys = false,
     hotkeys_mode = "text_diff_based",
+    auto_preview = false,
   },
 }
 
