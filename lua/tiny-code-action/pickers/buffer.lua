@@ -104,11 +104,6 @@ local function next_non_reserved_hotkey_idx(start_idx)
   end
 end
 
-local function normalize_title(title)
-  -- Remove whitespace and punctuation, keep case
-  return title:gsub("[%s%p]", "")
-end
-
 local function get_text_based_hotkey(title, used_hotkeys)
   -- Try to use the first unique, non-reserved character from the title (case-insensitive)
   for i = 1, #title do
@@ -121,98 +116,70 @@ local function get_text_based_hotkey(title, used_hotkeys)
 end
 
 local function get_text_diff_based_hotkeys(action_titles, category)
+  -- Gather all action titles globally
+  local all_action_titles = M._all_action_titles or {}
   local n = #action_titles
-  local normalized = {}
-  local remainders = {}
-  local cat_norm = normalize_title(category or ""):lower()
-  local cat_letter = cat_norm:sub(1, 1)
-
-  for i, title in ipairs(action_titles) do
-    local norm = normalize_title(title)
-    normalized[i] = norm
-    local norm_l = norm:lower()
-    if cat_norm ~= "" and norm_l:sub(1, #cat_norm) == cat_norm then
-      -- Remove category prefix and following non-alphanum
-      local rem = norm:sub(#cat_norm + 1)
-      rem = rem:gsub("^[^%w]*", "")
-      remainders[i] = rem
-    else
-      remainders[i] = norm
-    end
-  end
   local hotkeys = {}
   local used = {}
 
-  -- Build a flat list of all normalized titles (for global uniqueness)
-  local all_titles = {}
-  local all_remainders = {}
-  local all_cat_norms = {}
-  for _, entry in ipairs(M._all_action_titles) do
-    local norm = normalize_title(entry.title)
-    local norm_l = norm:lower()
-    local cat = entry.category or ""
-    local rem
-
-    cat_norm = normalize_title(cat):lower()
-    if cat_norm ~= "" and norm_l:sub(1, #cat_norm) == cat_norm then
-      rem = norm:sub(#cat_norm + 1)
-      rem = rem:gsub("^[^%w]*", "")
-    else
-      rem = norm
+  -- Build global candidates
+  local global_candidates = {}
+  for idx, entry in ipairs(all_action_titles) do
+    local candidate = ""
+    for word in (entry.title or ""):gmatch("%w+") do
+      candidate = candidate .. word:sub(1, 1):lower()
     end
-    table.insert(all_titles, norm)
-    table.insert(all_remainders, rem)
-    table.insert(all_cat_norms, cat_norm)
+    global_candidates[idx] = candidate
   end
 
-  -- First, try to assign single-char hotkeys for unique first chars (case-insensitive, globally)
-  local first_char_count = {}
-  for i, rem in ipairs(all_remainders) do
-    local c = rem:sub(1, 1):lower()
-    if c ~= "" and not is_reserved_hotkey(c) then
-      first_char_count[c] = (first_char_count[c] or 0) + 1
-    end
-  end
-  for i, rem in ipairs(remainders) do
-    local c = rem:sub(1, 1):lower()
-    if c ~= "" and not is_reserved_hotkey(c) and first_char_count[c] == 1 and not used[c] then
-      hotkeys[i] = c
-      used[c] = true
-    end
-  end
-
-  -- For ambiguous cases, assign minimal unique prefix (case-insensitive, globally)
-  for prefix_len = 2, 40 do
-    for i = 1, n do
-      if not hotkeys[i] then
-        local candidate = remainders[i]:sub(1, 1):lower()
-          .. (remainders[i]:sub(prefix_len, prefix_len):lower() or "")
-
-        if #candidate > 0 and not is_reserved_hotkey(candidate) and not used[candidate] then
-          -- Check uniqueness globally
-          local unique = true
-          for j = 1, #all_remainders do
-            if
-              all_remainders[j]:sub(1, prefix_len):lower() == candidate
-              and all_titles[j] ~= normalized[i]
-            then
-              unique = false
-              break
-            end
-          end
-          if unique then
-            hotkeys[i] = candidate
-            used[candidate] = true
-          end
-        end
+  -- Assign unique minimal prefix globally
+  local function is_unique_global(prefix, idx)
+    for j, cand in ipairs(global_candidates) do
+      if j ~= idx and cand:sub(1, #prefix) == prefix then
+        return false
       end
     end
+    return true
   end
 
-  -- For actions that had the category prefix, prepend the category letter
+  -- Map from local index to global index
+  local local_to_global = {}
+  local offset = 0
+  for i, entry in ipairs(all_action_titles) do
+    if entry.category == category then
+      offset = offset + 1
+      local_to_global[offset] = i
+    end
+  end
+
   for i = 1, n do
-    if hotkeys[i] and cat_norm ~= "" and normalized[i]:lower():sub(1, #cat_norm) == cat_norm then
-      hotkeys[i] = cat_letter .. hotkeys[i]
+    local global_idx = local_to_global[i]
+    local candidate = global_candidates[global_idx]
+    local prefix_len = 1
+    local assigned = false
+    while prefix_len <= #candidate do
+      local prefix = candidate:sub(1, prefix_len)
+      if
+        not is_reserved_hotkey(prefix)
+        and not used[prefix]
+        and is_unique_global(prefix, global_idx)
+      then
+        hotkeys[i] = prefix
+        used[prefix] = true
+        assigned = true
+        break
+      end
+      prefix_len = prefix_len + 1
+    end
+    if
+      not assigned
+      and #candidate > 0
+      and not is_reserved_hotkey(candidate)
+      and not used[candidate]
+    then
+      hotkeys[i] = candidate
+      used[candidate] = true
+      assigned = true
     end
   end
 
