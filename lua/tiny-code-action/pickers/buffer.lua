@@ -84,7 +84,7 @@ local function build_display_content(groups, config_signs)
 
     -- Add icon only to category title
     local category_line = icon ~= "" and string.format("## %s  %s", icon, category_label)
-      or "## " .. category_label
+        or "## " .. category_label
     table.insert(lines, category_line)
     line_number = line_number + 1
 
@@ -189,6 +189,14 @@ local function show_preview(action_item, bufnr, previewer, main_win_config)
     { nowait = true, noremap = true, silent = true }
   )
 
+  vim.api.nvim_buf_set_keymap(
+    preview_buf,
+    "n",
+    "Q",
+    "<cmd>bd!<CR>",
+    { nowait = true, noremap = true, silent = true }
+  )
+
   previewer.term_previewer(bufnr, {
     item = action_item,
     buf = preview_buf,
@@ -197,13 +205,13 @@ local function show_preview(action_item, bufnr, previewer, main_win_config)
 end
 
 local function create_main_window(
-  bufnr,
-  lines,
-  line_to_action,
-  line_to_hotkey,
-  hotkey_count,
-  previewer,
-  config
+    bufnr,
+    lines,
+    line_to_action,
+    line_to_hotkey,
+    hotkey_count,
+    previewer,
+    config
 )
   local width, height = calculate_window_size(lines)
   local cursor_row = vim.api.nvim_win_get_cursor(0)[1] - 1
@@ -266,7 +274,7 @@ local function create_main_window(
   local keymap_opts = { buffer = buf, nowait = true }
   vim.keymap.set("n", "<CR>", handle_selection, keymap_opts)
   vim.keymap.set("n", "K", handle_preview, keymap_opts)
-  vim.keymap.set("n", "q", close_window, keymap_opts)
+  vim.keymap.set("n", "Q", close_window, keymap_opts)
 
   if config.picker and config.picker.opts and config.picker.opts.hotkeys then
     local hotkey_to_line = {}
@@ -288,7 +296,6 @@ local function create_main_window(
           vim.api.nvim_win_set_cursor(win, { line, 0 })
         end
         vim.keymap.set("n", hotkey, jumpto, keymap_opts)
-        vim.keymap.set("n", hotkey:upper(), jumpto, keymap_opts)
       end
     end
   end
@@ -297,7 +304,7 @@ end
 function M.create(config, results, bufnr)
   local grouped_actions = group_actions_by_category(results)
   local lines, line_to_action, line_to_hotkey, hotkey_count =
-    build_display_content(grouped_actions, config.signs)
+      build_display_content(grouped_actions, config.signs)
 
   M.config = config
   local previewer = M.init_previewer("buffer", config)
