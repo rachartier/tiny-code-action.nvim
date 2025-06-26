@@ -104,14 +104,128 @@ local function next_non_reserved_hotkey_idx(start_idx)
   end
 end
 
+local function normalize_title(title)
+  -- Remove whitespace and punctuation, keep case
+  return title:gsub("[%s%p]", "")
+end
+
 local function get_text_based_hotkey(title, used_hotkeys)
+  -- Try to use the first unique, non-reserved character from the title (case-insensitive)
   for i = 1, #title do
-    local c = title:sub(1, i):lower()
+    local c = title:sub(i, i):lower()
     if c:match("[a-z]") and not is_reserved_hotkey(c) and not used_hotkeys[c] then
       return c
     end
   end
   return nil
+end
+
+local function get_text_diff_based_hotkeys(action_titles, category)
+  local n = #action_titles
+  local normalized = {}
+  local remainders = {}
+  local cat_norm = normalize_title(category or ""):lower()
+  local cat_letter = cat_norm:sub(1, 1)
+
+  for i, title in ipairs(action_titles) do
+    local norm = normalize_title(title)
+    normalized[i] = norm
+    local norm_l = norm:lower()
+    if cat_norm ~= "" and norm_l:sub(1, #cat_norm) == cat_norm then
+      -- Remove category prefix and following non-alphanum
+      local rem = norm:sub(#cat_norm + 1)
+      rem = rem:gsub("^[^%w]*", "")
+      remainders[i] = rem
+    else
+      remainders[i] = norm
+    end
+  end
+  local hotkeys = {}
+  local used = {}
+
+  -- Build a flat list of all normalized titles (for global uniqueness)
+  local all_titles = {}
+  local all_remainders = {}
+  local all_cat_norms = {}
+  for _, entry in ipairs(M._all_action_titles) do
+    local norm = normalize_title(entry.title)
+    local norm_l = norm:lower()
+    local cat = entry.category or ""
+    local rem
+
+    cat_norm = normalize_title(cat):lower()
+    if cat_norm ~= "" and norm_l:sub(1, #cat_norm) == cat_norm then
+      rem = norm:sub(#cat_norm + 1)
+      rem = rem:gsub("^[^%w]*", "")
+    else
+      rem = norm
+    end
+    table.insert(all_titles, norm)
+    table.insert(all_remainders, rem)
+    table.insert(all_cat_norms, cat_norm)
+  end
+
+  -- First, try to assign single-char hotkeys for unique first chars (case-insensitive, globally)
+  local first_char_count = {}
+  for i, rem in ipairs(all_remainders) do
+    local c = rem:sub(1, 1):lower()
+    if c ~= "" and not is_reserved_hotkey(c) then
+      first_char_count[c] = (first_char_count[c] or 0) + 1
+    end
+  end
+  for i, rem in ipairs(remainders) do
+    local c = rem:sub(1, 1):lower()
+    if c ~= "" and not is_reserved_hotkey(c) and first_char_count[c] == 1 and not used[c] then
+      hotkeys[i] = c
+      used[c] = true
+    end
+  end
+
+  -- For ambiguous cases, assign minimal unique prefix (case-insensitive, globally)
+  for prefix_len = 2, 40 do
+    for i = 1, n do
+      if not hotkeys[i] then
+        local candidate = remainders[i]:sub(1, 1):lower()
+          .. (remainders[i]:sub(prefix_len, prefix_len):lower() or "")
+
+        if #candidate > 0 and not is_reserved_hotkey(candidate) and not used[candidate] then
+          -- Check uniqueness globally
+          local unique = true
+          for j = 1, #all_remainders do
+            if
+              all_remainders[j]:sub(1, prefix_len):lower() == candidate
+              and all_titles[j] ~= normalized[i]
+            then
+              unique = false
+              break
+            end
+          end
+          if unique then
+            hotkeys[i] = candidate
+            used[candidate] = true
+          end
+        end
+      end
+    end
+  end
+
+  -- For actions that had the category prefix, prepend the category letter
+  for i = 1, n do
+    if hotkeys[i] and cat_norm ~= "" and normalized[i]:lower():sub(1, #cat_norm) == cat_norm then
+      hotkeys[i] = cat_letter .. hotkeys[i]
+    end
+  end
+
+  -- Fallback to sequential for any not assigned
+  local seq_idx = 1
+  for i = 1, n do
+    if not hotkeys[i] then
+      seq_idx = next_non_reserved_hotkey_idx(seq_idx)
+      hotkeys[i] = num_to_hotkey(seq_idx)
+      seq_idx = seq_idx + 1
+    end
+  end
+  return hotkeys
 end
 
 local function build_display_content(groups, config_signs, hotkey_mode)
@@ -122,6 +236,19 @@ local function build_display_content(groups, config_signs, hotkey_mode)
   local used_hotkeys = {}
 
   local sorted_categories = get_sorted_categories(groups)
+
+  -- Collect all actions' titles and categories for global uniqueness
+  if hotkey_mode == "text_diff_based" then
+    local all_action_titles = {}
+    for _, category in ipairs(sorted_categories) do
+      local actions = groups[category]
+      for _, action_item in ipairs(actions) do
+        local title = action_item.action and action_item.action.title or ""
+        table.insert(all_action_titles, { title = title, category = category })
+      end
+    end
+    M._all_action_titles = all_action_titles
+  end
 
   local hotkey_idx = 1
   for _, category in ipairs(sorted_categories) do
@@ -134,7 +261,18 @@ local function build_display_content(groups, config_signs, hotkey_mode)
     table.insert(lines, category_line)
     line_number = line_number + 1
 
-    for _, action_item in ipairs(groups[category]) do
+    local actions = groups[category]
+    local titles = {}
+    for _, action_item in ipairs(actions) do
+      local title = action_item.action and action_item.action.title or ""
+      table.insert(titles, title)
+    end
+    local hotkeys = {}
+    if hotkey_mode == "text_diff_based" then
+      hotkeys = get_text_diff_based_hotkeys(titles, category)
+    end
+
+    for i, action_item in ipairs(actions) do
       local title = action_item.action and action_item.action.title or ""
       local hotkey
       if hotkey_mode == "text_based" then
@@ -144,11 +282,15 @@ local function build_display_content(groups, config_signs, hotkey_mode)
           hotkey = num_to_hotkey(hotkey_idx)
           hotkey_idx = hotkey_idx + 1
         end
+      elseif hotkey_mode == "text_diff_based" then
+        hotkey = hotkeys[i]
+        used_hotkeys[hotkey] = true
       else
         hotkey_idx = next_non_reserved_hotkey_idx(hotkey_idx)
         hotkey = num_to_hotkey(hotkey_idx)
         hotkey_idx = hotkey_idx + 1
       end
+
       used_hotkeys[hotkey] = true
       local display_line = string.format("  [%s] %s", hotkey, title)
       table.insert(lines, display_line)
@@ -161,9 +303,14 @@ local function build_display_content(groups, config_signs, hotkey_mode)
     line_number = line_number + 1
   end
 
+  if hotkey_mode == "text_diff_based" then
+    M._all_action_titles = nil
+  end
+
   return lines, line_to_action, line_to_hotkey, line_number - 2
 end
 
+-- Calculate the window size based on the content lines.
 local function calculate_window_size(lines)
   local max_width = 0
   for _, line in ipairs(lines) do
@@ -176,6 +323,7 @@ local function calculate_window_size(lines)
   return width, height
 end
 
+-- Highlight icons in category headers using configured highlight groups.
 local function add_icon_highlighting(buf, lines, config_signs, match_hl_kind)
   if not config_signs or not match_hl_kind then
     return
@@ -231,6 +379,7 @@ local function show_preview(action_item, bufnr, previewer, main_win_config)
     anchor = "NW",
   })
 
+  -- Close preview window with <Esc> or q
   vim.api.nvim_buf_set_keymap(
     preview_buf,
     "n",
@@ -238,7 +387,6 @@ local function show_preview(action_item, bufnr, previewer, main_win_config)
     "<cmd>bd!<CR>",
     { nowait = true, noremap = true, silent = true }
   )
-
   vim.api.nvim_buf_set_keymap(
     preview_buf,
     "n",
@@ -300,23 +448,24 @@ local function create_main_window(
   vim.api.nvim_set_option_value("foldcolumn", "0", { win = win })
   vim.api.nvim_set_option_value("colorcolumn", "", { win = win })
 
+  -- Handle selection of a code action
   local function handle_selection()
     local cursor_line = vim.api.nvim_win_get_cursor(win)[1]
     local action_item = line_to_action[cursor_line]
-
     if action_item then
       M.apply_action(action_item.action, action_item.client, action_item.context, bufnr)
     end
-
     vim.api.nvim_win_close(win, true)
   end
 
+  -- Handle preview of a code action
   local function handle_preview()
     local cursor_line = vim.api.nvim_win_get_cursor(win)[1]
     local action_item = line_to_action[cursor_line]
     show_preview(action_item, bufnr, previewer, win_config)
   end
 
+  -- Close the picker window
   local function close_window()
     vim.api.nvim_win_close(win, true)
   end
@@ -326,6 +475,7 @@ local function create_main_window(
   vim.keymap.set("n", "K", handle_preview, keymap_opts)
   vim.keymap.set("n", "q", close_window, keymap_opts)
 
+  -- Set up hotkey navigation if enabled in config
   if config.picker and config.picker.opts and config.picker.opts.hotkeys then
     local hotkey_to_line = {}
     for line, hotkey in pairs(line_to_hotkey) do
@@ -336,7 +486,10 @@ local function create_main_window(
         vim.api.nvim_win_set_cursor(win, { line, 0 })
       end
       vim.keymap.set("n", hotkey, jumpto, keymap_opts)
-      vim.keymap.set("n", hotkey:upper(), jumpto, keymap_opts)
+      -- Only set upper-case mapping for single-char hotkeys
+      if #hotkey == 1 then
+        vim.keymap.set("n", hotkey:upper(), jumpto, keymap_opts)
+      end
     end
   end
 end
