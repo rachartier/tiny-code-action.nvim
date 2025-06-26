@@ -35,7 +35,9 @@ M.picker_config = {
     layout = "vertical",
   },
   select = {},
-  buffer = {},
+  buffer = {
+    hotkeys = false,
+  },
 }
 
 -- Default configuration

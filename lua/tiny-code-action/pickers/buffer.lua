@@ -59,21 +59,25 @@ local function get_sorted_categories(groups)
   return categories
 end
 
-local function count_total_actions(groups)
-  local total = 0
-  for _, actions in pairs(groups) do
-    total = total + #actions
-  end
-  return total
+local function num_to_hotkey(n)
+  local hotkey = ""
+  n = n - 1
+  repeat
+    hotkey = string.char(97 + (n % 26)) .. hotkey
+    n = math.floor(n / 26) - 1
+  until n < 0
+  return hotkey
 end
 
 local function build_display_content(groups, config_signs)
   local lines = {}
   local line_to_action = {}
+  local line_to_hotkey = {}
   local line_number = 1
 
   local sorted_categories = get_sorted_categories(groups)
 
+  local hotkey_idx = 1
   for _, category in ipairs(sorted_categories) do
     local category_label = CATEGORIES[category] and CATEGORIES[category].label or category
     local icon = config_signs and config_signs[category] and config_signs[category][1] or ""
@@ -86,10 +90,12 @@ local function build_display_content(groups, config_signs)
 
     for _, action_item in ipairs(groups[category]) do
       local title = action_item.action and action_item.action.title or ""
-      local display_line = "  • " .. title
-
+      local hotkey = num_to_hotkey(hotkey_idx)
+      local display_line = string.format("  [%s] %s", hotkey, title)
       table.insert(lines, display_line)
       line_to_action[line_number] = action_item
+      line_to_hotkey[line_number] = hotkey
+      hotkey_idx = hotkey_idx + 1
       line_number = line_number + 1
     end
 
@@ -97,7 +103,7 @@ local function build_display_content(groups, config_signs)
     line_number = line_number + 1
   end
 
-  return lines, line_to_action
+  return lines, line_to_action, line_to_hotkey, hotkey_idx - 1
 end
 
 local function calculate_window_size(lines)
@@ -190,7 +196,15 @@ local function show_preview(action_item, bufnr, previewer, main_win_config)
   })
 end
 
-local function create_main_window(bufnr, lines, line_to_action, previewer, config)
+local function create_main_window(
+  bufnr,
+  lines,
+  line_to_action,
+  line_to_hotkey,
+  hotkey_count,
+  previewer,
+  config
+)
   local width, height = calculate_window_size(lines)
   local cursor_row = vim.api.nvim_win_get_cursor(0)[1] - 1
   local col = 2
@@ -253,16 +267,43 @@ local function create_main_window(bufnr, lines, line_to_action, previewer, confi
   vim.keymap.set("n", "<CR>", handle_selection, keymap_opts)
   vim.keymap.set("n", "K", handle_preview, keymap_opts)
   vim.keymap.set("n", "q", close_window, keymap_opts)
+
+  if config.picker and config.picker.opts and config.picker.opts.hotkeys then
+    local hotkey_to_line = {}
+    for line, hotkey in pairs(line_to_hotkey) do
+      hotkey_to_line[hotkey] = line
+    end
+    for i = 1, hotkey_count do
+      local hotkey = ""
+      do
+        local n = i - 1
+        repeat
+          hotkey = string.char(97 + (n % 26)) .. hotkey
+          n = math.floor(n / 26) - 1
+        until n < 0
+      end
+      local line = hotkey_to_line[hotkey]
+      if line then
+        local function jump_and_apply()
+          vim.api.nvim_win_set_cursor(win, { line, 0 })
+          handle_selection()
+        end
+        vim.keymap.set("n", hotkey, jump_and_apply, keymap_opts)
+        vim.keymap.set("n", hotkey:upper(), jump_and_apply, keymap_opts)
+      end
+    end
+  end
 end
 
 function M.create(config, results, bufnr)
   local grouped_actions = group_actions_by_category(results)
-  local lines, line_to_action = build_display_content(grouped_actions, config.signs)
+  local lines, line_to_action, line_to_hotkey, hotkey_count =
+    build_display_content(grouped_actions, config.signs)
 
   M.config = config
   local previewer = M.init_previewer("buffer", config)
 
-  create_main_window(bufnr, lines, line_to_action, previewer, config)
+  create_main_window(bufnr, lines, line_to_action, line_to_hotkey, hotkey_count, previewer, config)
 end
 
 return M

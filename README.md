@@ -96,6 +96,11 @@ end, { noremap = true, silent = true })
       -- If you want to use the `fzf-lua` picker, you can simply set it to `select`
       --
       -- You can also set `picker = "telescope"` without any opts.
+      --
+      -- For "buffer" picker, you can set the `opts` to the following:
+      -- {
+      --    hotkeys = true -- Enable hotkeys for the buffer picker to quickly select an action
+      -- }
       picker = "telescope",
       backend_opts = {
         delta = {
