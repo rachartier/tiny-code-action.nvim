@@ -267,36 +267,47 @@ local function build_display_content(groups, config_signs, hotkey_mode)
       local title = action_item.action and action_item.action.title or ""
       table.insert(titles, title)
     end
-    local hotkeys = {}
-    if hotkey_mode == "text_diff_based" then
-      hotkeys = get_text_diff_based_hotkeys(titles, category)
-    end
 
-    for i, action_item in ipairs(actions) do
-      local title = action_item.action and action_item.action.title or ""
-      local hotkey
-      if hotkey_mode == "text_based" then
-        hotkey = get_text_based_hotkey(title, used_hotkeys)
-        if not hotkey then
+    if M._hotkey_enabled then
+      local hotkeys = {}
+      if hotkey_mode == "text_diff_based" then
+        hotkeys = get_text_diff_based_hotkeys(titles, category)
+      end
+
+      for i, action_item in ipairs(actions) do
+        local title = action_item.action and action_item.action.title or ""
+        local hotkey
+        if hotkey_mode == "text_based" then
+          hotkey = get_text_based_hotkey(title, used_hotkeys)
+          if not hotkey then
+            hotkey_idx = next_non_reserved_hotkey_idx(hotkey_idx)
+            hotkey = num_to_hotkey(hotkey_idx)
+            hotkey_idx = hotkey_idx + 1
+          end
+        elseif hotkey_mode == "text_diff_based" then
+          hotkey = hotkeys[i]
+          used_hotkeys[hotkey] = true
+        else
           hotkey_idx = next_non_reserved_hotkey_idx(hotkey_idx)
           hotkey = num_to_hotkey(hotkey_idx)
           hotkey_idx = hotkey_idx + 1
         end
-      elseif hotkey_mode == "text_diff_based" then
-        hotkey = hotkeys[i]
-        used_hotkeys[hotkey] = true
-      else
-        hotkey_idx = next_non_reserved_hotkey_idx(hotkey_idx)
-        hotkey = num_to_hotkey(hotkey_idx)
-        hotkey_idx = hotkey_idx + 1
-      end
 
-      used_hotkeys[hotkey] = true
-      local display_line = string.format("  [%s] %s", hotkey, title)
-      table.insert(lines, display_line)
-      line_to_action[line_number] = action_item
-      line_to_hotkey[line_number] = hotkey
-      line_number = line_number + 1
+        used_hotkeys[hotkey] = true
+        local display_line = string.format("  [%s] %s", hotkey, title)
+        table.insert(lines, display_line)
+        line_to_action[line_number] = action_item
+        line_to_hotkey[line_number] = hotkey
+        line_number = line_number + 1
+      end
+    else
+      for i, action_item in ipairs(actions) do
+        local title = action_item.action and action_item.action.title or ""
+        local display_line = string.format("  • %s", title)
+        table.insert(lines, display_line)
+        line_to_action[line_number] = action_item
+        line_number = line_number + 1
+      end
     end
 
     table.insert(lines, "")
@@ -496,9 +507,16 @@ end
 
 function M.create(config, results, bufnr)
   local grouped_actions = group_actions_by_category(results)
-  local hotkeys_mode = "sequential"
+  local hotkeys_mode = "text_diff_based"
 
-  if config.picker and config.picker.opts and config.picker.opts.hotkeys_mode then
+  M._hotkey_enabled = config.picker and config.picker.opts and config.picker.opts.hotkeys
+
+  if
+    config.picker
+    and config.picker.opts
+    and config.picker.opts.hotkeys
+    and config.picker.opts.hotkeys_mode
+  then
     hotkeys_mode = config.picker.opts.hotkeys_mode
   end
 
