@@ -338,6 +338,7 @@ local function add_icon_highlighting(buf, lines, config_signs, match_hl_kind)
     end
   end
 end
+
 local function close_preview()
   if preview_state.win and vim.api.nvim_win_is_valid(preview_state.win) then
     vim.api.nvim_win_close(preview_state.win, true)
@@ -345,6 +346,27 @@ local function close_preview()
   preview_state.win = nil
   preview_state.buf = nil
   preview_state.action_item = nil
+end
+
+local function focus_main_window_from_preview()
+  if preview_state.main_win and vim.api.nvim_win_is_valid(preview_state.main_win) then
+    vim.api.nvim_set_current_win(preview_state.main_win)
+  end
+end
+
+local function accept_action_from_preview()
+  if preview_state.action_item then
+    M.apply_action(
+      preview_state.action_item.action,
+      preview_state.action_item.client,
+      preview_state.action_item.context,
+      preview_state.bufnr
+    )
+  end
+  if preview_state.main_win and vim.api.nvim_win_is_valid(preview_state.main_win) then
+    vim.api.nvim_win_close(preview_state.main_win, true)
+  end
+  close_preview()
 end
 
 local function show_preview(action_item, bufnr, previewer, main_win_config, focus)
@@ -408,7 +430,7 @@ local function show_preview(action_item, bufnr, previewer, main_win_config, focu
       noautocmd = true,
       anchor = "NW",
     })
-    -- Close preview window with <Esc> or q
+
     vim.api.nvim_buf_set_keymap(
       preview_buf,
       "n",
@@ -416,23 +438,28 @@ local function show_preview(action_item, bufnr, previewer, main_win_config, focu
       "<cmd>bd!<CR>",
       { nowait = true, noremap = true, silent = true }
     )
-    vim.api.nvim_buf_set_keymap(
-      preview_buf,
-      "n",
-      "q",
-      "<cmd>bd!<CR>",
-      { nowait = true, noremap = true, silent = true }
-    )
-    -- Accept action with <CR> in preview window
-    vim.api.nvim_buf_set_keymap(
-      preview_buf,
-      "n",
-      "<CR>",
-      string.format(
-        [[<cmd>lua require("tiny-code-action.pickers.buffer")._accept_action_from_preview()<CR>]]
-      ),
-      { nowait = true, noremap = true, silent = true }
-    )
+    vim.keymap.set("n", "q", function()
+      if
+        M.config
+        and M.config.picker
+        and M.config.picker.opts
+        and M.config.picker.opts.auto_preview
+      then
+        focus_main_window_from_preview()
+      end
+
+      vim.api.nvim_win_close(preview_state.win, true)
+    end, {
+      buffer = preview_buf,
+      nowait = true,
+      noremap = true,
+      silent = true,
+    })
+
+    vim.keymap.set("n", "<CR>", function()
+      accept_action_from_preview()
+    end, { buffer = preview_buf, nowait = true, noremap = true, silent = true })
+
     preview_state.win = preview_win
     preview_state.buf = preview_buf
     preview_state.main_win = main_win_config.win
@@ -457,21 +484,6 @@ local function show_preview(action_item, bufnr, previewer, main_win_config, focu
   if focus and preview_state.win and vim.api.nvim_win_is_valid(preview_state.win) then
     vim.api.nvim_set_current_win(preview_state.win)
   end
-end
-
-function M._accept_action_from_preview()
-  if preview_state.action_item then
-    M.apply_action(
-      preview_state.action_item.action,
-      preview_state.action_item.client,
-      preview_state.action_item.context,
-      preview_state.bufnr
-    )
-  end
-  if preview_state.main_win and vim.api.nvim_win_is_valid(preview_state.main_win) then
-    vim.api.nvim_win_close(preview_state.main_win, true)
-  end
-  close_preview()
 end
 
 local function create_main_window(

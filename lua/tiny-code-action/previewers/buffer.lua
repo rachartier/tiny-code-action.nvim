@@ -18,12 +18,16 @@ function M.term_previewer(bufnr, ctx)
   local action = ctx.item.action
   local client = ctx.item.client
   local preview_content = M.preview_with_resolve(action, bufnr, client)
+
   if not preview_content or vim.tbl_isempty(preview_content) then
     preview_content = { "No preview available for this action" }
   end
+
   utils.set_win_option(ctx.win, "statuscolumn", "")
   utils.set_win_option(ctx.win, "number", false)
   utils.set_win_option(ctx.win, "relativenumber", false)
+  utils.set_win_option(ctx.win, "spell", false)
+
   if terminal.is_diff_content(preview_content) then
     safe_buf_op(function()
       utils.set_buf_option(ctx.buf, "modifiable", true)
