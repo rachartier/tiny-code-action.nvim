@@ -446,9 +446,9 @@ local function show_preview(action_item, bufnr, previewer, main_win_config, focu
         and M.config.picker.opts.auto_preview
       then
         focus_main_window_from_preview()
+      else
+        vim.api.nvim_win_close(preview_state.win, true)
       end
-
-      vim.api.nvim_win_close(preview_state.win, true)
     end, {
       buffer = preview_buf,
       nowait = true,
