@@ -110,13 +110,28 @@ end
 local function code_action_finder(opts, callback)
   local results = {}
   local position_encoding = vim.api.nvim_get_option_value("encoding", { scope = "local" })
+  local params
 
-  local params = {
-    textDocument = {
-      uri = vim.uri_from_bufnr(opts.bufnr),
-    },
-    range = vim.lsp.util.make_range_params(0, position_encoding).range,
-  }
+  if vim.fn.mode() == "n" then
+    params = {
+      textDocument = {
+        uri = vim.uri_from_bufnr(opts.bufnr),
+      },
+      range = vim.lsp.util.make_range_params(0, position_encoding).range,
+    }
+  else
+    params = {
+      textDocument = {
+        uri = vim.uri_from_bufnr(opts.bufnr),
+      },
+      range = vim.lsp.util.make_given_range_params(
+        { vim.fn.getpos("'<")[2], vim.fn.getpos("'<")[3] },
+        { vim.fn.getpos("'>")[2], vim.fn.getpos("'>")[3] },
+        0,
+        position_encoding
+      ).range,
+    }
+  end
 
   local context = {}
   context.triggerKind = vim.lsp.protocol.CodeActionTriggerKind.Invoked
