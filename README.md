@@ -111,6 +111,7 @@ end, { noremap = true, silent = true })
       --    -- text_based = "Fix all" => "f", "Fix others" => "o" (first non assigned letter of the action)
       --    -- text_diff_based = "Fix all" => "fa", "Fix others" => "fo" smarter than text_based
       --    auto_preview = false -- Enable auto preview of the code action
+      --    position = "cursor" | "center"
       -- }
       picker = "telescope",
       backend_opts = {
