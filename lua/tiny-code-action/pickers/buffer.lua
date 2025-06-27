@@ -170,6 +170,11 @@ local function get_text_diff_based_hotkeys(action_titles, category)
     local assigned = false
     while prefix_len <= #candidate do
       local prefix = candidate:sub(1, prefix_len)
+
+      if #prefix > 1 then
+        prefix = prefix:sub(1, 1) .. prefix:sub(#prefix, #prefix)
+      end
+
       if
         not is_reserved_hotkey(prefix)
         and not used[prefix]
