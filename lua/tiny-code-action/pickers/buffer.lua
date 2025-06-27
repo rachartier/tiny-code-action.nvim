@@ -404,7 +404,7 @@ local function show_preview(action_item, bufnr, previewer, main_win_config, focu
       local south_space = nvim_height - (main_row + main_height) - 2
       local north_space = main_row - 2
       preview_width = main_width
-      preview_height = main_height
+      preview_height = math.ceil(orig_preview_height / 2)
       if south_space >= north_space then
         -- Place preview south (below) the main window
         preview_row = main_row + main_height + 2
@@ -496,8 +496,18 @@ local function create_main_window(
   config
 )
   local width, height = calculate_window_size(lines)
-  local cursor_row = vim.api.nvim_win_get_cursor(0)[1] - 1
-  local col = 2
+  local row, col
+  local position = config.picker and config.picker.opts and config.picker.opts.position or "cursor"
+  if position == "center" then
+    local nvim_width = vim.o.columns
+    local nvim_height = vim.o.lines
+    row = math.floor((nvim_height - height) / 2)
+    col = math.floor((nvim_width - width) / 2)
+  else
+    local cursor_row = vim.api.nvim_win_get_cursor(0)[1] - 1
+    row = cursor_row + 2
+    col = 2
+  end
 
   local buf = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
@@ -506,7 +516,7 @@ local function create_main_window(
 
   local win_config = {
     relative = "editor",
-    row = cursor_row + 2,
+    row = row,
     col = col,
     width = width,
     height = height,

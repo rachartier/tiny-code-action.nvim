@@ -39,6 +39,7 @@ M.picker_config = {
     hotkeys = false,
     hotkeys_mode = "text_diff_based",
     auto_preview = false,
+    position = "cursor",
   },
 }
 
@@ -363,13 +364,20 @@ end
 -- Setup the plugin
 -- @param opts table: Options to configure the plugin
 function M.setup(opts)
-  M.config = vim.tbl_deep_extend("force", M.config, opts or {})
+  M.config = vim.tbl_deep_extend("force", {}, M.config, opts or {})
+
+  local picker_name = type(M.config.picker) == "table" and M.config.picker[1] or M.config.picker
+  local default_picker_opts = M.picker_config[picker_name] or {}
 
   if type(M.config.picker) == "string" then
-    M.config.picker = { M.config.picker, opts = M.picker_config[M.config.picker] }
+    M.config.picker =
+      { M.config.picker, opts = vim.tbl_deep_extend("force", {}, default_picker_opts) }
   else
-    if M.config.picker.opts == nil then
-      M.config.picker.opts = M.picker_config[M.config.picker[1]]
+    if not M.config.picker.opts then
+      M.config.picker.opts = vim.tbl_deep_extend("force", {}, default_picker_opts)
+    else
+      M.config.picker.opts =
+        vim.tbl_deep_extend("force", {}, default_picker_opts, M.config.picker.opts)
     end
   end
 
