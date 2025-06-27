@@ -272,6 +272,11 @@ function M.code_action(opts)
     -- Sort actions with isPreferred to the top
     results = sort_by_preferred(results)
 
+    if results == nil or #results == 0 then
+      vim.notify("No code actions found.", vim.log.levels.INFO)
+      return
+    end
+
     -- Get the configured or default picker module
     local picker_name
 

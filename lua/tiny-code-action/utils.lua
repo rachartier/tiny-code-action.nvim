@@ -154,8 +154,14 @@ function M.filter_code_actions(actions, filters)
   if filters.kind ~= nil then
     local temp_actions = {}
     for _, action in ipairs(filtered_actions) do
-      if action.action.kind == filters.kind then
-        table.insert(temp_actions, action)
+      if type(filters.kind) == "table" then
+        if vim.tbl_contains(filters.kind, action.action.kind) then
+          table.insert(temp_actions, action)
+        end
+      else
+        if action.action.kind == filters.kind then
+          table.insert(temp_actions, action)
+        end
       end
     end
     filtered_actions = temp_actions
