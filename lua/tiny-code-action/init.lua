@@ -50,6 +50,7 @@ M.config = {
   backend_opts = {
     delta = {
       header_lines_to_remove = 4,
+      trailing_newlines_to_add = 0,
       args = {
         "--line-numbers",
       },

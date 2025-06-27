@@ -120,6 +120,10 @@ end, { noremap = true, silent = true })
           -- You can remove them by setting this to the number of lines to remove
           header_lines_to_remove = 4,
 
+          -- a message [Process exited 0] might be displayed at the bottom of the terminal
+          -- adding newlines is a hacky way to hide it, increase this option value if you see it
+          trailing_newlines_to_add = 0,
+
           -- The arguments to pass to delta
           -- If you have a custom configuration file, you can set the path to it like so:
           -- args = {

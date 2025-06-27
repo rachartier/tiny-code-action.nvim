@@ -39,6 +39,13 @@ function BaseBackendFiles:remove_header_lines(diff_output, header_lines_to_remov
   return diff_output
 end
 
+function BaseBackendFiles:add_trailing_newlines(diff_output, trailing_newlines_to_add)
+  for _ = 1, trailing_newlines_to_add do
+    table.insert(diff_output, '\n')
+  end
+  return diff_output
+end
+
 function BaseBackendFiles:is_diff_content(lines)
   return require("tiny-code-action.terminal").is_diff_content(lines)
 end
