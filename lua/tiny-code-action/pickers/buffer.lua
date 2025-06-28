@@ -58,6 +58,15 @@ local function get_action_category(action_item)
   return "others"
 end
 
+local function resolve_border_style(config)
+  if config and config.picker and config.picker.opts and config.picker.opts.winborder ~= nil then
+    return config.picker.opts.winborder
+  elseif vim.o.winborder ~= nil and vim.o.winborder ~= "" then
+    return vim.o.winborder
+  end
+  return "rounded"
+end
+
 local function group_actions_by_category(actions)
   local groups = {}
 
@@ -503,15 +512,6 @@ local function show_preview(action_item, bufnr, previewer, main_win_config, focu
   if focus and preview_state.win and vim.api.nvim_win_is_valid(preview_state.win) then
     vim.api.nvim_set_current_win(preview_state.win)
   end
-end
-
-local function resolve_border_style(config)
-  if config and config.picker and config.picker.opts and config.picker.opts.winborder ~= nil then
-    return config.picker.opts.winborder
-  elseif vim.o.winborder ~= nil and vim.o.winborder ~= "" then
-    return vim.o.winborder
-  end
-  return "rounded"
 end
 
 local function create_main_window(
