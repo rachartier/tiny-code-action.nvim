@@ -25,11 +25,19 @@ local CATEGORIES = {
 
 local RESERVED_HOTKEYS = {
   k = true,
-  q = true,
   h = true,
   l = true,
   j = true,
 }
+
+local function add_config_keymaps_to_reserved(config)
+  local keymaps = config.picker and config.picker.opts and config.picker.opts.keymaps or {}
+  for _, key in pairs(keymaps) do
+    if type(key) == "string" then
+      RESERVED_HOTKEYS[key:lower()] = true
+    end
+  end
+end
 
 local function get_action_category(action_item)
   local kind = action_item.action and action_item.action.kind or ""
@@ -510,6 +518,18 @@ local function create_main_window(
   previewer,
   config
 )
+  add_config_keymaps_to_reserved(config)
+
+  local keymaps = config.picker and config.picker.opts and config.picker.opts.keymaps or {}
+  local preview_key = keymaps.preview or "K"
+  local close_key = keymaps.close or "q"
+
+  local footer = string.format(
+    " Press <CR> to apply action │ %s: preview │ %s: quit ",
+    preview_key,
+    close_key
+  )
+
   local width, height = calculate_window_size(lines)
   local row, col
   local position = config.picker and config.picker.opts and config.picker.opts.position or "cursor"
@@ -540,7 +560,7 @@ local function create_main_window(
     border = border_style,
     title = " Code Actions ",
     title_pos = "center",
-    footer = " Press <CR> to apply action │ K: preview │ q: quit ",
+    footer = footer,
     footer_pos = "center",
     noautocmd = true,
     anchor = "NW",
@@ -570,12 +590,10 @@ local function create_main_window(
     close_preview()
   end
 
-  -- Handle preview of a code action (K key)
+  -- Handle preview of a code action
   local function handle_preview()
     local cursor_line = vim.api.nvim_win_get_cursor(win)[1]
     local action_item = line_to_action[cursor_line]
-    -- If preview is not open, open it (do not focus)
-    -- If preview is open, focus it
     if preview_state.win and vim.api.nvim_win_is_valid(preview_state.win) then
       vim.api.nvim_set_current_win(preview_state.win)
     else
@@ -591,8 +609,8 @@ local function create_main_window(
 
   local keymap_opts = { buffer = buf, nowait = true }
   vim.keymap.set("n", "<CR>", handle_selection, keymap_opts)
-  vim.keymap.set("n", "K", handle_preview, keymap_opts)
-  vim.keymap.set("n", "q", close_window, keymap_opts)
+  vim.keymap.set("n", preview_key, handle_preview, keymap_opts)
+  vim.keymap.set("n", close_key, close_window, keymap_opts)
 
   -- Set up hotkey navigation if enabled in config
   if config.picker and config.picker.opts and config.picker.opts.hotkeys then

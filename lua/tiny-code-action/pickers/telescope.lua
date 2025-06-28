@@ -101,7 +101,7 @@ function M.create(config, results, bufnr)
         end
 
         M.apply_action(action, client, context, bufnr)
-        
+
         if not close_picker then
           -- Remove the applied action from the results to provide visual feedback
           local current_picker = action_state.get_current_picker(prompt_bufnr)
