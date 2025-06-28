@@ -270,13 +270,18 @@ local function build_display_content(groups, config_signs, hotkey_mode)
         local hotkey
         if hotkey_mode == "text_based" then
           hotkey = get_text_based_hotkey(title, used_hotkeys)
-          if not hotkey then
+          if not hotkey or is_reserved_hotkey(hotkey) then
             hotkey_idx = next_non_reserved_hotkey_idx(hotkey_idx)
             hotkey = num_to_hotkey(hotkey_idx)
             hotkey_idx = hotkey_idx + 1
           end
         elseif hotkey_mode == "text_diff_based" then
           hotkey = hotkeys[i]
+          if not hotkey or is_reserved_hotkey(hotkey) or used_hotkeys[hotkey] then
+            hotkey_idx = next_non_reserved_hotkey_idx(hotkey_idx)
+            hotkey = num_to_hotkey(hotkey_idx)
+            hotkey_idx = hotkey_idx + 1
+          end
           used_hotkeys[hotkey] = true
         else
           hotkey_idx = next_non_reserved_hotkey_idx(hotkey_idx)
@@ -518,8 +523,6 @@ local function create_main_window(
   previewer,
   config
 )
-  add_config_keymaps_to_reserved(config)
-
   local keymaps = config.picker and config.picker.opts and config.picker.opts.keymaps or {}
   local preview_key = keymaps.preview or "K"
   local close_key = keymaps.close or "q"
@@ -660,6 +663,8 @@ local function create_main_window(
 end
 
 function M.create(config, results, bufnr)
+  add_config_keymaps_to_reserved(config)
+
   local grouped_actions = group_actions_by_category(results)
   local hotkeys_mode = "text_diff_based"
 

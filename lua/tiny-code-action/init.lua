@@ -43,7 +43,7 @@ M.picker_config = {
     winborder = nil, -- Set to a border style (e.g. "single", "rounded", "solid", etc.) or nil to fallback to vim.o.winborder
     keymaps = {
       preview = "K",
-      close = "a",
+      close = "q",
     },
   },
 }
