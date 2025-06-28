@@ -84,12 +84,11 @@ function M.create(config, results, bufnr)
     }),
     sorter = conf.generic_sorter({}),
     attach_mappings = function(prompt_bufnr, map)
-      actions.select_default:replace(function()
-        actions.close(prompt_bufnr)
-
+      -- Common function to apply code action
+      local apply_code_action = function(close_picker)
         local selection = action_state.get_selected_entry()
         if not selection then
-          vim.notify("No action selected", vim.log.levels.INFO)
+          require("telescope.utils").__warn_no_selection("code_action")
           return
         end
 
@@ -97,11 +96,34 @@ function M.create(config, results, bufnr)
         local client = selection.value.client
         local context = selection.value.context
 
+        if close_picker then
+          actions.close(prompt_bufnr)
+        end
+
         M.apply_action(action, client, context, bufnr)
+        
+        if not close_picker then
+          -- Remove the applied action from the results to provide visual feedback
+          local current_picker = action_state.get_current_picker(prompt_bufnr)
+          if current_picker then
+            current_picker:delete_selection(function(selection)
+              -- Remove this entry from the results
+              return true
+            end)
+          end
+          vim.notify("Applied: " .. action.title, vim.log.levels.INFO)
+        end
+      end
+
+      -- Replace default select to close picker
+      actions.select_default:replace(function()
+        apply_code_action(true)
       end)
 
-      map("n", "<CR>", actions.select_default)
-      map("i", "<CR>", actions.select_default)
+      -- Add custom keybind to apply without closing
+      map({ "n", "i" }, "<C-CR>", function()
+        apply_code_action(false)
+      end)
 
       return true
     end,
