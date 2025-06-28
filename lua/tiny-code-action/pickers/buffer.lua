@@ -422,6 +422,7 @@ local function show_preview(action_item, bufnr, previewer, main_win_config, focu
     end
 
     local preview_buf = vim.api.nvim_create_buf(false, true)
+    local border_style = resolve_border_style(M.config or {})
     local preview_win = vim.api.nvim_open_win(preview_buf, not not focus, {
       relative = "editor",
       row = preview_row,
@@ -429,7 +430,7 @@ local function show_preview(action_item, bufnr, previewer, main_win_config, focu
       width = preview_width,
       height = preview_height,
       style = "minimal",
-      border = "single",
+      border = border_style,
       title = " Previewer ",
       title_pos = "center",
       noautocmd = true,
@@ -491,6 +492,15 @@ local function show_preview(action_item, bufnr, previewer, main_win_config, focu
   end
 end
 
+local function resolve_border_style(config)
+  if config and config.picker and config.picker.opts and config.picker.opts.winborder ~= nil then
+    return config.picker.opts.winborder
+  elseif vim.o.winborder ~= nil and vim.o.winborder ~= "" then
+    return vim.o.winborder
+  end
+  return "rounded"
+end
+
 local function create_main_window(
   bufnr,
   lines,
@@ -519,6 +529,7 @@ local function create_main_window(
 
   add_icon_highlighting(buf, lines, config.signs, M.match_hl_kind)
 
+  local border_style = resolve_border_style(config)
   local win_config = {
     relative = "editor",
     row = row,
@@ -526,7 +537,7 @@ local function create_main_window(
     width = width,
     height = height,
     style = "minimal",
-    border = "rounded",
+    border = border_style,
     title = " Code Actions ",
     title_pos = "center",
     footer = " Press <CR> to apply action │ K: preview │ q: quit ",

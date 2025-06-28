@@ -1,4 +1,20 @@
 ## 📇 tiny-code-action.nvim
+### Buffer Picker Window Border
+
+You can customize the border style of the buffer picker and its preview window using the `winborder` option:
+
+```lua
+require("tiny-code-action").setup({
+  picker = {
+    "buffer",
+    opts = {
+      winborder = "single", -- or "rounded", "solid", etc.
+    }
+  }
+})
+```
+
+If not set, it will fallback to the global `vim.o.winborder` if available, otherwise defaults to `"rounded"`.
 
 A Neovim plugin that provides a simple way to run and visualize code actions.
 
@@ -112,6 +128,9 @@ end, { noremap = true, silent = true })
       --    -- text_diff_based = "Fix all" => "fa", "Fix others" => "fo" smarter than text_based
       --    auto_preview = false -- Enable auto preview of the code action
       --    position = "cursor" | "center"
+      --
+      --    winborder = "single" -- Set the window border style ("single", "rounded", "solid", etc.)
+      --    -- Fallback order: opts.winborder > vim.o.winborder > "rounded"
       -- }
       picker = "telescope",
       backend_opts = {
