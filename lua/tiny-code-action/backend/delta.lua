@@ -33,7 +33,7 @@ function M.get_diff(bufnr, old_lines, new_lines, opts)
 
   DeltaBackend:cleanup_files(old_file, new_file)
   DeltaBackend:remove_header_lines(diff, opts.backend_opts.delta.header_lines_to_remove)
-	if opts.picker == "telescope" then
+	if opts.picker[1] == "telescope" then
 		return DeltaBackend:add_trailing_newlines(diff, opts.backend_opts.delta.trailing_newlines_to_add)
 	else
 		return diff
