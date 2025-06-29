@@ -49,7 +49,8 @@ end
 ---                           any error that occurred. The callback should accept two parameters:
 ---                           the result and the error.
 function M.resolve(action, bufnr, client, callback)
-  client.request("codeAction/resolve", action, function(e, res)
+  utils.add_client_methods(client)
+  client:request("codeAction/resolve", action, function(e, res)
     callback(res, e)
   end, bufnr)
 end
@@ -66,7 +67,8 @@ end
 function M.blocking_resolve(action, bufnr, client)
   local result, err = nil, nil
 
-  client.request("codeAction/resolve", action, function(e, res)
+  utils.add_client_methods(client)
+  client:request("codeAction/resolve", action, function(e, res)
     result, err = res, e
   end, bufnr)
 
@@ -81,11 +83,12 @@ function M.blocking_resolve(action, bufnr, client)
 end
 
 function M.support_resolve(client, bufnr)
+  utils.add_client_methods(client)
   local reg = client.dynamic_capabilities
       and client.dynamic_capabilities:get("textDocument/codeAction", { bufnr = bufnr })
     or {}
   local support_resolve = vim.tbl_get(reg, "registerOptions", "resolveProvider")
-    or (client.supports_method and client.supports_method("codeAction/resolve"))
+    or (client:supports_method("codeAction/resolve"))
 
   return support_resolve
 end
