@@ -88,10 +88,10 @@ M.config = {
 -- Get diagnostics for the current buffer
 -- @param bufnr number: Buffer number
 -- @return table: Diagnostics
-local function get_diagnostics(bufnr)
+local function get_line_diagnostics(bufnr)
   local current_line = vim.api.nvim_win_get_cursor(0)[1] - 1
   if utils.is_nvim_version_at_least("0.11.0") then
-    local diagnostics = vim.diagnostic.get(bufnr)
+    local diagnostics = vim.diagnostic.get(bufnr, { lnum = current_line })
     local for_lsp_diagnostics = {}
 
     table.sort(diagnostics, function(a, b)
@@ -107,7 +107,7 @@ local function get_diagnostics(bufnr)
     return for_lsp_diagnostics
   end
 
-  return vim.lsp.diagnostic.get_line_diagnostics(bufnr)
+  return vim.lsp.diagnostic.get_line_diagnostics(bufnr)[current_line] or {}
 end
 
 -- Find code actions from all LSP clients
@@ -141,7 +141,7 @@ local function code_action_finder(opts, callback)
 
   local context = {}
   context.triggerKind = vim.lsp.protocol.CodeActionTriggerKind.Invoked
-  context.diagnostics = get_diagnostics(opts.bufnr)
+  context.diagnostics = get_line_diagnostics(opts.bufnr)
   params.context = context
 
   local clients = vim.lsp.get_clients({ bufnr = opts.bufnr, method = "textDocument/codeAction" })
