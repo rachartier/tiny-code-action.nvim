@@ -66,16 +66,17 @@ function M.new(opts)
 
   -- Standard way to apply a code action
   picker.apply_action = function(action, client, context, bufnr)
+    utils.add_client_methods(client)
     local lsp_actions = require("tiny-code-action.action")
 
     local reg = client.dynamic_capabilities
         and client.dynamic_capabilities:get("textDocument/codeAction", { bufnr = bufnr })
       or {}
     local support_resolve = vim.tbl_get(reg, "registerOptions", "resolveProvider")
-      or (client.supports_method and client.supports_method("codeAction/resolve"))
+      or (client:supports_method("codeAction/resolve"))
 
     if lsp_actions.action_is_not_complete(action) and client and support_resolve then
-      client.request("codeAction/resolve", action, function(e, resolved_action)
+      client:request("codeAction/resolve", action, function(e, resolved_action)
         if e then
           if action.command then
             lsp_actions.apply(action, client, context)
