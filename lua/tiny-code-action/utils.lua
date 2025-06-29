@@ -195,4 +195,18 @@ function M.filter_code_actions(actions, filters)
   return filtered_actions
 end
 
+--- @param client vim.lsp.Client
+function M.add_client_methods(client)
+  if not M.is_nvim_version_at_least("0.11") then
+    client = setmetatable({
+      supports_method = function(_, ...)
+        return client.supports_method(...)
+      end,
+      request = function(_, ...)
+        return client.request(...)
+      end,
+    }, { __index = client })
+  end
+end
+
 return M
