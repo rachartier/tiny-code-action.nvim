@@ -88,23 +88,6 @@ function M.get_file_extension(bufnr)
   return filename:match("^.+%.(.+)$")
 end
 
-function M.is_nvim_version_at_least(version)
-  local nvim_version = vim.version()
-  local major, minor, patch = version:match("(%d+)%.(%d+)%.(%d+)")
-  major, minor, patch = tonumber(major), tonumber(minor), tonumber(patch)
-
-  if nvim_version.major > major then
-    return true
-  elseif nvim_version.major == major then
-    if nvim_version.minor > minor then
-      return true
-    elseif nvim_version.minor == minor then
-      return nvim_version.patch >= patch
-    end
-  end
-  return false
-end
-
 -- Safe wrapper for buffer operations
 function M.safe_buf_op(fn)
   local ok, err = pcall(fn)
@@ -116,7 +99,7 @@ end
 
 -- Set buffer option with version compatibility
 function M.set_buf_option(bufnr, name, value)
-  if M.is_nvim_version_at_least("0.9.0") then
+  if vim.fn.has("nvim-0.9") then
     vim.api.nvim_set_option_value(name, value, { buf = bufnr })
   else
     vim.api.nvim_buf_set_option(bufnr, name, value)
@@ -124,7 +107,7 @@ function M.set_buf_option(bufnr, name, value)
 end
 
 function M.set_win_option(winid, name, value)
-  if M.is_nvim_version_at_least("0.9.0") then
+  if vim.fn.has("nvim-0.9") then
     vim.api.nvim_set_option_value(name, value, { win = winid })
   else
     vim.api.nvim_win_set_option(winid, name, value)
@@ -197,7 +180,7 @@ end
 
 --- @param client vim.lsp.Client
 function M.add_client_methods(client)
-  if not M.is_nvim_version_at_least("0.11.0") then
+  if vim.fn.has("nvim-0.11") then
     client = setmetatable({
       supports_method = function(_, ...)
         return client.supports_method(...)
