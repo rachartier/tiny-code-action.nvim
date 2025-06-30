@@ -1,4 +1,5 @@
 local BasePicker = require("tiny-code-action.base.picker")
+local utils = require("tiny-code-action.utils")
 
 local M = BasePicker.new()
 
@@ -500,14 +501,14 @@ local function show_preview(action_item, bufnr, previewer, main_win_config, focu
   if preview_state.action_item ~= action_item or need_new_win then
     preview_state.action_item = action_item
 
-    vim.api.nvim_set_option_value("modifiable", true, { buf = preview_state.buf })
+    utils.set_buf_option(preview_state.buf, "modifiable", true)
     vim.api.nvim_buf_set_lines(preview_state.buf, 0, -1, false, {})
     previewer.term_previewer(bufnr, {
       item = action_item,
       buf = preview_state.buf,
       win = preview_state.win,
     })
-    vim.api.nvim_set_option_value("modifiable", false, { buf = preview_state.buf })
+    utils.set_buf_option(preview_state.buf, "modifiable", false)
   end
   if focus and preview_state.win and vim.api.nvim_win_is_valid(preview_state.win) then
     vim.api.nvim_set_current_win(preview_state.win)
@@ -572,15 +573,15 @@ local function create_main_window(
   local win = vim.api.nvim_open_win(buf, true, win_config)
   win_config.win = win
   vim.api.nvim_win_set_cursor(win, { 2, 0 })
-  vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
-  vim.api.nvim_set_option_value("filetype", "markdown", { buf = buf })
-  vim.api.nvim_set_option_value("spell", false, { win = win })
+  utils.set_buf_option(buf, "modifiable", false)
+  utils.set_buf_option(buf, "filetype", "markdown")
+  utils.set_win_option(win, "spell", false)
 
-  vim.api.nvim_set_option_value("number", false, { win = win })
-  vim.api.nvim_set_option_value("relativenumber", false, { win = win })
-  vim.api.nvim_set_option_value("signcolumn", "no", { win = win })
-  vim.api.nvim_set_option_value("foldcolumn", "0", { win = win })
-  vim.api.nvim_set_option_value("colorcolumn", "", { win = win })
+  utils.set_win_option(win, "number", false)
+  utils.set_win_option(win, "relativenumber", false)
+  utils.set_win_option(win, "signcolumn", "no")
+  utils.set_win_option(win, "foldcolumn", "0")
+  utils.set_win_option(win, "colorcolumn", "")
 
   -- Handle selection of a code action
   local function handle_selection()
