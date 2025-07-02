@@ -90,7 +90,7 @@ M.config = {
 -- @return table: Diagnostics
 local function get_line_diagnostics(bufnr)
   local current_line = vim.api.nvim_win_get_cursor(0)[1] - 1
-  if vim.fn.has("nvim-0.11") then
+  if vim.fn.has("nvim-0.11") == 1 then
     local diagnostics = vim.diagnostic.get(bufnr, { lnum = current_line })
     local for_lsp_diagnostics = {}
 
