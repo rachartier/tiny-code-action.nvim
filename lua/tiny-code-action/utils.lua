@@ -10,7 +10,16 @@ local M = {}
 --- @error This function does not explicitly throw any errors or exceptions. However, if the 'tbl'
 ---        parameter is not a table, a Lua error may occur.
 function M.find_key_in_table(tbl, key_to_find)
+  local max_depth = 16
+  local depth = 0
+
   local function recursive_search(t, key)
+    if depth > max_depth then
+      return false, nil, nil
+    end
+
+    depth = depth + 1
+
     for k, v in pairs(t) do
       if k == key then
         return true, k, v
