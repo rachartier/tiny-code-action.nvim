@@ -117,21 +117,6 @@ end, { noremap = true, silent = true })
       -- If you want to use the `fzf-lua` picker, you can simply set it to `select`
       --
       -- You can also set `picker = "<picker>"` without any opts.
-      --
-      -- For "buffer" picker, you can set the `opts` to the following:
-      -- {
-      --    hotkeys = true -- Enable hotkeys for the buffer picker to quickly select an action
-      --
-      --    hotkeys_mode = "text_diff_based" | "text_based" | "sequential"
-      --    -- sequential = a, b, c...
-      --    -- text_based = "Fix all" => "f", "Fix others" => "o" (first non assigned letter of the action)
-      --    -- text_diff_based = "Fix all" => "fa", "Fix others" => "fo" smarter than text_based
-      --    auto_preview = false -- Enable auto preview of the code action
-      --    position = "cursor" | "center"
-      --
-      --    winborder = "single" -- Set the window border style ("single", "rounded", "solid", etc.)
-      --    -- Fallback order: opts.winborder > vim.o.winborder > "rounded"
-      -- }
       picker = "telescope",
       backend_opts = {
         delta = {
@@ -183,11 +168,64 @@ end, { noremap = true, silent = true })
 ```
 
 
-## Autocmds (only for `buffer` picker)
+
+## Buffer Picker Options
+
+The `buffer` picker provides compact and customizable options for displaying and managing code actions.
+
+### Configuration
+
+Below is an example configuration for the `buffer` picker:
+
+```lua
+require("tiny-code-action").setup({
+  picker = {
+    "buffer",
+    opts = {
+      hotkeys = true, -- Enable hotkeys for quick selection of actions
+      hotkeys_mode = "text_diff_based", -- Modes for generating hotkeys
+      auto_preview = false, -- Enable or disable automatic preview
+      position = "cursor", -- Position of the picker window
+      winborder = "single", -- Border style for picker and preview windows
+      custom_keys = {
+        ['e'] = "Extract Method", -- Assigning 'e' for the 'Extract Method' action
+        ['r'] = "Rename", -- Assigning 'r' for the 'Rename' action
+      },
+    },
+  },
+})
+```
+
+### Explanation of Options
+
+- **hotkeys**: Enables hotkeys for selecting actions efficiently.
+- **hotkeys_mode**: Defines the mode for generating hotkeys:
+  - `sequential`: Generates sequential hotkeys like `a`, `b`, `c`, etc.
+  - `text_based`: Assigns hotkeys based on the first unique character in the action title.
+  - `text_diff_based`: Generates smarter hotkeys based on title differences.
+- **auto_preview**: Automatically previews the selected action.
+- **position**: Sets the position of the picker window.
+- **winborder**: Style for window borders; falls back to `vim.o.winborder` or `"rounded"`.
+- **custom_keys**: Allows users to assign custom hotkeys to specific actions.
+
+### Custom Keys
+
+The `custom_keys` table lets you define specific hotkeys for actions. For example:
+
+```lua
+custom_keys = {
+  ['e'] = "Extract Method", -- Assigning 'e' for the 'Extract Method' action
+  ['r'] = "Rename", -- Assigning 'r' for the 'Rename' action
+}
+```
+
+This ensures a predictable and personalized mapping for frequently used actions.
+
+### Autocmds (only for `buffer` picker)
 
 The plugin provides autocmds that are triggered when code action windows are opened. You can listen to these events to customize behavior or integrate with other plugins.
 
-### Available Autocmds
+#### Available Autocmds
 
 - `TinyCodeActionWindowEnterMain`: Triggered when the main code action picker window is opened
 - `TinyCodeActionWindowEnterPreview`: Triggered when the preview window is opened
@@ -196,7 +234,7 @@ Both autocmds provide the following data:
 - `buf`: Buffer ID of the opened window
 - `win`: Window ID of the opened window
 
-### Usage Examples
+#### Usage Examples
 
 ```lua
 -- Listen for main window opening
@@ -248,4 +286,4 @@ require("tiny-code-action").code_action({
 
 - How to look like the preview?
 	- You can find my `delta` configuration here: ![rachartier/dotfiles/delta](https://github.com/rachartier/dotfiles/tree/main/.config/delta)
-    - Then you can set the `config_path` to the path of your configuration file.
+  - Then you can set the `config_path` to the path of your configuration file.
