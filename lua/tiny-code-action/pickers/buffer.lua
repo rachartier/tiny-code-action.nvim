@@ -495,6 +495,14 @@ local function show_preview(action_item, bufnr, previewer, main_win_config, focu
     preview_state.main_win_config = main_win_config
     preview_state.bufnr = bufnr
     preview_state.previewer = previewer
+
+    vim.api.nvim_exec_autocmds("User", {
+      pattern = "TinyCodeActionWindowEnterPreview",
+      data = {
+        buf = preview_buf,
+        win = preview_win,
+      },
+    })
   end
 
   -- Only update if action changed or buffer is new
@@ -576,6 +584,14 @@ local function create_main_window(
   utils.set_buf_option(buf, "modifiable", false)
   utils.set_buf_option(buf, "filetype", "markdown")
   utils.set_win_option(win, "spell", false)
+
+  vim.api.nvim_exec_autocmds("User", {
+    pattern = "TinyCodeActionWindowEnterMain",
+    data = {
+      buf = buf,
+      win = win,
+    },
+  })
 
   utils.set_win_option(win, "number", false)
   utils.set_win_option(win, "relativenumber", false)
