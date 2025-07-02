@@ -99,7 +99,7 @@ end
 
 -- Set buffer option with version compatibility
 function M.set_buf_option(bufnr, name, value)
-  if vim.fn.has("nvim-0.9") then
+  if vim.fn.has("nvim-0.9") == 1 then
     vim.api.nvim_set_option_value(name, value, { buf = bufnr })
   else
     vim.api.nvim_buf_set_option(bufnr, name, value)
@@ -107,7 +107,7 @@ function M.set_buf_option(bufnr, name, value)
 end
 
 function M.set_win_option(winid, name, value)
-  if vim.fn.has("nvim-0.9") then
+  if vim.fn.has("nvim-0.9") == 1 then
     vim.api.nvim_set_option_value(name, value, { win = winid })
   else
     vim.api.nvim_win_set_option(winid, name, value)
@@ -180,7 +180,7 @@ end
 
 --- @param client vim.lsp.Client
 function M.add_client_methods(client)
-  if vim.fn.has("nvim-0.11") then
+  if vim.fn.has("nvim-0.11") == 1 then
     client = setmetatable({
       supports_method = function(_, ...)
         return client.supports_method(...)
