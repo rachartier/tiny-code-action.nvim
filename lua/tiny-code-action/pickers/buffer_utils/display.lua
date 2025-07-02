@@ -47,26 +47,7 @@ function M.build_display_content(groups, config_signs, hotkey_mode, custom_keys,
   local line_number = 1
   local used_hotkeys = {}
 
-  local custom_key_counters = {}
-  if custom_keys then
-    for custom_key, _ in pairs(custom_keys) do
-      custom_key_counters[custom_key:lower()] = 0
-    end
-  end
-
   local sorted_categories = categories.get_sorted_categories(groups)
-
-  local all_action_titles = nil
-  if hotkey_mode == "text_diff_based" then
-    all_action_titles = {}
-    for _, category in ipairs(sorted_categories) do
-      local actions = groups[category]
-      for _, action_item in ipairs(actions) do
-        local title = action_item.action and action_item.action.title or ""
-        table.insert(all_action_titles, { title = title, category = category })
-      end
-    end
-  end
 
   for _, category in ipairs(sorted_categories) do
     local category_label = categories.get_category_label(category)
@@ -85,14 +66,8 @@ function M.build_display_content(groups, config_signs, hotkey_mode, custom_keys,
     end
 
     if hotkey_enabled then
-      local action_hotkeys = hotkeys.generate_hotkeys(
-        titles,
-        category,
-        hotkey_mode,
-        custom_keys,
-        used_hotkeys,
-        all_action_titles
-      )
+      local action_hotkeys =
+        hotkeys.generate_hotkeys(titles, hotkey_mode, custom_keys, used_hotkeys)
 
       for i, action_item in ipairs(actions) do
         local title = action_item.action and action_item.action.title or ""
