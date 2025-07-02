@@ -183,6 +183,43 @@ end, { noremap = true, silent = true })
 ```
 
 
+## Autocmds (only for `buffer` picker)
+
+The plugin provides autocmds that are triggered when code action windows are opened. You can listen to these events to customize behavior or integrate with other plugins.
+
+### Available Autocmds
+
+- `TinyCodeActionWindowEnterMain`: Triggered when the main code action picker window is opened
+- `TinyCodeActionWindowEnterPreview`: Triggered when the preview window is opened
+
+Both autocmds provide the following data:
+- `buf`: Buffer ID of the opened window
+- `win`: Window ID of the opened window
+
+### Usage Examples
+
+```lua
+-- Listen for main window opening
+vim.api.nvim_create_autocmd("User", {
+  pattern = "TinyCodeActionWindowEnterMain",
+  callback = function(event)
+    local buf = event.data.buf
+    local win = event.data.win
+    vim.notify("Code action main window opened: buf=" .. buf .. ", win=" .. win)
+  end,
+})
+
+-- Listen for preview window opening
+vim.api.nvim_create_autocmd("User", {
+  pattern = "TinyCodeActionWindowEnterPreview",
+  callback = function(event)
+    local buf = event.data.buf
+    local win = event.data.win
+    -- Custom logic for preview window
+  end,
+})
+```
+
 ### Filters
 
 You can filter the code actions by setting the `filters` option.
