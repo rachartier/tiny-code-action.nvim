@@ -144,6 +144,24 @@ local function get_text_based_hotkey(title, used_hotkeys)
   return nil
 end
 
+local function get_next_incremental_hotkey(base_key, used_hotkeys)
+  -- Generate incremental hotkeys: ei -> eia, eib, eic, etc.
+  local suffix = 97 -- Start with 'a' (ASCII 97)
+  local candidate = base_key .. string.char(suffix)
+
+  while used_hotkeys[candidate] or is_reserved_hotkey(candidate) do
+    suffix = suffix + 1
+    if suffix > 122 then -- 'z' is ASCII 122
+      -- If we've exhausted a-z, start with aa, ab, ac, etc.
+      suffix = 97
+      base_key = base_key .. "a"
+    end
+    candidate = base_key .. string.char(suffix)
+  end
+
+  return candidate
+end
+
 local function get_text_diff_based_hotkeys(action_titles, category)
   -- Gather all action titles globally
   local all_action_titles = M._all_action_titles or {}
@@ -229,12 +247,20 @@ local function get_text_diff_based_hotkeys(action_titles, category)
   return hotkeys
 end
 
-local function build_display_content(groups, config_signs, hotkey_mode)
+local function build_display_content(groups, config_signs, hotkey_mode, custom_keys)
   local lines = {}
   local line_to_action = {}
   local line_to_hotkey = {}
   local line_number = 1
   local used_hotkeys = {}
+
+  -- Track custom key usage counters to handle multiple actions with same custom key
+  local custom_key_counters = {}
+  if custom_keys then
+    for custom_key, _ in pairs(custom_keys) do
+      custom_key_counters[custom_key:lower()] = 0
+    end
+  end
 
   local sorted_categories = get_sorted_categories(groups)
 
@@ -278,25 +304,47 @@ local function build_display_content(groups, config_signs, hotkey_mode)
       for i, action_item in ipairs(actions) do
         local title = action_item.action and action_item.action.title or ""
         local hotkey
-        if hotkey_mode == "text_based" then
-          hotkey = get_text_based_hotkey(title, used_hotkeys)
-          if not hotkey or is_reserved_hotkey(hotkey) then
-            hotkey_idx = next_non_reserved_hotkey_idx(hotkey_idx)
-            hotkey = num_to_hotkey(hotkey_idx)
-            hotkey_idx = hotkey_idx + 1
+
+        local custom_hotkey = nil
+        if custom_keys then
+          for custom_key, action_title in pairs(custom_keys) do
+            if title:find(action_title, 1, true) then
+              custom_hotkey = custom_key:lower()
+              break
+            end
           end
-        elseif hotkey_mode == "text_diff_based" then
-          hotkey = hotkeys[i]
-          if not hotkey or is_reserved_hotkey(hotkey) or used_hotkeys[hotkey] then
-            hotkey_idx = next_non_reserved_hotkey_idx(hotkey_idx)
-            hotkey = num_to_hotkey(hotkey_idx)
-            hotkey_idx = hotkey_idx + 1
+        end
+
+        -- Use custom hotkey if available
+        if custom_hotkey then
+          -- Check if this is the first time using this custom key
+          if not used_hotkeys[custom_hotkey] and not is_reserved_hotkey(custom_hotkey) then
+            hotkey = custom_hotkey
+          else
+            -- Generate incremental hotkey (ei -> eia, eib, eic, etc.)
+            hotkey = get_next_incremental_hotkey(custom_hotkey, used_hotkeys)
           end
-          used_hotkeys[hotkey] = true
         else
-          hotkey_idx = next_non_reserved_hotkey_idx(hotkey_idx)
-          hotkey = num_to_hotkey(hotkey_idx)
-          hotkey_idx = hotkey_idx + 1
+          -- Fall back to existing hotkey generation logic
+          if hotkey_mode == "text_based" then
+            hotkey = get_text_based_hotkey(title, used_hotkeys)
+            if not hotkey or is_reserved_hotkey(hotkey) then
+              hotkey_idx = next_non_reserved_hotkey_idx(hotkey_idx)
+              hotkey = num_to_hotkey(hotkey_idx)
+              hotkey_idx = hotkey_idx + 1
+            end
+          elseif hotkey_mode == "text_diff_based" then
+            hotkey = hotkeys[i]
+            if not hotkey or is_reserved_hotkey(hotkey) or used_hotkeys[hotkey] then
+              hotkey_idx = next_non_reserved_hotkey_idx(hotkey_idx)
+              hotkey = num_to_hotkey(hotkey_idx)
+              hotkey_idx = hotkey_idx + 1
+            end
+          else
+            hotkey_idx = next_non_reserved_hotkey_idx(hotkey_idx)
+            hotkey = num_to_hotkey(hotkey_idx)
+            hotkey_idx = hotkey_idx + 1
+          end
         end
 
         used_hotkeys[hotkey] = true
@@ -696,8 +744,11 @@ function M.create(config, results, bufnr)
     hotkeys_mode = config.picker.opts.hotkeys_mode
   end
 
+  -- Extract custom_keys from config
+  local custom_keys = config.picker and config.picker.opts and config.picker.opts.custom_keys or {}
+
   local lines, line_to_action, line_to_hotkey, hotkey_count =
-    build_display_content(grouped_actions, config.signs, hotkeys_mode)
+    build_display_content(grouped_actions, config.signs, hotkeys_mode, custom_keys)
 
   M.config = config
   local previewer = M.init_previewer("buffer", config)
