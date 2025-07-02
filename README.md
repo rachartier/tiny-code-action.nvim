@@ -1,7 +1,7 @@
 ## 📇 tiny-code-action.nvim
 A Neovim plugin that provides a simple way to run and visualize code actions.
 
-[Preview](#preview) • [Installation](#installation) • [Options](#options) • [FAQ](#faq)
+[Preview](#preview) • [Installation](#installation) • [Options](#options) • [Buffer Picker Options](#buffer-picker-options) • [FAQ](#faq)
 
 Supported pickers:
 - `vim.ui.select`
