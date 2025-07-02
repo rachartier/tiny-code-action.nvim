@@ -142,7 +142,7 @@ function M.filter_code_actions(actions, filters)
           table.insert(temp_actions, action)
         end
       else
-        if action.action.kind == filters.kind then
+        if string.find(action.action.kind, filters.kind) then
           table.insert(temp_actions, action)
         end
       end
@@ -153,7 +153,7 @@ function M.filter_code_actions(actions, filters)
   if filters.str ~= nil then
     local temp_actions = {}
     for _, action in ipairs(filtered_actions) do
-      if action.action.title:find(filters.str, 1, true) ~= nil then
+      if string.find(action.action.title, filters.str, 1, true) ~= nil then
         table.insert(temp_actions, action)
       end
     end
