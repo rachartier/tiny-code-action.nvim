@@ -37,6 +37,7 @@ M.picker_config = {
     auto_preview = false,
     position = "cursor",
     winborder = nil,
+    conceallevel = 1,
     keymaps = {
       preview = "K",
       close = "q",

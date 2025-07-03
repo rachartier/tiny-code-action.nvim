@@ -49,6 +49,30 @@ function M.build_display_content(groups, config_signs, hotkey_mode, custom_keys,
 
   local sorted_categories = categories.get_sorted_categories(groups)
 
+  -- Gather all actions and titles for global hotkey computation
+  local all_actions = {}
+  local all_titles = {}
+  for _, category in ipairs(sorted_categories) do
+    for _, action_item in ipairs(groups[category]) do
+      table.insert(all_actions, action_item)
+      local title = action_item.action and action_item.action.title or ""
+      table.insert(all_titles, title)
+    end
+  end
+
+  -- Generate global hotkeys and compute max length
+  local global_hotkeys = {}
+  if hotkey_enabled then
+    global_hotkeys = hotkeys.generate_hotkeys(all_titles, hotkey_mode, custom_keys, used_hotkeys)
+  end
+  local global_max_hotkey_len = 0
+  for _, hotkey in ipairs(global_hotkeys) do
+    if #hotkey > global_max_hotkey_len then
+      global_max_hotkey_len = #hotkey
+    end
+  end
+
+  local hotkey_idx = 1
   for _, category in ipairs(sorted_categories) do
     local category_label = categories.get_category_label(category)
     local icon = config_signs and config_signs[category] and config_signs[category][1] or ""
@@ -59,24 +83,17 @@ function M.build_display_content(groups, config_signs, hotkey_mode, custom_keys,
     line_number = line_number + 1
 
     local actions = groups[category]
-    local titles = {}
-    for _, action_item in ipairs(actions) do
-      local title = action_item.action and action_item.action.title or ""
-      table.insert(titles, title)
-    end
-
     if hotkey_enabled then
-      local action_hotkeys =
-        hotkeys.generate_hotkeys(titles, hotkey_mode, custom_keys, used_hotkeys)
-
-      for i, action_item in ipairs(actions) do
+      for _, action_item in ipairs(actions) do
         local title = action_item.action and action_item.action.title or ""
-        local hotkey = action_hotkeys[i]
-        local display_line = string.format("  [%s] %s", hotkey, title)
+        local hotkey = global_hotkeys[hotkey_idx]
+        local display_line =
+          string.format("  [%-" .. global_max_hotkey_len .. "s] %s", hotkey, title)
         table.insert(lines, display_line)
         line_to_action[line_number] = action_item
         line_to_hotkey[line_number] = hotkey
         line_number = line_number + 1
+        hotkey_idx = hotkey_idx + 1
       end
     else
       for _, action_item in ipairs(actions) do
