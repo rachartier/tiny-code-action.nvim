@@ -1,351 +1,34 @@
 local M = {}
 
-local utils = require("tiny-code-action.utils")
+local config = require("tiny-code-action.config")
+local filters = require("tiny-code-action.filters")
+local finder = require("tiny-code-action.finder")
+local highlights = require("tiny-code-action.highlights")
+local picker_util = require("tiny-code-action.picker")
 
+M.config = vim.tbl_deep_extend("force", {}, config.default_config)
 M.match_hl_kind = {}
-
-local VALID_PICKERS = {
-  telescope = true,
-  snacks = true,
-  select = true,
-  buffer = true,
-}
-
-local VALID_BACKENDS = {
-  vim = true,
-  delta = true,
-  difftastic = true,
-  diffsofancy = true,
-}
-
-M.picker_config = {
-  telescope = {
-    layout_strategy = "vertical",
-    layout_config = {
-      width = 0.7,
-      height = 0.9,
-      preview_cutoff = 1,
-      preview_height = function(_, _, max_lines)
-        local h = math.floor(max_lines * 0.5)
-        return math.max(h, 10)
-      end,
-    },
-  },
-  snacks = {
-    layout = "vertical",
-  },
-  select = {},
-  buffer = {
-    hotkeys = false,
-    hotkeys_mode = "text_diff_based",
-    auto_preview = false,
-    position = "cursor",
-    winborder = nil,
-    keymaps = {
-      preview = "K",
-      close = "q",
-    },
-  },
-}
-
--- Default configuration
-M.config = {
-  backend = "vim",
-  picker = "telescope",
-  backend_opts = {
-    delta = {
-      header_lines_to_remove = 4,
-      args = {
-        "--line-numbers",
-      },
-    },
-    difftastic = {
-      header_lines_to_remove = 1,
-      args = {
-        "--color=always",
-        "--display=inline",
-        "--syntax-highlight=on",
-      },
-    },
-    diffsofancy = {
-      header_lines_to_remove = 4,
-    },
-  },
-  signs = {
-    quickfix = { "", { link = "DiagnosticWarning" } },
-    others = { "", { link = "DiagnosticWarning" } },
-    refactor = { "", { link = "DiagnosticInfo" } },
-    ["refactor.move"] = { "󰪹", { link = "DiagnosticInfo" } },
-    ["refactor.extract"] = { "", { link = "DiagnosticError" } },
-    ["source.organizeImports"] = { "", { link = "DiagnosticWarning" } },
-    ["source.fixAll"] = { "󰃢", { link = "DiagnosticError" } },
-    ["source"] = { "", { link = "DiagnosticError" } },
-    ["rename"] = { "󰑕", { link = "DiagnosticWarning" } },
-    ["codeAction"] = { "", { link = "DiagnosticWarning" } },
-  },
-}
-
--- Get diagnostics for the current buffer
--- @param bufnr number: Buffer number
--- @return table: Diagnostics
-local function get_line_diagnostics(bufnr)
-  local current_line = vim.api.nvim_win_get_cursor(0)[1] - 1
-  if vim.fn.has("nvim-0.11") == 1 then
-    local diagnostics = vim.diagnostic.get(bufnr, { lnum = current_line })
-    local for_lsp_diagnostics = {}
-
-    table.sort(diagnostics, function(a, b)
-      return math.abs(a.lnum - current_line) < math.abs(b.lnum - current_line)
-    end)
-
-    for _, diagnostic in ipairs(diagnostics) do
-      if diagnostic.user_data and diagnostic.user_data.lsp then
-        table.insert(for_lsp_diagnostics, diagnostic.user_data.lsp)
-      end
-    end
-
-    return for_lsp_diagnostics
-  end
-
-  return vim.lsp.diagnostic.get_line_diagnostics(bufnr)[current_line] or {}
-end
-
--- Find code actions from all LSP clients
--- @param opts table: Options for the finder
--- @param callback function: Callback to call with results
-local function code_action_finder(opts, callback)
-  local results = {}
-  local position_encoding = vim.api.nvim_get_option_value("encoding", { scope = "local" })
-  local params
-
-  -- Handle custom range if provided
-  if opts.range then
-    params = {
-      textDocument = {
-        uri = vim.uri_from_bufnr(opts.bufnr),
-      },
-      range = {
-        start = {
-          line = opts.range.start[1] - 1, -- Convert to 0-based
-          character = opts.range.start[2],
-        },
-        ["end"] = {
-          line = opts.range["end"][1] - 1, -- Convert to 0-based
-          character = opts.range["end"][2],
-        },
-      },
-    }
-  elseif vim.fn.mode() == "n" then
-    params = {
-      textDocument = {
-        uri = vim.uri_from_bufnr(opts.bufnr),
-      },
-      range = vim.lsp.util.make_range_params(0, position_encoding).range,
-    }
-  else
-    params = {
-      textDocument = {
-        uri = vim.uri_from_bufnr(opts.bufnr),
-      },
-      range = vim.lsp.util.make_given_range_params(
-        { vim.fn.getpos("'<")[2], vim.fn.getpos("'<")[3] },
-        { vim.fn.getpos("'>")[2], vim.fn.getpos("'>")[3] },
-        0,
-        position_encoding
-      ).range,
-    }
-  end
-
-  local context = {}
-
-  -- Set trigger kind (default to Invoked if not provided)
-  if opts.context and opts.context.triggerKind then
-    context.triggerKind = opts.context.triggerKind
-  else
-    context.triggerKind = vim.lsp.protocol.CodeActionTriggerKind.Invoked
-  end
-
-  -- Use provided diagnostics or get line diagnostics
-  if opts.context and opts.context.diagnostics then
-    context.diagnostics = opts.context.diagnostics
-  else
-    context.diagnostics = get_line_diagnostics(opts.bufnr)
-  end
-
-  -- Add 'only' filter to context if provided
-  if opts.context and opts.context.only then
-    context.only = opts.context.only
-  end
-
-  params.context = context
-
-  local clients = vim.lsp.get_clients({ bufnr = opts.bufnr, method = "textDocument/codeAction" })
-
-  if not clients or #clients == 0 then
-    return nil
-  end
-
-  local client_count_done = 0
-
-  vim.lsp.buf_request(
-    opts.bufnr,
-    "textDocument/codeAction",
-    params,
-    function(err, req_results, ctx, _)
-      client_count_done = client_count_done + 1
-
-      if err then
-        -- vim.notify("Error getting code actions: " .. vim.inspect(err), vim.log.levels.ERROR)
-        return
-      end
-
-      if req_results then
-        local client = vim.lsp.get_client_by_id(ctx.client_id)
-        for _, action in ipairs(req_results) do
-          table.insert(results, {
-            client = client,
-            action = action,
-            context = context,
-          })
-        end
-      end
-
-      if client_count_done == #clients then
-        if vim.tbl_isempty(results) then
-          vim.notify("No code actions found.", vim.log.levels.INFO)
-          return
-        end
-
-        callback(results)
-      end
-    end
-  )
-end
-
--- Get a picker module by name, with fallbacks
--- @param picker_name string: Name of the picker to get
--- @return module or nil: The picker module
-local function get_picker_module(picker_name)
-  if not VALID_PICKERS[picker_name] then
-    vim.notify(
-      "Invalid picker: " .. picker_name .. ". Using default 'telescope'.",
-      vim.log.levels.WARN
-    )
-    return get_picker_module("telescope")
-  end
-
-  local has_picker, picker_module = pcall(require, "tiny-code-action.pickers." .. picker_name)
-
-  if has_picker then
-    return picker_module
-  end
-
-  -- Apply fallback logic
-  if picker_name == "telescope" then
-    vim.notify(
-      "Telescope picker is not available. Falling back to vim.ui.select.",
-      vim.log.levels.WARN
-    )
-    return get_picker_module("select")
-  elseif picker_name == "snacks" then
-    vim.notify("Snacks picker is not available. Falling back to telescope.", vim.log.levels.WARN)
-    return get_picker_module("telescope")
-  elseif picker_name == "select" then
-    vim.notify("Select picker is not available. Falling back to buffer.", vim.log.levels.WARN)
-    return get_picker_module("buffer")
-  elseif picker_name == "buffer" then
-    vim.notify("Buffer picker is not available. No picker could be loaded.", vim.log.levels.ERROR)
-    return nil
-  else
-    vim.notify("Could not load any picker module. This should not happen.", vim.log.levels.ERROR)
-    return nil
-  end
-end
-
---- @class Filters (plugin-specific filters for backward compatibility)
---- @field kind string|string[]
---- @field str string
---- @field client string
---- @field line int
---- @field only string[]
-
---- @class Context (LSP CodeActionContext)
---- @field only string[] Array of CodeActionKind strings to filter by
---- @field diagnostics table[] Array of diagnostics to include in context
---- @field triggerKind integer The reason why code actions were requested
-
---- @class Range
---- @field start integer[] Start position {row, col} (1-based)
---- @field end integer[] End position {row, col} (1-based)
-
---- @class CodeActionOpts (compatible with vim.lsp.buf.code_action)
---- @field context Context LSP context options
---- @field filter fun(action: table): boolean Function predicate to filter actions
---- @field apply boolean When true and only one action remains, apply it automatically
---- @field range Range Range for which code actions should be requested
---- @field filters Filters Plugin-specific filters (for backward compatibility)
-
---- Sort code actions based on priority with isPreferred at the top
---- @param results table: The code actions to sort
---- @return table: The sorted code actions
-local function sort_by_preferred(results)
-  if not results or #results == 0 then
-    return results
-  end
-
-  table.sort(results, function(a, b)
-    -- Sort preferred actions to the top
-    local a_preferred = a.action and a.action.isPreferred == true
-    local b_preferred = b.action and b.action.isPreferred == true
-
-    if a_preferred and not b_preferred then
-      return true
-    elseif not a_preferred and b_preferred then
-      return false
-    end
-    -- If both are preferred or both are not preferred, maintain original order
-    return false
-  end)
-
-  return results
-end
+M.picker_config = config.picker_config
 
 --- Get the code actions for the current buffer
 --- @param opts table: The options for the code actions (compatible with vim.lsp.buf.code_action).
----   - context: Table with LSP context options
----     - only: Array of CodeActionKind strings to filter by (e.g., {"source"})
----     - diagnostics: Array of diagnostics to include in context
----     - triggerKind: The reason why code actions were requested
----   - filter: Function predicate taking a CodeAction and returning boolean
----   - apply: Boolean - when true and only one action remains, apply it automatically
----   - range: {start: integer[], end: integer[]} - Range for code actions
----   - filters: Table of filters to apply (plugin-specific, for backward compatibility)
 function M.code_action(opts)
   local bufnr = vim.api.nvim_get_current_buf()
-
-  -- Build finder options
   local finder_opts = {
     bufnr = bufnr,
     context = opts and opts.context,
     range = opts and opts.range,
   }
-
-  code_action_finder(finder_opts, function(results)
+  finder.code_action_finder(finder_opts, function(results)
     if opts == nil then
       opts = {}
     end
-
-    -- Apply context-based filtering first (if provided)
     if opts.context and opts.context.only then
-      results = utils.filter_code_actions(results, { only = opts.context.only })
+      results = filters.filter_code_actions(results, { only = opts.context.only })
     end
-
-    -- Apply additional filters if provided (plugin-specific)
     if opts.filters ~= nil then
-      results = utils.filter_code_actions(results, opts.filters)
+      results = filters.filter_code_actions(results, opts.filters)
     end
-
-    -- Apply filter function if provided (vim.lsp.buf.code_action compatible)
     if opts.filter and type(opts.filter) == "function" then
       local filtered_results = {}
       for _, result in ipairs(results) do
@@ -355,16 +38,11 @@ function M.code_action(opts)
       end
       results = filtered_results
     end
-
-    -- Sort actions with isPreferred to the top
-    results = sort_by_preferred(results)
-
+    results = finder.sort_by_preferred(results)
     if results == nil or #results == 0 then
       vim.notify("No code actions found.", vim.log.levels.INFO)
       return
     end
-
-    -- If apply=true and only one action remains, apply it automatically
     if opts.apply and #results == 1 then
       local action = results[1]
       if action.action.edit then
@@ -382,17 +60,13 @@ function M.code_action(opts)
       end
       return
     end
-
-    -- Get the configured or default picker module
     local picker_name
-
     if type(M.config.picker) == "table" then
       picker_name = M.config.picker[1]
     else
       picker_name = M.config.picker or "telescope"
     end
-
-    local picker_module = get_picker_module(picker_name)
+    local picker_module = picker_util.get_picker_module(picker_name)
     if not picker_module then
       vim.notify(
         "No picker module could be loaded. Aborting code action display.",
@@ -400,80 +74,28 @@ function M.code_action(opts)
       )
       return
     end
-
     picker_module.match_hl_kind = M.match_hl_kind
     picker_module.backend = M.backend
     picker_module.create(M.config, results, bufnr)
   end)
 end
 
--- Initialize the picker module
--- @param picker_name string: Name of the picker to initialize
--- @return boolean: True if successful
-local function init_picker(picker)
-  local picker_name
-
-  if type(picker) == "table" then
-    picker_name = picker[1]
-  end
-
-  if not VALID_PICKERS[picker_name] then
-    vim.notify(
-      "Invalid picker: " .. picker_name .. ". Using default 'telescope'.",
-      vim.log.levels.WARN
-    )
-    return init_picker("telescope")
-  end
-
-  -- Special case for telescope extension
-  if picker_name == "telescope" then
-    local has_telescope, _ = pcall(require, "telescope")
-    if has_telescope then
-      -- Load telescope extension
-      pcall(function()
-        require("telescope").load_extension("tiny-code-action")
-      end)
-    end
-  end
-
-  return true
-end
-
--- Initialize the backend module
--- @param backend_name string: Name of the backend to initialize
--- @return module or nil: The backend module
 local function init_backend(backend_name)
   if type(backend_name) ~= "string" then
     error("Invalid backend type: " .. type(backend_name))
     return nil
   end
-
-  if not VALID_BACKENDS[backend_name] then
+  if not config.VALID_BACKENDS[backend_name] then
     error("Invalid backend: " .. backend_name)
     return nil
   end
-
-  local backend = require("tiny-code-action.backend." .. backend_name)
-  return backend
+  return require("tiny-code-action.backend." .. backend_name)
 end
 
--- Setup highlight groups for code action kinds
--- @param signs table: Table of signs with their highlights
-local function setup_highlights(signs)
-  for kind_name, sign in pairs(signs) do
-    vim.api.nvim_set_hl(0, "TinyCodeActionKind" .. kind_name, sign[2])
-    M.match_hl_kind[kind_name] = "TinyCodeActionKind" .. kind_name
-  end
-end
-
--- Setup the plugin
--- @param opts table: Options to configure the plugin
 function M.setup(opts)
   M.config = vim.tbl_deep_extend("force", {}, M.config, opts or {})
-
   local picker_name = type(M.config.picker) == "table" and M.config.picker[1] or M.config.picker
   local default_picker_opts = M.picker_config[picker_name] or {}
-
   if type(M.config.picker) == "string" then
     M.config.picker =
       { M.config.picker, opts = vim.tbl_deep_extend("force", {}, default_picker_opts) }
@@ -485,10 +107,10 @@ function M.setup(opts)
         vim.tbl_deep_extend("force", {}, default_picker_opts, M.config.picker.opts)
     end
   end
-
-  init_picker(M.config.picker)
+  picker_util.init_picker(M.config.picker)
   M.backend = init_backend(M.config.backend)
-  setup_highlights(M.config.signs)
+  highlights.setup_highlights(M.config.signs)
+  M.match_hl_kind = highlights.match_hl_kind or {}
 end
 
 return M
