@@ -171,8 +171,8 @@ require("tiny-code-action").setup({
       position = "cursor", -- Position of the picker window
       winborder = "single", -- Border style for picker and preview windows
       custom_keys = {
-        ['e'] = "Extract Method", -- Assigning 'e' for the 'Extract Method' action
-        ['r'] = "Rename", -- Assigning 'r' for the 'Rename' action
+        { key = 'm', pattern = 'Fill match arms' },
+        { key = 'r', pattern = 'Rename.*' }, -- Lua pattern matching
       },
     },
   },
@@ -193,7 +193,25 @@ require("tiny-code-action").setup({
 
 ### Custom Keys
 
-The `custom_keys` table lets you define specific hotkeys for actions. For example:
+The `custom_keys` option allows you to define specific hotkeys for actions. It supports two formats:
+
+#### Array Format (Recommended)
+
+```lua
+custom_keys = {
+  { key = 'm', pattern = 'Fill match arms' },
+  { key = 'm', pattern = 'Consider making this binding mutable: mut' },
+  { key = 'r', pattern = 'Rename.*' }, -- Lua pattern matching
+  { key = 'e', pattern = 'Extract Method' },
+}
+```
+
+This format allows:
+- **Multiple same keys**: You can use the same key for different actions that never appear together
+- **Lua pattern matching**: Use Lua patterns (e.g., `'Rename.*'`) for flexible matching
+- **Exact string matching**: Plain strings without pattern characters work as exact matches
+
+#### Table Format (Legacy)
 
 ```lua
 custom_keys = {
@@ -202,7 +220,9 @@ custom_keys = {
 }
 ```
 
-This ensures a predictable and personalized mapping for frequently used actions.
+Note: This format doesn't allow duplicate keys and only supports exact string matching.
+
+The array format is recommended as it provides more flexibility for complex use cases while maintaining backward compatibility.
 
 ### Autocmds (only for `buffer` picker)
 
