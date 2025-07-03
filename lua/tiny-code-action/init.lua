@@ -118,7 +118,24 @@ local function code_action_finder(opts, callback)
   local position_encoding = vim.api.nvim_get_option_value("encoding", { scope = "local" })
   local params
 
-  if vim.fn.mode() == "n" then
+  -- Handle custom range if provided
+  if opts.range then
+    params = {
+      textDocument = {
+        uri = vim.uri_from_bufnr(opts.bufnr),
+      },
+      range = {
+        start = {
+          line = opts.range.start[1] - 1, -- Convert to 0-based
+          character = opts.range.start[2],
+        },
+        ["end"] = {
+          line = opts.range["end"][1] - 1, -- Convert to 0-based
+          character = opts.range["end"][2],
+        },
+      },
+    }
+  elseif vim.fn.mode() == "n" then
     params = {
       textDocument = {
         uri = vim.uri_from_bufnr(opts.bufnr),
@@ -140,8 +157,26 @@ local function code_action_finder(opts, callback)
   end
 
   local context = {}
-  context.triggerKind = vim.lsp.protocol.CodeActionTriggerKind.Invoked
-  context.diagnostics = get_line_diagnostics(opts.bufnr)
+
+  -- Set trigger kind (default to Invoked if not provided)
+  if opts.context and opts.context.triggerKind then
+    context.triggerKind = opts.context.triggerKind
+  else
+    context.triggerKind = vim.lsp.protocol.CodeActionTriggerKind.Invoked
+  end
+
+  -- Use provided diagnostics or get line diagnostics
+  if opts.context and opts.context.diagnostics then
+    context.diagnostics = opts.context.diagnostics
+  else
+    context.diagnostics = get_line_diagnostics(opts.bufnr)
+  end
+
+  -- Add 'only' filter to context if provided
+  if opts.context and opts.context.only then
+    context.only = opts.context.only
+  end
+
   params.context = context
 
   local clients = vim.lsp.get_clients({ bufnr = opts.bufnr, method = "textDocument/codeAction" })
@@ -227,14 +262,28 @@ local function get_picker_module(picker_name)
   end
 end
 
---- @class Filters
---- @field kind string
+--- @class Filters (plugin-specific filters for backward compatibility)
+--- @field kind string|string[]
 --- @field str string
 --- @field client string
 --- @field line int
+--- @field only string[]
 
---- @class CodeActionOpts
---- @field filters Filters
+--- @class Context (LSP CodeActionContext)
+--- @field only string[] Array of CodeActionKind strings to filter by
+--- @field diagnostics table[] Array of diagnostics to include in context
+--- @field triggerKind integer The reason why code actions were requested
+
+--- @class Range
+--- @field start integer[] Start position {row, col} (1-based)
+--- @field end integer[] End position {row, col} (1-based)
+
+--- @class CodeActionOpts (compatible with vim.lsp.buf.code_action)
+--- @field context Context LSP context options
+--- @field filter fun(action: table): boolean Function predicate to filter actions
+--- @field apply boolean When true and only one action remains, apply it automatically
+--- @field range Range Range for which code actions should be requested
+--- @field filters Filters Plugin-specific filters (for backward compatibility)
 
 --- Sort code actions based on priority with isPreferred at the top
 --- @param results table: The code actions to sort
@@ -262,17 +311,49 @@ local function sort_by_preferred(results)
 end
 
 --- Get the code actions for the current buffer
---- @param opts table: The options for the code actions.
+--- @param opts table: The options for the code actions (compatible with vim.lsp.buf.code_action).
+---   - context: Table with LSP context options
+---     - only: Array of CodeActionKind strings to filter by (e.g., {"source"})
+---     - diagnostics: Array of diagnostics to include in context
+---     - triggerKind: The reason why code actions were requested
+---   - filter: Function predicate taking a CodeAction and returning boolean
+---   - apply: Boolean - when true and only one action remains, apply it automatically
+---   - range: {start: integer[], end: integer[]} - Range for code actions
+---   - filters: Table of filters to apply (plugin-specific, for backward compatibility)
 function M.code_action(opts)
   local bufnr = vim.api.nvim_get_current_buf()
 
-  code_action_finder({ bufnr = bufnr }, function(results)
+  -- Build finder options
+  local finder_opts = {
+    bufnr = bufnr,
+    context = opts and opts.context,
+    range = opts and opts.range,
+  }
+
+  code_action_finder(finder_opts, function(results)
     if opts == nil then
       opts = {}
     end
 
+    -- Apply context-based filtering first (if provided)
+    if opts.context and opts.context.only then
+      results = utils.filter_code_actions(results, { only = opts.context.only })
+    end
+
+    -- Apply additional filters if provided (plugin-specific)
     if opts.filters ~= nil then
       results = utils.filter_code_actions(results, opts.filters)
+    end
+
+    -- Apply filter function if provided (vim.lsp.buf.code_action compatible)
+    if opts.filter and type(opts.filter) == "function" then
+      local filtered_results = {}
+      for _, result in ipairs(results) do
+        if opts.filter(result.action) then
+          table.insert(filtered_results, result)
+        end
+      end
+      results = filtered_results
     end
 
     -- Sort actions with isPreferred to the top
@@ -280,6 +361,25 @@ function M.code_action(opts)
 
     if results == nil or #results == 0 then
       vim.notify("No code actions found.", vim.log.levels.INFO)
+      return
+    end
+
+    -- If apply=true and only one action remains, apply it automatically
+    if opts.apply and #results == 1 then
+      local action = results[1]
+      if action.action.edit then
+        vim.lsp.util.apply_workspace_edit(action.action.edit, action.client.offset_encoding)
+      end
+      if action.action.command then
+        if action.client.commands and action.client.commands[action.action.command.command] then
+          action.client.commands[action.action.command.command](
+            action.action.command,
+            { bufnr = bufnr }
+          )
+        else
+          action.client:exec_cmd(action.action.command, { bufnr = bufnr })
+        end
+      end
       return
     end
 
