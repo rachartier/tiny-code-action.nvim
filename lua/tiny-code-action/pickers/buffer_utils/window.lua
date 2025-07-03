@@ -152,6 +152,10 @@ function M.create_main_window(
   utils.set_win_option(win, "foldcolumn", "0")
   utils.set_win_option(win, "colorcolumn", "")
 
+  if config.picker and config.picker.opts and config.picker.opts.conceallevel ~= nil then
+    utils.set_win_option(win, "conceallevel", config.picker.opts.conceallevel)
+  end
+
   vim.api.nvim_exec_autocmds("User", {
     pattern = "TinyCodeActionWindowEnterMain",
     data = {
@@ -206,4 +210,3 @@ function M.create_main_window(
 end
 
 return M
-
