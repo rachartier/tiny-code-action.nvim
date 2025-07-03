@@ -322,10 +322,37 @@ function M.generate_hotkeys(titles, hotkey_mode, custom_keys, used_hotkeys)
   for i, title in ipairs(titles) do
     local custom_hotkey = nil
     if custom_keys then
-      for custom_key, action_title in pairs(custom_keys) do
-        if title:find(action_title, 1, true) then
-          custom_hotkey = custom_key:lower()
-          break
+      -- Support both old table format and new array format
+      if custom_keys[1] and type(custom_keys[1]) == "table" then
+        -- New array format: { { key = 'm', pattern = 'Fill match' }, ... }
+        for _, custom_entry in ipairs(custom_keys) do
+          local pattern = custom_entry.pattern
+          local key = custom_entry.key
+
+          if pattern and key then
+            -- Try Lua pattern matching first, fall back to exact string match
+            local matches = false
+            if pattern:match("[%*%+%?%[%]%(%)%.%^%$%%%-]") then
+              -- Contains pattern metacharacters, use pattern matching
+              matches = title:match(pattern) ~= nil
+            else
+              -- No pattern metacharacters, use exact string search
+              matches = title:find(pattern, 1, true) ~= nil
+            end
+
+            if matches then
+              custom_hotkey = key:lower()
+              break
+            end
+          end
+        end
+      else
+        -- Old table format: { m = 'Fill match arms', ... }
+        for custom_key, action_title in pairs(custom_keys) do
+          if title:find(action_title, 1, true) then
+            custom_hotkey = custom_key:lower()
+            break
+          end
         end
       end
     end
