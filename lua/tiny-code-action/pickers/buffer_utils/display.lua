@@ -86,6 +86,8 @@ function M.build_display_content(groups, config_signs, hotkey_mode, custom_keys,
     if hotkey_enabled then
       for _, action_item in ipairs(actions) do
         local title = action_item.action and action_item.action.title or ""
+        title = title:gsub("\n", " ")
+
         local hotkey = global_hotkeys[hotkey_idx]
         local display_line =
           string.format("  [%-" .. global_max_hotkey_len .. "s] %s", hotkey, title)

@@ -127,19 +127,8 @@ function M.create_main_window(
   local width, height, row, col = calculate_window_position(lines, config)
 
   local buf = vim.api.nvim_create_buf(false, true)
-  local flat_lines = {}
-  for _, l in ipairs(lines) do
-    if type(l) == "string" then
-      for s in l:gmatch("([^\n]*)\n?") do
-        if s ~= "" then
-          table.insert(flat_lines, s)
-        end
-      end
-    else
-      table.insert(flat_lines, l)
-    end
-  end
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, flat_lines)
+
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
 
   display.add_icon_highlighting(buf, lines, config.signs, match_hl_kind, ns)
 
