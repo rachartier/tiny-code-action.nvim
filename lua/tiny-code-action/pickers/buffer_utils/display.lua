@@ -36,7 +36,8 @@ end
 
 --- Calculates the optimal window size for displaying the given lines.
 --- @param lines table: Lines to display
---- @return number: width, number: height
+--- @return number width
+--- @return number height
 function M.calculate_window_size(lines)
   local max_width = 0
   for _, line in ipairs(lines) do
@@ -55,7 +56,10 @@ end
 --- @param hotkey_mode string: Hotkey generation mode
 --- @param custom_keys table: Custom hotkey definitions
 --- @param hotkey_enabled boolean: Whether hotkeys are enabled
---- @return table: lines, table: line_to_action, table: line_to_hotkey, number: last_line
+--- @return table lines
+--- @return table line_to_action
+--- @return table line_to_hotkey
+--- @return number last_line
 function M.build_display_content(groups, config_signs, hotkey_mode, custom_keys, hotkey_enabled)
   local lines = {}
   local line_to_action = {}

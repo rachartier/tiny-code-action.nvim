@@ -32,7 +32,7 @@ end
 
 --- Groups code action items by their category.
 --- @param actions table: List of code action items
---- @return table: Actions grouped by category
+--- @return table groups
 function M.group_actions_by_category(actions)
   local groups = {}
 
@@ -47,7 +47,7 @@ end
 
 --- Returns a sorted list of category names based on their order.
 --- @param groups table: Grouped actions by category
---- @return table: Sorted category names
+--- @return table categories
 function M.get_sorted_categories(groups)
   local categories = {}
 
@@ -66,7 +66,7 @@ end
 
 --- Gets the display label for a category.
 --- @param category string: Category name
---- @return string: Display label for the category
+--- @return string label
 function M.get_category_label(category)
   return CATEGORIES[category] and CATEGORIES[category].label or category
 end

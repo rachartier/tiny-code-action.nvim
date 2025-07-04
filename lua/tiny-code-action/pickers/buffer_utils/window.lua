@@ -113,7 +113,7 @@ end
 --- @param apply_action_fn function: Function to apply a code action
 --- @param ns number: Highlight namespace
 --- @param match_hl_kind table: Highlight groups for categories
---- @return number: Window handle
+--- @return number win
 function M.create_main_window(
   bufnr,
   lines,
