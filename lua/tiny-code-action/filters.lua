@@ -40,4 +40,3 @@ function M.filter_code_actions(results, filters)
 end
 
 return M
-

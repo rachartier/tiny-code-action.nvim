@@ -1,5 +1,7 @@
 local M = {}
 
+--- Sets up highlight groups for code action kinds based on provided signs.
+--- @param signs table: Mapping of kind names to sign definitions
 function M.setup_highlights(signs)
   for kind_name, sign in pairs(signs) do
     vim.api.nvim_set_hl(0, "TinyCodeActionKind" .. kind_name, sign[2])

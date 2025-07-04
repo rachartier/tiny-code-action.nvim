@@ -3,6 +3,12 @@ local hotkeys = require("tiny-code-action.pickers.buffer_utils.hotkeys")
 
 local M = {}
 
+--- Adds icon highlighting to lines in a buffer based on category icons and highlight kinds.
+--- @param buf number: Buffer handle
+--- @param lines table: Lines to process
+--- @param config_signs table: Mapping of categories to icon/sign config
+--- @param match_hl_kind table: Mapping of categories to highlight groups
+--- @param ns number: Namespace for highlights
 function M.add_icon_highlighting(buf, lines, config_signs, match_hl_kind, ns)
   if not config_signs or not match_hl_kind then
     return
@@ -28,6 +34,9 @@ function M.add_icon_highlighting(buf, lines, config_signs, match_hl_kind, ns)
   end
 end
 
+--- Calculates the optimal window size for displaying the given lines.
+--- @param lines table: Lines to display
+--- @returnnumber: width, number: height
 function M.calculate_window_size(lines)
   local max_width = 0
   for _, line in ipairs(lines) do
@@ -40,6 +49,13 @@ function M.calculate_window_size(lines)
   return width, height
 end
 
+--- Builds the display content for grouped actions, including hotkeys and icons.
+--- @param groups table: Actions grouped by category
+--- @param config_signs table: Category icon/sign config
+--- @param hotkey_mode string: Hotkey generation mode
+--- @param custom_keys table: Custom hotkey definitions
+--- @param hotkey_enabled boolean: Whether hotkeys are enabled
+--- @returntable: lines, table: line_to_action, table: line_to_hotkey, number: last_line
 function M.build_display_content(groups, config_signs, hotkey_mode, custom_keys, hotkey_enabled)
   local lines = {}
   local line_to_action = {}

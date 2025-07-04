@@ -3,9 +3,9 @@ local BasePicker = require("tiny-code-action.base.picker")
 local M = BasePicker.new()
 
 -- Create a vim.ui.select-based code action picker
--- @param config table: The plugin configuration
--- @param results table: The code action results
--- @param bufnr number: The buffer number
+--- @param config table: The plugin configuration
+--- @param results table: The code action results
+--- @param bufnr number: The buffer number
 function M.create(config, results, bufnr)
   M.config = config
 

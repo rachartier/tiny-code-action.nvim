@@ -3,9 +3,9 @@ local M = {}
 local utils = require("tiny-code-action.utils")
 
 --- Helper function to check if a picker dependency is available
--- @param name string: Name of the picker
--- @param module_path string: Path to the module to check
--- @return boolean: True if the dependency is available
+--- @param name string: Name of the picker
+--- @param module_path string: Path to the module to check
+--- @returnboolean: True if the dependency is available
 local function has_dependency(name, module_path)
   local has_module, _ = pcall(require, module_path)
   if not has_module then
@@ -19,7 +19,7 @@ local function has_dependency(name, module_path)
 end
 
 --- Initialize a new picker base
--- @param opts table: Options to configure the picker
+--- @param opts table: Options to configure the picker
 function M.new(opts)
   local picker = {
     -- Common properties that all pickers should have

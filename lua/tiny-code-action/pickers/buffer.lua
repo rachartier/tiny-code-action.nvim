@@ -8,6 +8,10 @@ local M = BasePicker.new()
 
 local ns = vim.api.nvim_create_namespace("tiny_code_action_buffer")
 
+--- Creates and displays the buffer picker window for code actions.
+--- @param config table: Picker configuration
+--- @param results table: List of code action results
+--- @param bufnr number: Buffer number
 function M.create(config, results, bufnr)
   hotkeys.add_config_keymaps_to_reserved(config)
 

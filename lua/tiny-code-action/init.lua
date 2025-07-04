@@ -12,6 +12,8 @@ M.picker_config = config.picker_config
 
 --- Get the code actions for the current buffer
 --- @param opts table: The options for the code actions (compatible with vim.lsp.buf.code_action).
+--- Gets and displays code actions for the current buffer, applying filters and using the configured picker.
+--- @param opts table: Options for code actions (compatible with vim.lsp.buf.code_action)
 function M.code_action(opts)
   local bufnr = vim.api.nvim_get_current_buf()
   local finder_opts = {
@@ -107,6 +109,8 @@ local function init_backend(backend_name)
   return require("tiny-code-action.backend." .. backend_name)
 end
 
+--- Sets up the plugin configuration, picker, highlights, and backend.
+--- @param opts table: User configuration options
 function M.setup(opts)
   M.config = vim.tbl_deep_extend("force", {}, M.config, opts or {})
 

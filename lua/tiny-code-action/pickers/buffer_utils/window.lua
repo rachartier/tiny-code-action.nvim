@@ -102,6 +102,18 @@ local function setup_hotkey_navigation(buf, config, line_to_hotkey)
   end
 end
 
+--- Creates the main code action window with actions, hotkeys, and preview integration.
+--- @param bufnr number: Buffer number
+--- @param lines table: Lines to display
+--- @param line_to_action table: Mapping of line numbers to actions
+--- @param line_to_hotkey table: Mapping of line numbers to hotkeys
+--- @param hotkey_count number: Number of hotkeys
+--- @param previewer any: Previewer object
+--- @param config table: Configuration options
+--- @param apply_action_fn function: Function to apply a code action
+--- @param ns number: Highlight namespace
+--- @param match_hl_kind table: Highlight groups for categories
+--- @return number: Window handle
 function M.create_main_window(
   bufnr,
   lines,

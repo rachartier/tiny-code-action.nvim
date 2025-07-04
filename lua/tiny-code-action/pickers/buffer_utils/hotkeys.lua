@@ -7,6 +7,8 @@ local RESERVED_HOTKEYS = {
   j = true,
 }
 
+--- Adds configured keymaps to the set of reserved hotkeys.
+--- @param config table: Picker configuration
 function M.add_config_keymaps_to_reserved(config)
   local keymaps = config.picker and config.picker.opts and config.picker.opts.keymaps or {}
   for _, key in pairs(keymaps) do
@@ -16,6 +18,9 @@ function M.add_config_keymaps_to_reserved(config)
   end
 end
 
+--- Checks if a hotkey is reserved.
+--- @param hotkey string: Hotkey to check
+--- @returnboolean: True if reserved, false otherwise
 function M.is_reserved_hotkey(hotkey)
   return RESERVED_HOTKEYS[hotkey] or false
 end
@@ -113,6 +118,10 @@ local function generate_candidate_hotkeys(text)
 
   return unique_candidates
 end
+--- Generates sequential hotkeys, skipping reserved and used ones.
+--- @param count number: Number of hotkeys to generate
+--- @param used_hotkeys table: Table of already used hotkeys
+--- @returntable: List of generated hotkeys
 function M.sequential_hotkeys(count, used_hotkeys)
   local hotkeys = {}
   local chars = "abcdefghijklmnopqrstuvwxyz"
@@ -142,6 +151,10 @@ function M.sequential_hotkeys(count, used_hotkeys)
   return hotkeys
 end
 
+--- Generates hotkeys based on the text of each title, avoiding reserved and used hotkeys.
+--- @param titles table: List of action titles
+--- @param used_hotkeys table: Table of already used hotkeys
+--- @returntable: List of generated hotkeys
 function M.text_based_hotkeys(titles, used_hotkeys)
   local hotkeys = {}
 
@@ -183,6 +196,10 @@ local function calculate_hotkey_conflicts(titles)
   return char_counts, title_chars
 end
 
+--- Generates hotkeys using a text-diff-based strategy to minimize conflicts.
+--- @param titles table: List of action titles
+--- @param used_hotkeys table: Table of already used hotkeys
+--- @returntable: List of generated hotkeys
 function M.text_diff_based_hotkeys(titles, used_hotkeys)
   local hotkeys = {}
   local n = #titles
@@ -287,6 +304,10 @@ function M.text_diff_based_hotkeys(titles, used_hotkeys)
   return hotkeys
 end
 
+--- Finds the next available incremental hotkey based on a base key.
+--- @param base_key string: The base key to increment
+--- @param used_hotkeys table: Table of already used hotkeys
+--- @returnstring: Next available hotkey
 function M.get_next_incremental_hotkey(base_key, used_hotkeys)
   local suffix = 97
   local candidate = base_key .. string.char(suffix)
@@ -303,6 +324,12 @@ function M.get_next_incremental_hotkey(base_key, used_hotkeys)
   return candidate
 end
 
+--- Generates hotkeys for a list of titles using the specified mode and custom keys.
+--- @param titles table: List of action titles
+--- @param hotkey_mode string: Hotkey generation mode
+--- @param custom_keys table: Custom key definitions
+--- @param used_hotkeys table: Table of already used hotkeys
+--- @returntable: List of generated hotkeys
 function M.generate_hotkeys(titles, hotkey_mode, custom_keys, used_hotkeys)
   local hotkeys = {}
   local local_used = {}
