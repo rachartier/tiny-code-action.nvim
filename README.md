@@ -1,14 +1,14 @@
-## 📇 tiny-code-action.nvim
+# 📇 tiny-code-action.nvim
 A Neovim plugin that provides a simple way to run and visualize code actions.
 
 [Preview](#preview) • [Installation](#installation) • [Options](#options) • [Buffer Picker Options](#buffer-picker-options) • [FAQ](#faq)
 
 Supported pickers:
+- `buffer` (a minimal picker that uses buffer)
 - `vim.ui.select`
-- `fzf-lua` (with `select`)
 - `telescope.nvim`
 - `snacks.nvim`
-- `buffer` (a minimal picker that uses buffer)
+- `fzf-lua` (with `select`)
 
 The code action protocol is nearly fully implemented in this plugin, so you can use it with any language server, even with, like in the preview, Omnisharp which uses partial code actions.
 
@@ -261,29 +261,65 @@ vim.api.nvim_create_autocmd("User", {
 })
 ```
 
-### Filters
 
-You can filter the code actions by setting the `filters` option.
+## Filters
+
+Filters can be provided via the `filters` option, the `context.only` option (LSP standard), or a user-supplied function. All filters are combined and applied in sequence.
+
+### 1. LSP Kind Filter (`context.only`)
+
+If you pass an `opts.context = { only = ... }` object, only code actions matching the specified LSP CodeActionKind will be included.
 
 ```lua
-{
-    str = "..." -- Filter to title
-    kind = "refactor" -- Filter to the kind
-    client = "omnisharp" -- Filter to the client
-    line = 10 -- Filter to the line number
-}
+require("tiny-code-action").code_action({
+    context = { only = "refactor" },
+})
 ```
+
+### 2. Built-in Filters (`filters` option)
+
+The `filters` table allows you to filter code actions by specific criteria. Supported filter keys:
+- `str`: String or Lua pattern to match in the action title
+- `kind`: Code action kind (e.g., "refactor", "source.organizeImports")
+- `client`: Name of the LSP client
+- `line`: Line number the action applies to
+
+You may combine multiple filters; all must match for an action to be included.
 
 Example:
 ```lua
 require("tiny-code-action").code_action({
-        filters = {
+    filters = {
         kind = "refactor",
-        str = "Wrap"
+        str = "Wrap",
+        client = "omnisharp",
+        line = 10,
     }
 })
 ```
 
+### 3. Custom Filter Function (`filter` option)
+
+You can supply a custom filter function, which will be called for each action. The function receives the action object and should return true to include it.
+
+Example:
+```lua
+require("tiny-code-action").code_action({
+    filter = function(action)
+        -- Only show actions that have "Rename" in the title and are preferred
+        return action.title:find("Rename") and action.isPreferred
+    end,
+})
+```
+
+#### 4. Combined Filtering
+
+You can use all filtering mechanisms together; they are applied in the following order:
+1. `context.only`
+2. `filters` table
+3. `filter` function
+
+Only code actions that pass all enabled filters will be shown.
 
 ## ❓ FAQ:
 
