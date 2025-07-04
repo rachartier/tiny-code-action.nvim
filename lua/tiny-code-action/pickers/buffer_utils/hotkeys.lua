@@ -20,7 +20,7 @@ end
 
 --- Checks if a hotkey is reserved.
 --- @param hotkey string: Hotkey to check
---- @returnboolean: True if reserved, false otherwise
+--- @return boolean: True if reserved, false otherwise
 function M.is_reserved_hotkey(hotkey)
   return RESERVED_HOTKEYS[hotkey] or false
 end
@@ -121,7 +121,7 @@ end
 --- Generates sequential hotkeys, skipping reserved and used ones.
 --- @param count number: Number of hotkeys to generate
 --- @param used_hotkeys table: Table of already used hotkeys
---- @returntable: List of generated hotkeys
+--- @return table: List of generated hotkeys
 function M.sequential_hotkeys(count, used_hotkeys)
   local hotkeys = {}
   local chars = "abcdefghijklmnopqrstuvwxyz"
@@ -154,7 +154,7 @@ end
 --- Generates hotkeys based on the text of each title, avoiding reserved and used hotkeys.
 --- @param titles table: List of action titles
 --- @param used_hotkeys table: Table of already used hotkeys
---- @returntable: List of generated hotkeys
+--- @return table: List of generated hotkeys
 function M.text_based_hotkeys(titles, used_hotkeys)
   local hotkeys = {}
 
@@ -199,7 +199,7 @@ end
 --- Generates hotkeys using a text-diff-based strategy to minimize conflicts.
 --- @param titles table: List of action titles
 --- @param used_hotkeys table: Table of already used hotkeys
---- @returntable: List of generated hotkeys
+--- @return table: List of generated hotkeys
 function M.text_diff_based_hotkeys(titles, used_hotkeys)
   local hotkeys = {}
   local n = #titles
@@ -307,7 +307,7 @@ end
 --- Finds the next available incremental hotkey based on a base key.
 --- @param base_key string: The base key to increment
 --- @param used_hotkeys table: Table of already used hotkeys
---- @returnstring: Next available hotkey
+--- @return string: Next available hotkey
 function M.get_next_incremental_hotkey(base_key, used_hotkeys)
   local suffix = 97
   local candidate = base_key .. string.char(suffix)
@@ -329,7 +329,7 @@ end
 --- @param hotkey_mode string: Hotkey generation mode
 --- @param custom_keys table: Custom key definitions
 --- @param used_hotkeys table: Table of already used hotkeys
---- @returntable: List of generated hotkeys
+--- @return table: List of generated hotkeys
 function M.generate_hotkeys(titles, hotkey_mode, custom_keys, used_hotkeys)
   local hotkeys = {}
   local local_used = {}
