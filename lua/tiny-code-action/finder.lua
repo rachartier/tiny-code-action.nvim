@@ -104,7 +104,7 @@ end
 -- Sort code actions based on priority with isPreferred at the top
 --- Sorts code actions by priority, placing preferred actions at the top.
 --- @param results table: List of code action results
---- @returntable: Sorted results
+--- @return table: Sorted results
 function M.sort_by_preferred(results)
   if not results or #results == 0 then
     return results

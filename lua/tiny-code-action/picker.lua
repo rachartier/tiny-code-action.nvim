@@ -40,7 +40,7 @@ end
 
 --- Initializes the specified picker, loading extensions if necessary.
 --- @param picker string|table: Picker name or config table
---- @returnboolean: True if initialization succeeded
+--- @return boolean: True if initialization succeeded
 function M.init_picker(picker)
   local picker_name
   if type(picker) == "table" then

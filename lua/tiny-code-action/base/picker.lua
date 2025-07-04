@@ -5,7 +5,7 @@ local utils = require("tiny-code-action.utils")
 --- Helper function to check if a picker dependency is available
 --- @param name string: Name of the picker
 --- @param module_path string: Path to the module to check
---- @returnboolean: True if the dependency is available
+--- @return boolean: True if the dependency is available
 local function has_dependency(name, module_path)
   local has_module, _ = pcall(require, module_path)
   if not has_module then

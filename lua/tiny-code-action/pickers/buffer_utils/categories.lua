@@ -10,7 +10,7 @@ local CATEGORIES = {
 
 --- Determines the category of a code action item based on its kind.
 --- @param action_item table: Code action item
---- @returnstring: Category name
+--- @return string: Category name
 function M.get_action_category(action_item)
   local kind = action_item.action and action_item.action.kind or ""
 
@@ -32,7 +32,7 @@ end
 
 --- Groups code action items by their category.
 --- @param actions table: List of code action items
---- @returntable: Actions grouped by category
+--- @return table: Actions grouped by category
 function M.group_actions_by_category(actions)
   local groups = {}
 
@@ -47,7 +47,7 @@ end
 
 --- Returns a sorted list of category names based on their order.
 --- @param groups table: Grouped actions by category
---- @returntable: Sorted category names
+--- @return table: Sorted category names
 function M.get_sorted_categories(groups)
   local categories = {}
 
@@ -66,7 +66,7 @@ end
 
 --- Gets the display label for a category.
 --- @param category string: Category name
---- @returnstring: Display label for the category
+--- @return string: Display label for the category
 function M.get_category_label(category)
   return CATEGORIES[category] and CATEGORIES[category].label or category
 end

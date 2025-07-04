@@ -125,7 +125,7 @@ end
 --- @param end_line number: The 1-indexed line number where the edit ends.
 --- @param start_char number: The 0-indexed character position within the start line where the edit starts.
 --- @param end_char number: The 0-indexed character position within the end line where the edit ends.
---- @returntable: A table of strings, each representing a line of text after the edit has been applied. The lines are 1-indexed.
+--- @return table: A table of strings, each representing a line of text after the edit has been applied. The lines are 1-indexed.
 -- @error This function does not explicitly throw errors, but may propagate errors thrown by called functions.
 local function apply_empty_edit(lines, start_line, end_line, start_char, end_char)
   local first = lines[start_line]
@@ -162,7 +162,7 @@ end
 --   newText = <string>
 -- }
 -- The range's start and end lines are 0-indexed, and the characters are 0-indexed within their respective lines. The newText is the text to replace the range with.
---- @returntable: A table of strings, each representing a line of text after the edit has been applied. The lines are 1-indexed.
+--- @return table: A table of strings, each representing a line of text after the edit has been applied. The lines are 1-indexed.
 -- @error This function does not explicitly throw errors, but may propagate errors thrown by called functions.
 local function apply_single_edit(lines, edit)
   local start_line, end_line = get_line_start_end(edit)
@@ -190,7 +190,7 @@ end
 -- The 'line' property is a zero-based line number. The 'character' property is a zero-based character index.
 -- The 'offset' property is a one-based index, which is converted to a zero-based index by subtracting one.
 --
---- @returntable: Returns a table representing the normalized range. The table has 'start' and 'end' properties,
+--- @return table: Returns a table representing the normalized range. The table has 'start' and 'end' properties,
 -- each of which is a table with 'line' and 'character' properties. The 'line' property is a zero-based line number.
 -- The 'character' property is a zero-based character index. If the original range was inverted (i.e., the start was
 -- after the end), the returned range is swapped to ensure that the start is before the end.
@@ -227,7 +227,7 @@ end
 
 -- This function preprocesses a list of edits. It assigns an index to each edit and normalizes its range.
 --- @param edits table: A list of edits. Each edit is a table that should have a 'range' field.
---- @returntable: A list of edits with preprocessed 'range' and an additional '_index' field.
+--- @return table: A list of edits with preprocessed 'range' and an additional '_index' field.
 -- @raise No specific exceptions are raised in this function.
 local function preprocess_edits(edits)
   local index = 0
@@ -242,7 +242,7 @@ end
 -- This function preprocesses the edits, sorts them, and then applies each edit to the lines in order.
 --- @param lines table: A table of strings, where each string represents a line of text. This is the text that the edits will be applied to.
 --- @param edits table: A table of edits to apply. Each edit is a table with fields 'range' and 'newText'. 'range' is a table with fields 'start' and 'end', each of which is a table with fields 'line' and 'character'. 'newText' is the text to replace the range with.
---- @returntable: A table of strings, representing the lines of text after all edits have been applied.
+--- @return table: A table of strings, representing the lines of text after all edits have been applied.
 -- @error Will throw an error if an edit's range is invalid (e.g., 'start' is after 'end', or the line or character indices are out of bounds).
 function M.apply_edit(lines, edits)
   local processed_edits = preprocess_edits(edits)
