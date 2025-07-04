@@ -32,7 +32,16 @@ local function calculate_window_position(lines, config)
   return width, height, row, col
 end
 
-local function setup_window_autocmds(buf, win, line_to_action, bufnr, previewer, win_config, config)
+local function setup_window_autocmds(
+  buf,
+  win,
+  line_to_action,
+  bufnr,
+  previewer,
+  win_config,
+  config,
+  apply_action_fn
+)
   local preview_state = preview.get_preview_state()
 
   if config.picker and config.picker.opts and config.picker.opts.auto_preview then
@@ -118,7 +127,19 @@ function M.create_main_window(
   local width, height, row, col = calculate_window_position(lines, config)
 
   local buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+  local flat_lines = {}
+  for _, l in ipairs(lines) do
+    if type(l) == "string" then
+      for s in l:gmatch("([^\n]*)\n?") do
+        if s ~= "" then
+          table.insert(flat_lines, s)
+        end
+      end
+    else
+      table.insert(flat_lines, l)
+    end
+  end
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, flat_lines)
 
   display.add_icon_highlighting(buf, lines, config.signs, match_hl_kind, ns)
 
@@ -204,7 +225,16 @@ function M.create_main_window(
   vim.keymap.set("n", close_key, close_window, keymap_opts)
 
   setup_hotkey_navigation(buf, config, line_to_hotkey)
-  setup_window_autocmds(buf, win, line_to_action, bufnr, previewer, win_config, config)
+  setup_window_autocmds(
+    buf,
+    win,
+    line_to_action,
+    bufnr,
+    previewer,
+    win_config,
+    config,
+    apply_action_fn
+  )
 
   return win
 end
