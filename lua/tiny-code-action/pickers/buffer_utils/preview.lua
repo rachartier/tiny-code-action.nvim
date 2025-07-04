@@ -12,10 +12,13 @@ local preview_state = {
   previewer = nil,
 }
 
+--- Returns the current preview state table.
+--- @return table: Preview state
 function M.get_preview_state()
   return preview_state
 end
 
+--- Closes the preview window and resets preview state.
 function M.close_preview()
   if preview_state.win and vim.api.nvim_win_is_valid(preview_state.win) then
     vim.api.nvim_win_close(preview_state.win, true)
@@ -25,12 +28,15 @@ function M.close_preview()
   preview_state.action_item = nil
 end
 
+--- Focuses the main window from the preview window if valid.
 function M.focus_main_window_from_preview()
   if preview_state.main_win and vim.api.nvim_win_is_valid(preview_state.main_win) then
     vim.api.nvim_set_current_win(preview_state.main_win)
   end
 end
 
+--- Accepts the action from the preview and applies it, then closes windows.
+--- @param apply_action_fn function: Function to apply the action
 function M.accept_action_from_preview(apply_action_fn)
   if preview_state.action_item and apply_action_fn then
     apply_action_fn(
@@ -55,7 +61,23 @@ local function resolve_border_style(config)
   return "rounded"
 end
 
-function M.show_preview(action_item, bufnr, previewer, main_win_config, focus, config, apply_action_fn)
+--- Shows the preview window for a code action item.
+--- @param action_item table: Code action item
+--- @param bufnr number: Buffer number
+--- @param previewer table: Previewer object
+--- @param main_win_config table: Main window configuration
+--- @param focus boolean: Whether to focus the preview window
+--- @param config table: Picker configuration
+--- @param apply_action_fn function: Function to apply the action
+function M.show_preview(
+  action_item,
+  bufnr,
+  previewer,
+  main_win_config,
+  focus,
+  config,
+  apply_action_fn
+)
   if not action_item or not action_item.action then
     vim.notify("No code action selected", vim.log.levels.WARN)
     return
@@ -175,4 +197,3 @@ function M.show_preview(action_item, bufnr, previewer, main_win_config, focus, c
 end
 
 return M
-

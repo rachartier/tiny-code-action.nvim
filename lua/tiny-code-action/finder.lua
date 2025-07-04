@@ -20,6 +20,9 @@ local function get_line_diagnostics(bufnr)
 end
 
 -- Find code actions from all LSP clients
+--- Finds code actions from all LSP clients for the given options and invokes the callback with results.
+--- @param opts table: Options including bufnr, range, and context
+--- @param callback function: Function to call with the results
 function M.code_action_finder(opts, callback)
   local results = {}
   local position_encoding = vim.api.nvim_get_option_value("encoding", { scope = "local" })
@@ -99,6 +102,9 @@ function M.code_action_finder(opts, callback)
 end
 
 -- Sort code actions based on priority with isPreferred at the top
+--- Sorts code actions by priority, placing preferred actions at the top.
+--- @param results table: List of code action results
+--- @returntable: Sorted results
 function M.sort_by_preferred(results)
   if not results or #results == 0 then
     return results

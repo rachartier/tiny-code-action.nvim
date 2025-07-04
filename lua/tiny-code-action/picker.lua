@@ -2,6 +2,9 @@ local config = require("tiny-code-action.config")
 local M = {}
 
 -- Get a picker module by name, with fallbacks
+--- Retrieves a picker module by name, with fallbacks to defaults if unavailable.
+--- @param picker_name string: Name of the picker module
+--- @returntable|nil: Picker module or nil if not found
 function M.get_picker_module(picker_name)
   if not config.VALID_PICKERS[picker_name] then
     vim.notify(
@@ -15,7 +18,10 @@ function M.get_picker_module(picker_name)
     return picker_module
   end
   if picker_name == "telescope" then
-    vim.notify("Telescope picker is not available. Falling back to vim.ui.select.", vim.log.levels.WARN)
+    vim.notify(
+      "Telescope picker is not available. Falling back to vim.ui.select.",
+      vim.log.levels.WARN
+    )
     return M.get_picker_module("select")
   elseif picker_name == "snacks" then
     vim.notify("Snacks picker is not available. Falling back to telescope.", vim.log.levels.WARN)
@@ -32,6 +38,9 @@ function M.get_picker_module(picker_name)
   end
 end
 
+--- Initializes the specified picker, loading extensions if necessary.
+--- @param picker string|table: Picker name or config table
+--- @returnboolean: True if initialization succeeded
 function M.init_picker(picker)
   local picker_name
   if type(picker) == "table" then
@@ -56,4 +65,3 @@ function M.init_picker(picker)
 end
 
 return M
-

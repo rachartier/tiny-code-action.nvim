@@ -5,7 +5,7 @@ local terminal = require("tiny-code-action.terminal")
 local utils = require("tiny-code-action.utils")
 
 --- Initialize a new previewer base
--- @param opts table: Options to configure the previewer
+--- @param opts table: Options to configure the previewer
 function M.new(opts)
   local previewer = {
     config = opts or {},

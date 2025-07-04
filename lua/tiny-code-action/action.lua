@@ -4,10 +4,10 @@ local utils = require("tiny-code-action.utils")
 local apply_edit = require("tiny-code-action.edit").apply_edit
 
 --- Applies a given action in the context of a client and a context.
--- @param action The action to be applied. If nil, an error message is displayed.
--- @param client The client in which the action is applied. It is used to apply workspace edits and execute commands.
--- @param ctx The context in which the action is applied. If not provided, an empty context is used.
--- @return No return value. The function operates by side effects, applying the action in the given context.
+--- @param action The action to be applied. If nil, an error message is displayed.
+--- @param client The client in which the action is applied. It is used to apply workspace edits and execute commands.
+--- @param ctx The context in which the action is applied. If not provided, an empty context is used.
+--- @return No return value. The function operates by side effects, applying the action in the given context.
 function M.apply(action, client, ctx)
   if action == nil then
     vim.notify("Error: No action to apply/action can't be applied", vim.log.levels.ERROR)
