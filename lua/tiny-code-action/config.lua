@@ -35,6 +35,7 @@ M.picker_config = {
     hotkeys = false,
     hotkeys_mode = "text_diff_based",
     auto_preview = false,
+    auto_accept = false,
     position = "cursor",
     winborder = nil,
     conceallevel = 1,

@@ -80,7 +80,7 @@ local function setup_window_autocmds(
   end
 end
 
-local function setup_hotkey_navigation(buf, config, line_to_hotkey)
+local function setup_hotkey_navigation(buf, config, line_to_hotkey, handle_selection_cb)
   if not (config.picker and config.picker.opts and config.picker.opts.hotkeys) then
     return
   end
@@ -91,10 +91,17 @@ local function setup_hotkey_navigation(buf, config, line_to_hotkey)
   end
 
   local keymap_opts = { buffer = buf, nowait = true }
+  local auto_accept = config.picker and config.picker.opts and config.picker.opts.auto_accept
+    or false
+
   for hotkey, line in pairs(hotkey_to_line) do
     local function jumpto()
       vim.api.nvim_win_set_cursor(vim.api.nvim_get_current_win(), { line, 0 })
+      if auto_accept then
+        handle_selection_cb()
+      end
     end
+
     vim.keymap.set("n", hotkey, jumpto, keymap_opts)
     if #hotkey == 1 then
       vim.keymap.set("n", hotkey:upper(), jumpto, keymap_opts)
@@ -127,6 +134,8 @@ function M.create_main_window(
   match_hl_kind
 )
   local keymaps = config.picker and config.picker.opts and config.picker.opts.keymaps or {}
+  local auto_accept = config.picker and config.picker.opts and config.picker.opts.auto_accept
+    or false
   local preview_key = keymaps.preview or "K"
   local close_key = keymaps.close or "q"
 
@@ -225,7 +234,7 @@ function M.create_main_window(
   vim.keymap.set("n", preview_key, handle_preview, keymap_opts)
   vim.keymap.set("n", close_key, close_window, keymap_opts)
 
-  setup_hotkey_navigation(buf, config, line_to_hotkey)
+  setup_hotkey_navigation(buf, config, line_to_hotkey, handle_selection)
   setup_window_autocmds(
     buf,
     win,
