@@ -21,11 +21,9 @@ The code action protocol is nearly fully implemented in this plugin, so you can 
 
 ![tinycode_1](https://github.com/user-attachments/assets/d6906aef-0ef3-45d3-9a54-1249a9ea2d51)
 
-
 ### Vim
 
 ![tinycode_vimdiff_1](https://github.com/user-attachments/assets/d4797ffc-b85c-44de-a52e-cb85879b9f88)
-
 
 ### Difftastic
 
@@ -186,6 +184,16 @@ require("tiny-code-action").setup({
   - `sequential`: Generates sequential hotkeys like `a`, `b`, `c`, etc.
   - `text_based`: Assigns hotkeys based on the first unique character in the action title.
   - `text_diff_based`: Generates smarter hotkeys based on title differences.
+  - **Custom function**: You can also provide a function for `hotkeys_mode` to fully control hotkey generation. The function receives `(titles, used_hotkeys)` and must return a list of hotkey strings. Example for numeric hotkeys:
+
+```lua
+hotkeys_mode = function(titles, used_hotkeys)
+  local t = {}
+  for i = 1, #titles do t[i] = tostring(i) end
+  return t
+end
+```
+
 - **auto_preview**: Automatically previews the selected action.
 - **position**: Sets the position of the picker window.
 - **winborder**: Style for window borders; falls back to `vim.o.winborder` or `"rounded"`.
@@ -326,3 +334,4 @@ Only code actions that pass all enabled filters will be shown.
 - How to look like the preview?
 	- You can find my `delta` configuration here: ![rachartier/dotfiles/delta](https://github.com/rachartier/dotfiles/tree/main/.config/delta)
   - Then you can set the `config_path` to the path of your configuration file.
+
