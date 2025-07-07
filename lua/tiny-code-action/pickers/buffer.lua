@@ -27,6 +27,9 @@ function M.create(config, results, bufnr)
     and config.picker.opts.hotkeys_mode
   then
     hotkeys_mode = config.picker.opts.hotkeys_mode
+    if type(hotkeys_mode) == "function" then
+      hotkeys_mode = hotkeys_mode
+    end
   end
 
   local custom_keys = config.picker and config.picker.opts and config.picker.opts.custom_keys or {}

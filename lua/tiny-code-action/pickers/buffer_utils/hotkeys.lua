@@ -326,7 +326,7 @@ end
 
 --- Generates hotkeys for a list of titles using the specified mode and custom keys.
 --- @param titles table: List of action titles
---- @param hotkey_mode string: Hotkey generation mode
+--- @param hotkey_mode string|function: Hotkey generation mode or a function(titles, used_hotkeys)
 --- @param custom_keys table: Custom key definitions
 --- @param used_hotkeys table: Table of already used hotkeys
 --- @return table: List of generated hotkeys
@@ -338,7 +338,9 @@ function M.generate_hotkeys(titles, hotkey_mode, custom_keys, used_hotkeys)
     local_used[k] = v
   end
 
-  if hotkey_mode == "text_diff_based" then
+  if type(hotkey_mode) == "function" then
+    hotkeys = hotkey_mode(titles, local_used)
+  elseif hotkey_mode == "text_diff_based" then
     hotkeys = M.text_diff_based_hotkeys(titles, local_used)
   elseif hotkey_mode == "text_based" then
     hotkeys = M.text_based_hotkeys(titles, local_used)
