@@ -101,24 +101,33 @@ function M.show_preview(
     local orig_preview_width = math.floor(nvim_width * 0.4)
     local orig_preview_height = math.floor(nvim_height * 0.4)
     local preview_row, preview_col, preview_width, preview_height
+    local margin = main_win_config.margin
+    local win_row, win_col = unpack(vim.api.nvim_win_get_position(0))
+    local south_space = nvim_height - win_row - main_height - margin
+    local north_space = win_row - margin
 
-    if main_col + main_width + 2 + orig_preview_width <= nvim_width then
+    if win_col + main_width + margin + orig_preview_width <= nvim_width then
       preview_width = orig_preview_width
       preview_height = orig_preview_height
       preview_row = main_row
-      preview_col = main_col + main_width + 2
-    else
-      local south_space = nvim_height - (main_row + main_height) - 2
-      local north_space = main_row - 2
+      preview_col = main_col + main_width + margin
+    elseif win_col > margin + orig_preview_width then
+      preview_width = orig_preview_width
+      preview_height = orig_preview_height
+      preview_row = main_row
+      preview_col = win_col - margin - orig_preview_width
+    elseif south_space >= north_space then
       preview_width = main_width
-      preview_height = math.ceil(orig_preview_height / 2)
-      if south_space >= north_space then
-        preview_row = main_row + main_height + 2
-        preview_col = main_col
-      else
-        preview_row = math.max(0, main_row - preview_height - 2)
-        preview_col = main_col
-      end
+      preview_height =
+        math.max(0, math.min(math.ceil(orig_preview_height / 2), south_space - margin))
+      preview_row = win_row + main_height + margin
+      preview_col = main_col
+    else
+      preview_width = main_width
+      preview_height =
+        math.max(0, math.min(math.ceil(orig_preview_height / 2), north_space - margin))
+      preview_row = win_row - preview_height - margin
+      preview_col = main_col
     end
 
     local preview_buf = vim.api.nvim_create_buf(false, true)
