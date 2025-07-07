@@ -1,6 +1,7 @@
 local display = require("tiny-code-action.pickers.buffer_utils.display")
 local preview = require("tiny-code-action.pickers.buffer_utils.preview")
 local utils = require("tiny-code-action.utils")
+local margin = 2
 
 local M = {}
 
@@ -15,7 +16,7 @@ end
 
 local function calculate_window_position(lines, config)
   local width, height = display.calculate_window_size(lines)
-  local row, col
+  local row, col, win_row, win_col, shift
   local position = config.picker and config.picker.opts and config.picker.opts.position or "cursor"
 
   if position == "center" then
@@ -24,9 +25,12 @@ local function calculate_window_position(lines, config)
     row = math.floor((nvim_height - height) / 2)
     col = math.floor((nvim_width - width) / 2)
   else
-    local cursor_row = vim.api.nvim_win_get_cursor(0)[1] - 1
-    row = cursor_row + 2
-    col = 2
+    win_row, win_col = unpack(vim.api.nvim_win_get_position(0))
+    row = vim.fn.winline()
+    col = vim.fn.wincol()
+    shift = math.max(0, col - math.floor(width / 2))
+    row = win_row + row + margin
+    col = win_col + shift
   end
 
   return width, height, row, col
@@ -172,6 +176,7 @@ function M.create_main_window(
 
   local win = vim.api.nvim_open_win(buf, true, win_config)
   win_config.win = win
+  win_config.margin = margin
   vim.api.nvim_win_set_cursor(win, { 2, 0 })
 
   utils.set_buf_option(buf, "modifiable", false)
