@@ -126,8 +126,10 @@ function M.setup(opts)
     if not M.config.picker.opts then
       M.config.picker.opts = vim.tbl_deep_extend("force", {}, default_picker_opts)
     else
-      M.config.picker.opts =
-        vim.tbl_deep_extend("force", {}, default_picker_opts, M.config.picker.opts)
+      if M.config.picker.opts[1] == "buffer" then
+        M.config.picker.opts =
+          vim.tbl_deep_extend("force", {}, default_picker_opts, M.config.picker.opts)
+      end
     end
   end
 
