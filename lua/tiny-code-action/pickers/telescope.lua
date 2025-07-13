@@ -54,6 +54,50 @@ function M.create(config, results, bufnr)
     return
   end
 
+  -- adapted from: github.com/Creator54/starter/commit/c603a68d7aa660787fec5cbe3b58d03cda50c1d3
+  vim.api.nvim_create_autocmd("TermClose", {
+    group = vim.api.nvim_create_augroup("DeleteProcessStatus", { clear = true }),
+    pattern = { "*" },
+    callback = function(ev)
+      local delete_line_timer = vim.fn.timer_start(
+        0,
+        function(t) ---@diagnostic disable-line: redundant-parameter
+          local process_exited_line = 0
+          local lines = vim.api.nvim_buf_get_lines(ev.buf, 0, -1, false)
+
+          for i = #lines, 1, -1 do
+            if lines[i]:match("%[Process exited 0%]") then
+              process_exited_line = i
+              break
+            end
+          end
+
+          if process_exited_line > 0 then
+            vim.api.nvim_set_option_value("modifiable", true, { buf = ev.buf })
+
+            vim.api.nvim_buf_set_lines(
+              ev.buf,
+              process_exited_line - 1,
+              process_exited_line,
+              true,
+              { "" }
+            )
+
+            vim.api.nvim_set_option_value("modifiable", false, { buf = ev.buf })
+
+            vim.fn.timer_stop(t)
+          end
+        end,
+
+        { ["repeat"] = -1 } -- repeat indefinitely but will be cancelled after 3 seconds
+      )
+      -- give at most 3 seconds of an attempt to delete the line
+      vim.defer_fn(function()
+        vim.fn.timer_stop(delete_line_timer)
+      end, 100)
+    end,
+  })
+
   M.config = config
   local previewer_module = M.init_previewer("telescope", config)
   local make_display = prepare_entry_display(results)
@@ -98,6 +142,7 @@ function M.create(config, results, bufnr)
 
         if close_picker then
           actions.close(prompt_bufnr)
+          vim.api.nvim_del_augroup_by_name("DeleteProcessStatus")
         end
 
         M.apply_action(action, client, context, bufnr)
