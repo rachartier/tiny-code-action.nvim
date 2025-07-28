@@ -23,7 +23,7 @@ function M.get_diff(bufnr, old_lines, new_lines, opts)
   }):sync()
 
   DiffSoFancyBackend:cleanup_files(old_file, new_file)
-  return DiffSoFancyBackend:remove_header_lines(
+  return DiffSoFancyBackend:process_diff(
     fancy_output,
     opts.backend_opts.diffsofancy.header_lines_to_remove
   )

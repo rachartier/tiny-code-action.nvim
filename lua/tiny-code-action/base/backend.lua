@@ -39,6 +39,14 @@ function BaseBackendFiles:remove_header_lines(diff_output, header_lines_to_remov
   return diff_output
 end
 
+--- Removes all occurrences of "$0" (cursor placeholder) from each line of the diff output.
+---@param diff_output table: Table of diff lines
+---@return table: Table of diff lines with "$0" removed
+function BaseBackendFiles:process_diff(diff_output, header_lines_to_remove)
+  local cleaned = self:remove_header_lines(diff_output, header_lines_to_remove)
+  return cleaned
+end
+
 function BaseBackendFiles:is_diff_content(lines)
   return require("tiny-code-action.terminal").is_diff_content(lines)
 end

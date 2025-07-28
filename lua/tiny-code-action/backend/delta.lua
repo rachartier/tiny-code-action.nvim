@@ -32,7 +32,7 @@ function M.get_diff(bufnr, old_lines, new_lines, opts)
   }):sync()
 
   DeltaBackend:cleanup_files(old_file, new_file)
-  return DeltaBackend:remove_header_lines(diff, opts.backend_opts.delta.header_lines_to_remove)
+  return DeltaBackend:process_diff(diff, opts.backend_opts.delta.header_lines_to_remove)
 end
 
 function M.is_diff_content(lines)
