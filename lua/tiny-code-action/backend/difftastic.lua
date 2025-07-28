@@ -28,7 +28,7 @@ function M.get_diff(bufnr, old_lines, new_lines, opts)
   }):sync()
 
   DifftasticBackend:cleanup_files(old_file, new_file)
-  return DifftasticBackend:remove_header_lines(
+  return DifftasticBackend:process_diff(
     diff,
     opts.backend_opts.difftastic.header_lines_to_remove
   )
