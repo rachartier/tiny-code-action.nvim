@@ -55,28 +55,36 @@ function M.resolve(action, bufnr, client, callback)
   end, bufnr)
 end
 
---- This function resolves a code action in a blocking manner.
+--- Resolves a code action in a blocking manner, waiting for the result or an error.
 --- @param action table: The code action to be resolved. The structure and content of this table
 ---                      depend on the specific language server protocol client in use.
 --- @param bufnr number: The buffer number where the action is to be applied.
 --- @param client table: The language server protocol client that will resolve the action.
+--- @param timeout_ms number: Optional timeout in milliseconds (default: 500)
 --- @return table, string: The result of the action resolution and any error that occurred. The
 ---                        structure of the result depends on the specific language server protocol
 ---                        client in use. The error is a string describing the error, or nil if no
 ---                        error occurred.
-function M.blocking_resolve(action, bufnr, client)
+function M.blocking_resolve(action, bufnr, client, timeout_ms)
   local result, err = nil, nil
+  local timeout = timeout_ms or 500
+  local start_time = vim.loop.hrtime()
 
   utils.add_client_methods(client)
   client:request("codeAction/resolve", action, function(e, res)
     result, err = res, e
   end, bufnr)
 
-  -- TODO: really hacky way to wait for the result... need to find a better way
   while result == nil and err == nil do
-    vim.wait(5, function()
+    local elapsed = (vim.loop.hrtime() - start_time) / 1000000 -- Convert to milliseconds
+    if elapsed > timeout then
+      err = "Code action resolve timeout after " .. timeout .. "ms"
+      break
+    end
+
+    vim.wait(10, function()
       return result ~= nil or err ~= nil
-    end, 1000)
+    end, 100)
   end
 
   return result, err

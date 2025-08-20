@@ -88,7 +88,8 @@ function M.new(opts)
     if
       lsp_actions.action_is_not_complete(action) and lsp_actions.support_resolve(client, bufnr)
     then
-      local action_result, err_action = lsp_actions.blocking_resolve(action, bufnr, client)
+      local timeout = previewer.config.resolve_timeout or 2000
+      local action_result, err_action = lsp_actions.blocking_resolve(action, bufnr, client, timeout)
 
       if err_action then
         if action_result ~= nil and action_result.command then
@@ -98,12 +99,12 @@ function M.new(opts)
             true,
             {
               "Unable to preview code action.",
-              "The code action cannot be completed by your LSP.",
+              "Error: " .. tostring(err_action),
+              "This action may still work when applied directly.",
             }
         end
-      else
-        return action_result, false, nil
       end
+      return action_result, false, nil
     end
 
     return action, false, nil
