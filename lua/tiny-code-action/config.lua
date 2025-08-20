@@ -68,6 +68,7 @@ M.default_config = {
       header_lines_to_remove = 4,
     },
   },
+  resolve_timeout = 100,
   signs = {
     quickfix = { "", { link = "DiagnosticWarning" } },
     others = { "", { link = "DiagnosticWarning" } },
