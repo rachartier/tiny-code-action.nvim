@@ -76,7 +76,7 @@ function M.code_action(opts)
     if type(M.config.picker) == "table" then
       picker_name = M.config.picker[1]
     else
-      picker_name = M.config.picker or "telescope"
+      picker_name = M.config.picker or picker_util.autodetect_picker()
     end
 
     local picker_module = picker_util.get_picker_module(picker_name)
@@ -113,6 +113,11 @@ end
 --- @param opts table: User configuration options
 function M.setup(opts)
   M.config = vim.tbl_deep_extend("force", {}, M.config, opts or {})
+
+  -- If no picker is configured, use autodetection
+  if not M.config.picker then
+    M.config.picker = picker_util.autodetect_picker()
+  end
 
   local picker_name = type(M.config.picker) == "table" and M.config.picker[1] or M.config.picker
   local default_picker_opts = M.picker_config[picker_name] or {}
