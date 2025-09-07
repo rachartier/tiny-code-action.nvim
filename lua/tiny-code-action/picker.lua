@@ -29,6 +29,9 @@ function M.get_picker_module(picker_name)
   elseif picker_name == "select" then
     vim.notify("Select picker is not available. Falling back to buffer.", vim.log.levels.WARN)
     return M.get_picker_module("buffer")
+  elseif picker_name == "fzf-lua" then
+    vim.notify("Fzflua picker is not available. No picker could be loaded.", vim.log.levels.ERROR)
+    return M.get_picker_module("select")
   elseif picker_name == "buffer" then
     vim.notify("Buffer picker is not available. No picker could be loaded.", vim.log.levels.ERROR)
     return nil
