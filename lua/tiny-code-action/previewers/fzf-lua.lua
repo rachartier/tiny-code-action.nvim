@@ -63,8 +63,20 @@ local function preview_buf(opts)
   function CodeActionPreviewerBuf:populate_preview_buf(entry_str)
     local preview_content = extract_preview_data(entry_str, opts)
 
+    local sanitized_preview = {}
+
+    for _, line in ipairs(preview_content) do
+      if type(line) == "string" and line:find("\n") then
+        local split_lines = vim.split(line, "\n", { plain = true })
+        vim.list_extend(sanitized_preview, split_lines)
+      else
+        table.insert(sanitized_preview, line)
+      end
+    end
+
     local temp_buf = self:get_tmp_buffer()
-    vim.api.nvim_buf_set_lines(temp_buf, 0, -1, false, preview_content)
+
+    vim.api.nvim_buf_set_lines(temp_buf, 0, -1, false, sanitized_preview)
     utils.set_buf_option(temp_buf, "filetype", "diff")
 
     self:set_preview_buf(temp_buf)
