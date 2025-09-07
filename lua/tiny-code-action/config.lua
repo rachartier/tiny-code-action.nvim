@@ -5,6 +5,7 @@ M.VALID_PICKERS = {
   snacks = true,
   select = true,
   buffer = true,
+  ["fzf-lua"] = true,
 }
 
 M.VALID_BACKENDS = {
