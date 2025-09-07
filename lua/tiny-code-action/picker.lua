@@ -1,6 +1,44 @@
 local config = require("tiny-code-action.config")
 local M = {}
 
+--- Checks if a specific picker is available on the system
+--- @param picker_name string: Name of the picker to check
+--- @return boolean: True if picker is available
+local function is_picker_available(picker_name)
+  if picker_name == "telescope" then
+    return pcall(require, "telescope")
+  elseif picker_name == "fzf-lua" then
+    return pcall(require, "fzf-lua")
+  elseif picker_name == "snacks" then
+    return pcall(require, "snacks")
+  elseif picker_name == "select" then
+    return vim.ui and vim.ui.select ~= nil
+  elseif picker_name == "buffer" then
+    return true
+  end
+  return false
+end
+
+--- Autodetects the best available picker on the system
+--- @return string: Name of the detected picker
+function M.autodetect_picker()
+  local picker_priority = {
+    "telescope",
+    "fzf-lua",
+    "snacks",
+    "select",
+    "buffer",
+  }
+
+  for _, picker_name in ipairs(picker_priority) do
+    if is_picker_available(picker_name) then
+      return picker_name
+    end
+  end
+
+  return "buffer"
+end
+
 -- Get a picker module by name, with fallbacks
 --- Retrieves a picker module by name, with fallbacks to defaults if unavailable.
 --- @param picker_name string: Name of the picker module
@@ -8,35 +46,39 @@ local M = {}
 function M.get_picker_module(picker_name)
   if not config.VALID_PICKERS[picker_name] then
     vim.notify(
-      "Invalid picker: " .. picker_name .. ". Using default 'telescope'.",
+      "Invalid picker: " .. picker_name .. ". Using autodetected picker.",
       vim.log.levels.WARN
     )
-    return M.get_picker_module("telescope")
+    return M.get_picker_module(M.autodetect_picker())
   end
+
   local has_picker, picker_module = pcall(require, "tiny-code-action.pickers." .. picker_name)
   if has_picker then
     return picker_module
   end
-  if picker_name == "telescope" then
+
+  local fallback_chain = {
+    telescope = "fzf-lua",
+    ["fzf-lua"] = "snacks",
+    snacks = "select",
+    select = "buffer",
+    buffer = nil,
+  }
+
+  local fallback = fallback_chain[picker_name]
+  if fallback and is_picker_available(fallback) then
     vim.notify(
-      "Telescope picker is not available. Falling back to vim.ui.select.",
+      picker_name:gsub("^%l", string.upper)
+        .. " picker is not available. Falling back to "
+        .. fallback
+        .. ".",
       vim.log.levels.WARN
     )
-    return M.get_picker_module("select")
-  elseif picker_name == "snacks" then
-    vim.notify("Snacks picker is not available. Falling back to telescope.", vim.log.levels.WARN)
-    return M.get_picker_module("telescope")
-  elseif picker_name == "select" then
-    vim.notify("Select picker is not available. Falling back to buffer.", vim.log.levels.WARN)
-    return M.get_picker_module("buffer")
-  elseif picker_name == "fzf-lua" then
-    vim.notify("Fzflua picker is not available. No picker could be loaded.", vim.log.levels.ERROR)
-    return M.get_picker_module("select")
-  elseif picker_name == "buffer" then
-    vim.notify("Buffer picker is not available. No picker could be loaded.", vim.log.levels.ERROR)
-    return nil
+    return M.get_picker_module(fallback)
+  elseif fallback then
+    return M.get_picker_module(fallback)
   else
-    vim.notify("Could not load any picker module. This should not happen.", vim.log.levels.ERROR)
+    vim.notify("No picker could be loaded.", vim.log.levels.ERROR)
     return nil
   end
 end

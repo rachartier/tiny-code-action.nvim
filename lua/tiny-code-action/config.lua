@@ -49,7 +49,7 @@ M.picker_config = {
 
 M.default_config = {
   backend = "vim",
-  picker = "telescope",
+  picker = nil,
   backend_opts = {
     delta = {
       header_lines_to_remove = 4,
