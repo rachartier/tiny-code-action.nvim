@@ -15,7 +15,7 @@ The code action protocol is nearly fully implemented in this plugin, so you can 
 > [!WARNING]
 > I have not tested on all LSP, so do not hesitate to open an issue if it doesn't work for you.
 
-## 🖼️ Preview
+## Preview
 
 ### Delta
 
@@ -34,7 +34,7 @@ The code action protocol is nearly fully implemented in this plugin, so you can 
 ![tiny_code_action_buffer](https://github.com/user-attachments/assets/2ae62822-90c5-4314-b334-905b08e1cd43)
 
 
-## 📥 Installation
+## Installation
 
 > [!NOTE]
 > This plugins comes with NerdFonts icons by default.
@@ -73,7 +73,7 @@ vim.keymap.set({ "n", "x" }, "<leader>ca", function()
 end, { noremap = true, silent = true })
 ```
 
-## ⚙️ Options
+## Options
 
 > [!NOTE]
 > To use the delta backend you must install delta ![dandavison/delta](https://github.com/dandavison/delta)
@@ -332,7 +332,7 @@ You can use all filtering mechanisms together; they are applied in the following
 
 Only code actions that pass all enabled filters will be shown.
 
-## ❓ FAQ:
+## FAQ:
 
 - How to look like the preview?
 	- You can find my `delta` configuration here: ![rachartier/dotfiles/delta](https://github.com/rachartier/dotfiles/tree/main/.config/delta)
