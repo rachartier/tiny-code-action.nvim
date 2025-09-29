@@ -279,7 +279,7 @@ Filters can be provided via the `filters` option, the `context.only` option (LSP
 
 ### 1. LSP Kind Filter (`context.only`)
 
-If you pass an `opts.context = { only = ... }` object, only code actions matching the specified LSP CodeActionKind will be included.
+If you pass an `opts.context = { only = ... }` object, only code actions matching the specified LSP CodeActionKind will be included. Matching follows the LSP hierarchy rules: a filter like `"refactor"` will include actions with kind exactly `"refactor"` or any child such as `"refactor.extract"`, `"refactor.inline"`, etc.
 
 ```lua
 require("tiny-code-action").code_action({
