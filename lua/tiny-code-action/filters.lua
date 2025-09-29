@@ -1,40 +1,48 @@
 local M = {}
 
---- Filter code actions by certain criteria.
---- @param results table: List of code action results.
---- @param filters table: Table of filter criteria.
---- @return table: Filtered list of code action results.
+--- Filter code actions.
+--- Keys:
+---  only: LSP kind hierarchy (string or list)
+---  others: exact match (value or list of values)
+--- Each result item is kept only if all keys match.
+--- @param results table
+--- @param filters table
+--- @return table
 function M.filter_code_actions(results, filters)
   if not filters or next(filters) == nil then
     return results
   end
   local filtered = {}
-  for _, result in ipairs(results) do
-    local match = true
+  for _, r in ipairs(results) do
+    local ok = true
     for k, v in pairs(filters) do
-      local val = result.action[k]
-      if type(v) == "table" then
-        local found = false
-        for _, vv in ipairs(v) do
-          if val == vv then
-            found = true
-            break
-          end
+      if k == "only" then
+        local ak = r.action.kind
+        if not ak then ok = false break end
+        local function match_one(fk)
+          return type(fk) == "string" and (ak == fk or ak:sub(1, #fk + 1) == fk .. ".")
         end
-        if not found then
-          match = false
-          break
+        if type(v) == "string" then
+          if not match_one(v) then ok = false break end
+        elseif type(v) == "table" then
+          local any = false
+          for _, fk in ipairs(v) do if match_one(fk) then any = true break end end
+          if not any then ok = false break end
+        else
+          ok = false break
         end
       else
-        if val ~= v then
-          match = false
-          break
+        local val = r.action[k]
+        if type(v) == "table" then
+          local found = false
+          for _, vv in ipairs(v) do if val == vv then found = true break end end
+          if not found then ok = false break end
+        else
+          if val ~= v then ok = false break end
         end
       end
     end
-    if match then
-      table.insert(filtered, result)
-    end
+    if ok then table.insert(filtered, r) end
   end
   return filtered
 end

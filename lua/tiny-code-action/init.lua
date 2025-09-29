@@ -26,6 +26,7 @@ function M.code_action(opts)
       opts = {}
     end
     if opts.context and opts.context.only then
+      -- Use 'only' key to leverage LSP kind prefix semantics implemented in filters
       results = filters.filter_code_actions(results, { only = opts.context.only })
     end
     if opts.filters ~= nil then
