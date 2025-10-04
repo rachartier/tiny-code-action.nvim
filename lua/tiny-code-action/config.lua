@@ -43,6 +43,7 @@ M.picker_config = {
     keymaps = {
       preview = "K",
       close = "q",
+      select = "<CR>",
     },
   },
 }
