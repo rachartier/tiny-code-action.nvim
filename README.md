@@ -207,7 +207,7 @@ end
 - **winborder**: Style for window borders; falls back to `vim.o.winborder` or `"rounded"`.
 - **keymaps**: Customizable key mappings for picker interactions:
   - `preview`: Key to show/toggle preview (default: `"K"`)
-  - `close`: Key(s) to close the picker window (default: `{ "q", "<Esc>" }`, can be string or table)
+  - `close`: Key(s) to close the picker window (default: `"q"`, can be string or table)
   - `select`: Key(s) to select/apply an action (default: `"<CR>"`, can be string or table)
 - **custom_keys**: Allows users to assign custom hotkeys to specific actions.
 
@@ -243,45 +243,6 @@ custom_keys = {
 Note: This format doesn't allow duplicate keys and only supports exact string matching.
 
 The array format is recommended as it provides more flexibility for complex use cases while maintaining backward compatibility.
-
-### Usage Examples
-
-#### Custom Key Mappings for Selection and Closing
-
-You can customize the key mappings to suit your preferences. For example, to use `;` for selection and ensure ESC closes the window:
-
-```lua
-require("tiny-code-action").setup({
-  picker = {
-    "buffer",
-    opts = {
-      keymaps = {
-        select = ";", -- Use semicolon to select actions
-        close = { "q", "<Esc>" }, -- Both 'q' and ESC will close the window
-        preview = "K", -- Keep default preview key
-      },
-    },
-  },
-})
-```
-
-#### Multiple Selection Keys
-
-You can also define multiple keys for the same action:
-
-```lua
-require("tiny-code-action").setup({
-  picker = {
-    "buffer", 
-    opts = {
-      keymaps = {
-        select = { "<CR>", ";" }, -- Both Enter and semicolon select actions
-        close = { "q", "<Esc>", "<C-c>" }, -- Multiple ways to close
-      },
-    },
-  },
-})
-```
 
 ### Autocmds (only for `buffer` picker)
 
