@@ -138,8 +138,6 @@ function M.create_main_window(
   match_hl_kind
 )
   local keymaps = config.picker and config.picker.opts and config.picker.opts.keymaps or {}
-  local auto_accept = config.picker and config.picker.opts and config.picker.opts.auto_accept
-    or false
   local preview_key = keymaps.preview or "K"
   local close_keys = keymaps.close or "q"
   local select_keys = keymaps.select or "<CR>"
