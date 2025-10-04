@@ -141,12 +141,21 @@ function M.create_main_window(
   local auto_accept = config.picker and config.picker.opts and config.picker.opts.auto_accept
     or false
   local preview_key = keymaps.preview or "K"
-  local close_key = keymaps.close or "q"
+  local close_keys = keymaps.close or "q"
+  local select_keys = keymaps.select or "<CR>"
+
+  if type(close_keys) == "string" then
+    close_keys = { close_keys }
+  end
+  if type(select_keys) == "string" then
+    select_keys = { select_keys }
+  end
 
   local footer = string.format(
-    " Press <CR> to apply action │ %s: preview │ %s: quit ",
+    " Press %s to apply action │ %s: preview │ %s: quit ",
+    table.concat(select_keys, "/"),
     preview_key,
-    close_key
+    table.concat(close_keys, "/")
   )
 
   local width, height, row, col = calculate_window_position(lines, config)
@@ -235,9 +244,19 @@ function M.create_main_window(
   end
 
   local keymap_opts = { buffer = buf, nowait = true }
-  vim.keymap.set("n", "<CR>", handle_selection, keymap_opts)
+
+  -- Set up select keymaps
+  for _, key in ipairs(select_keys) do
+    vim.keymap.set("n", key, handle_selection, keymap_opts)
+  end
+
+  -- Set up preview keymap
   vim.keymap.set("n", preview_key, handle_preview, keymap_opts)
-  vim.keymap.set("n", close_key, close_window, keymap_opts)
+
+  -- Set up close keymaps
+  for _, key in ipairs(close_keys) do
+    vim.keymap.set("n", key, close_window, keymap_opts)
+  end
 
   setup_hotkey_navigation(buf, config, line_to_hotkey, handle_selection)
   setup_window_autocmds(
