@@ -178,6 +178,24 @@ function M.show_preview(
     preview_state.bufnr = bufnr
     preview_state.previewer = previewer
 
+    vim.api.nvim_create_autocmd("WinLeave", {
+      buffer = preview_buf,
+      callback = function()
+        vim.schedule(function()
+          local current_win = vim.api.nvim_get_current_win()
+          
+          if preview_state.main_win and current_win == preview_state.main_win then
+            return
+          end
+          
+          if preview_state.main_win and vim.api.nvim_win_is_valid(preview_state.main_win) then
+            vim.api.nvim_win_close(preview_state.main_win, true)
+          end
+          M.close_preview()
+        end)
+      end,
+    })
+
     vim.api.nvim_exec_autocmds("User", {
       pattern = "TinyCodeActionWindowEnterPreview",
       data = {

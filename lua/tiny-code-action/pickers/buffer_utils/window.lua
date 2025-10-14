@@ -82,6 +82,25 @@ local function setup_window_autocmds(
       end,
     })
   end
+
+  vim.api.nvim_create_autocmd("WinLeave", {
+    buffer = buf,
+    callback = function()
+      vim.schedule(function()
+        local preview_state = preview.get_preview_state()
+        local current_win = vim.api.nvim_get_current_win()
+        
+        if preview_state.win and current_win == preview_state.win then
+          return
+        end
+        
+        if vim.api.nvim_win_is_valid(win) then
+          vim.api.nvim_win_close(win, true)
+        end
+        preview.close_preview()
+      end)
+    end,
+  })
 end
 
 local function setup_hotkey_navigation(buf, config, line_to_hotkey, handle_selection_cb)
