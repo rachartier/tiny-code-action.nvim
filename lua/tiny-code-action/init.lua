@@ -36,7 +36,7 @@ function M.code_action(opts)
       local filtered_results = {}
 
       for _, result in ipairs(results) do
-        if opts.filter(result.action) then
+        if opts.filter(result.action, result.client) then
           table.insert(filtered_results, result)
         end
       end
