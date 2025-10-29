@@ -51,27 +51,6 @@ function M.code_action(opts)
       return
     end
 
-    if opts.apply and #results == 1 then
-      local action = results[1]
-
-      if action.action.edit then
-        vim.lsp.util.apply_workspace_edit(action.action.edit, action.client.offset_encoding)
-      end
-
-      if action.action.command then
-        if action.client.commands and action.client.commands[action.action.command.command] then
-          action.client.commands[action.action.command.command](
-            action.action.command,
-            { bufnr = bufnr }
-          )
-        else
-          action.client:exec_cmd(action.action.command, { bufnr = bufnr })
-        end
-      end
-
-      return
-    end
-
     local picker_name
 
     if type(M.config.picker) == "table" then
@@ -87,6 +66,13 @@ function M.code_action(opts)
         "No picker module could be loaded. Aborting code action display.",
         vim.log.levels.ERROR
       )
+      return
+    end
+
+    if opts.apply and #results == 1 then
+      local lsp_actions = require("tiny-code-action.action")
+      local result = results[1]
+      lsp_actions.apply(result.action, result.client, result.context)
       return
     end
 
