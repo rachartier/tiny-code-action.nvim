@@ -320,12 +320,12 @@ require("tiny-code-action").code_action({
 
 ### 3. Custom Filter Function (`filter` option)
 
-You can supply a custom filter function, which will be called for each action. The function receives the action object and should return true to include it.
+You can supply a custom filter function, which will be called for each action. The function receives the action and client objects and should return true to include it.
 
 Example:
 ```lua
 require("tiny-code-action").code_action({
-    filter = function(action)
+    filter = function(action, client)
         -- Only show actions that have "Rename" in the title and are preferred
         return action.title:find("Rename") and action.isPreferred
     end,
