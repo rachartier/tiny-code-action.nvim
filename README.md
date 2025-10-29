@@ -349,7 +349,7 @@ Only code actions that pass all enabled filters will be shown.
 
 - How can I find the kinds of actions?
   - Use a temporary filter function to print the available actions:
-    ```
+    ```lua
     require("tiny-code-action").code_action({
       filter = function(action, client)
         local client_name = client.name
