@@ -347,3 +347,15 @@ Only code actions that pass all enabled filters will be shown.
 	- You can find my `delta` configuration here: ![rachartier/dotfiles/delta](https://github.com/rachartier/dotfiles/tree/main/.config/delta)
   - Then you can set the `config_path` to the path of your configuration file.
 
+- How can I find the kinds of actions?
+  - Use a temporary filter function to print the available actions:
+    ```
+    require("tiny-code-action").code_action({
+      filter = function(action, client)
+        local client_name = client.name
+        local kind = action.kind
+        local title = action.title
+        vim.print(client_name, kind, title)
+      end,
+    })
+    ```
