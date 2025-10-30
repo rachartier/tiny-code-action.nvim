@@ -56,6 +56,9 @@ local function setup_window_autocmds(
 
   if config.picker and config.picker.opts and config.picker.opts.auto_preview then
     local function auto_preview()
+      if not vim.api.nvim_win_is_valid(win) then
+        return
+      end
       local cursor_line = vim.api.nvim_win_get_cursor(win)[1]
       local action_item = line_to_action[cursor_line]
       if action_item then
@@ -263,10 +266,9 @@ function M.create_main_window(
         ns = ns,
         match_hl_kind = match_hl_kind,
       }
-      require("tiny-code-action.pickers.buffer").create(config, action_item.children, bufnr, true)
-
       vim.api.nvim_win_close(win, true)
       preview.close_preview()
+      require("tiny-code-action.pickers.buffer").create(config, action_item.children, bufnr, true)
       return
     end
 
