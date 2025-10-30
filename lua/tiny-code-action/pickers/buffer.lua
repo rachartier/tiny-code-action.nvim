@@ -1,5 +1,6 @@
 local BasePicker = require("tiny-code-action.base.picker")
 local categories = require("tiny-code-action.pickers.buffer_utils.categories")
+local groups = require("tiny-code-action.pickers.buffer_utils.groups")
 local display = require("tiny-code-action.pickers.buffer_utils.display")
 local hotkeys = require("tiny-code-action.pickers.buffer_utils.hotkeys")
 local window = require("tiny-code-action.pickers.buffer_utils.window")
@@ -12,21 +13,20 @@ local ns = vim.api.nvim_create_namespace("tiny_code_action_buffer")
 --- @param config table: Picker configuration
 --- @param results table: List of code action results
 --- @param bufnr number: Buffer number
---- @param nested boolean?: If this is a nested menu. This is relevant for grouped actions
+--- @param nested boolean?: If this is a nested menu for grouped actions
 function M.create(config, results, bufnr, nested)
   hotkeys.add_config_keymaps_to_reserved(config)
 
-  local actions = {}
   local categorised_actions = categories.group_actions_by_category(results)
+  local actions = categorised_actions
+
+  -- Apply grouping only for top-level picker
   if not nested then
-    actions = require("tiny-code-action.pickers.buffer_utils.groups").group_actions_by_group(
-      categorised_actions,
-      config.picker and config.picker.opts and config.picker.opts.group_icon
-        or require("tiny-code-action.config").picker_config.buffer.group_icon
-    )
-  else
-    actions = categorised_actions
+    local group_icon = config.picker and config.picker.opts and config.picker.opts.group_icon
+      or require("tiny-code-action.config").picker_config.buffer.group_icon
+    actions = groups.group_actions_by_group(categorised_actions, group_icon)
   end
+
   local hotkeys_mode = "text_diff_based"
 
   M._hotkey_enabled = config.picker and config.picker.opts and config.picker.opts.hotkeys
@@ -66,7 +66,9 @@ function M.create(config, results, bufnr, nested)
     config,
     M.apply_action,
     ns,
-    M.match_hl_kind
+    M.match_hl_kind,
+    nested,
+    results
   )
 end
 

@@ -44,7 +44,7 @@ function M.calculate_window_size(lines)
     max_width = math.max(max_width, #line)
   end
 
-  local width = math.max(58, max_width)
+  local width = math.max(62, max_width)
   local height = #lines
 
   return width, height

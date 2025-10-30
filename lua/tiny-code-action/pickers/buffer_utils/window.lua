@@ -5,6 +5,9 @@ local margin = 2
 
 local M = {}
 
+local parent_win_coords = nil
+local parent_state = nil
+
 local function resolve_border_style(config)
   if config and config.picker and config.picker.opts and config.picker.opts.winborder ~= nil then
     return config.picker.opts.winborder
@@ -16,9 +19,8 @@ end
 
 local function calculate_window_position(lines, config)
   local width, height = display.calculate_window_size(lines)
-  if config._tca_parent_win_coords then
-    local p = config._tca_parent_win_coords
-    return width, height, p.row, p.col
+  if parent_win_coords then
+    return width, height, parent_win_coords.row, parent_win_coords.col
   end
   local row, col, win_row, win_col, shift
   local position = config.picker and config.picker.opts and config.picker.opts.position or "cursor"
@@ -147,6 +149,8 @@ end
 --- @param apply_action_fn function: Function to apply a code action
 --- @param ns number: Highlight namespace
 --- @param match_hl_kind table: Highlight groups for categories
+--- @param nested boolean?: If this is a nested menu for grouped actions
+--- @param original_results table?: Original unprocessed results for parent state storage
 --- @return number win
 function M.create_main_window(
   bufnr,
@@ -158,12 +162,16 @@ function M.create_main_window(
   config,
   apply_action_fn,
   ns,
-  match_hl_kind
+  match_hl_kind,
+  nested,
+  original_results
 )
+  local default_keymaps = require("tiny-code-action.config").picker_config.buffer.keymaps
   local keymaps = config.picker and config.picker.opts and config.picker.opts.keymaps or {}
-  local preview_key = keymaps.preview or "K"
-  local close_keys = keymaps.close or "q"
-  local select_keys = keymaps.select or "<CR>"
+  local preview_key = keymaps.preview or default_keymaps.preview
+  local close_keys = keymaps.close or default_keymaps.close
+  local select_keys = keymaps.select or default_keymaps.select
+  local back_key = keymaps.back or default_keymaps.back
 
   if type(close_keys) == "string" then
     close_keys = { close_keys }
@@ -172,12 +180,23 @@ function M.create_main_window(
     select_keys = { select_keys }
   end
 
-  local footer = string.format(
-    " Press %s to apply action │ %s: preview │ %s: quit ",
-    table.concat(select_keys, "/"),
-    preview_key,
-    table.concat(close_keys, "/")
-  )
+  local footer
+  if nested then
+    footer = string.format(
+      " Press %s to apply action │ %s: preview │ %s: back │ %s: quit ",
+      table.concat(select_keys, "/"),
+      preview_key,
+      back_key,
+      table.concat(close_keys, "/")
+    )
+  else
+    footer = string.format(
+      " Press %s to apply action │ %s: preview │ %s: quit ",
+      table.concat(select_keys, "/"),
+      preview_key,
+      table.concat(close_keys, "/")
+    )
+  end
 
   local width, height, row, col = calculate_window_position(lines, config)
 
@@ -235,10 +254,15 @@ function M.create_main_window(
     local action_item = line_to_action[cursor_line]
 
     if action_item and action_item.is_group then
-      -- clear used hotkeys so that selection works properly
-      config._tca_used_hotkeys = {}
-      config._tca_parent_win_coords = { row = win_config.row, col = win_config.col }
-      -- nested picker: reopen with child action
+      parent_win_coords = { row = win_config.row, col = win_config.col }
+      parent_state = {
+        bufnr = bufnr,
+        config = config,
+        results = original_results,
+        previewer = previewer,
+        ns = ns,
+        match_hl_kind = match_hl_kind,
+      }
       require("tiny-code-action.pickers.buffer").create(config, action_item.children, bufnr, true)
 
       vim.api.nvim_win_close(win, true)
@@ -272,10 +296,31 @@ function M.create_main_window(
     end
   end
 
+  local function handle_back()
+    if not parent_state then
+      return
+    end
+
+    vim.api.nvim_win_close(win, true)
+    preview.close_preview()
+
+    local saved_state = parent_state
+    parent_state = nil
+    parent_win_coords = nil
+
+    require("tiny-code-action.pickers.buffer").create(
+      saved_state.config,
+      saved_state.results,
+      saved_state.bufnr,
+      false
+    )
+  end
+
   local function close_window()
     vim.api.nvim_win_close(win, true)
     preview.close_preview()
-    config._tca_parent_win_coords = nil
+    parent_win_coords = nil
+    parent_state = nil
   end
 
   local keymap_opts = { buffer = buf, nowait = true }
@@ -287,6 +332,11 @@ function M.create_main_window(
 
   -- Set up preview keymap
   vim.keymap.set("n", preview_key, handle_preview, keymap_opts)
+
+  -- Set up back keymap (only for nested pickers)
+  if nested then
+    vim.keymap.set("n", back_key, handle_back, keymap_opts)
+  end
 
   -- Set up close keymaps
   for _, key in ipairs(close_keys) do
