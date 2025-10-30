@@ -23,10 +23,12 @@ function M.term_previewer(bufnr, ctx)
     preview_content = { "No preview available for this action" }
   end
 
-  utils.set_win_option(ctx.win, "statuscolumn", "")
-  utils.set_win_option(ctx.win, "number", false)
-  utils.set_win_option(ctx.win, "relativenumber", false)
-  utils.set_win_option(ctx.win, "spell", false)
+  if ctx.win and vim.api.nvim_win_is_valid(ctx.win) then
+    utils.set_win_option(ctx.win, "statuscolumn", "")
+    utils.set_win_option(ctx.win, "number", false)
+    utils.set_win_option(ctx.win, "relativenumber", false)
+    utils.set_win_option(ctx.win, "spell", false)
+  end
 
   if terminal.is_diff_content(preview_content) then
     safe_buf_op(function()
