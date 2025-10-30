@@ -81,6 +81,7 @@ local function setup_window_autocmds(
         auto_preview()
       end,
     })
+    auto_preview()
   else
     vim.api.nvim_create_autocmd("CursorMoved", {
       buffer = buf,
@@ -205,6 +206,7 @@ function M.create_main_window(
 
   local buf = vim.api.nvim_create_buf(false, true)
 
+  vim.api.nvim_buf_set_option(buf, "modifiable", true)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
 
   display.add_icon_highlighting(buf, lines, config.signs, match_hl_kind, ns)
