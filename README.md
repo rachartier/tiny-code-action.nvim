@@ -332,7 +332,7 @@ require("tiny-code-action").code_action({
 })
 ```
 
-#### 4. Combined Filtering
+### 4. Combined Filtering
 
 You can use all filtering mechanisms together; they are applied in the following order:
 1. `context.only`
@@ -340,6 +340,82 @@ You can use all filtering mechanisms together; they are applied in the following
 3. `filter` function
 
 Only code actions that pass all enabled filters will be shown.
+
+## Sorting
+
+You can customize the order in which code actions appear using the `sort` option. By default, actions marked as `isPreferred` by the LSP are placed at the top. You can override this with a custom sorting function.
+
+The sort function receives two result objects (`a` and `b`) and should return `true` if `a` should appear before `b`. Each result object contains:
+- `action`: The code action object (with `title`, `kind`, `isPreferred`, etc.)
+- `client`: The LSP client object (with `name`, etc.)
+- `context`: The context in which the action was requested
+
+### Global Configuration
+
+Set a default sort order in your setup:
+
+```lua
+require("tiny-code-action").setup({
+  sort = function(a, b)
+    -- Prioritize actions from rust_analyzer
+    if a.client.name == "rust_analyzer" and b.client.name ~= "rust_analyzer" then
+      return true
+    elseif a.client.name ~= "rust_analyzer" and b.client.name == "rust_analyzer" then
+      return false
+    end
+    
+    -- Sort by action kind alphabetically
+    local a_kind = a.action.kind or ""
+    local b_kind = b.action.kind or ""
+    return a_kind < b_kind
+  end
+})
+```
+
+### Per-Call Sorting
+
+Override the sort order for a specific invocation:
+
+```lua
+require("tiny-code-action").code_action({
+  sort = function(a, b)
+    -- Prioritize "Disable" actions
+    local a_is_disable = string.match(a.action.title, "Disable") ~= nil
+    local b_is_disable = string.match(b.action.title, "Disable") ~= nil
+    
+    if a_is_disable and not b_is_disable then
+      return true
+    elseif not a_is_disable and b_is_disable then
+      return false
+    end
+    
+    return false
+  end,
+})
+```
+
+### Example: Prioritize Specific Action Types
+
+```lua
+-- Prioritize quickfix actions, then refactoring, then everything else
+require("tiny-code-action").code_action({
+  sort = function(a, b)
+    local function get_priority(kind)
+      if string.match(kind or "", "^quickfix") then return 1 end
+      if string.match(kind or "", "^refactor") then return 2 end
+      return 3
+    end
+    
+    local a_priority = get_priority(a.action.kind)
+    local b_priority = get_priority(b.action.kind)
+    
+    return a_priority < b_priority
+  end,
+})
+```
+
+> [!NOTE]
+> The custom sort function is applied **after** the default `isPreferred` sorting, so preferred actions will still be prioritized unless you explicitly override this behavior in your sort function.
 
 ## FAQ:
 
