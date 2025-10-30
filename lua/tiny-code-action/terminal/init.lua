@@ -40,7 +40,7 @@ function M.colorize(buf, opts)
         end
       end)
 
-      cleaned = cleaned:gsub("%[", "\027[")
+      cleaned = cleaned:gsub("\\27%[", "\27[")
       table.insert(cleaned_lines, cleaned)
     end
 
