@@ -16,6 +16,10 @@ end
 
 local function calculate_window_position(lines, config)
   local width, height = display.calculate_window_size(lines)
+  if config._tca_parent_win_coords then
+    local p = config._tca_parent_win_coords
+    return width, height, p.row, p.col
+  end
   local row, col, win_row, win_col, shift
   local position = config.picker and config.picker.opts and config.picker.opts.position or "cursor"
 
@@ -89,11 +93,11 @@ local function setup_window_autocmds(
       vim.schedule(function()
         local preview_state = preview.get_preview_state()
         local current_win = vim.api.nvim_get_current_win()
-        
+
         if preview_state.win and current_win == preview_state.win then
           return
         end
-        
+
         if vim.api.nvim_win_is_valid(win) then
           vim.api.nvim_win_close(win, true)
         end
@@ -233,6 +237,7 @@ function M.create_main_window(
     if action_item and action_item.is_group then
       -- clear used hotkeys so that selection works properly
       config._tca_used_hotkeys = {}
+      config._tca_parent_win_coords = { row = win_config.row, col = win_config.col }
       -- nested picker: reopen with child action
       require("tiny-code-action.pickers.buffer").create(config, action_item.children, bufnr, true)
 
@@ -270,6 +275,7 @@ function M.create_main_window(
   local function close_window()
     vim.api.nvim_win_close(win, true)
     preview.close_preview()
+    config._tca_parent_win_coords = nil
   end
 
   local keymap_opts = { buffer = buf, nowait = true }
