@@ -45,6 +45,7 @@ M.picker_config = {
       close = "q",
       select = "<CR>",
     },
+		group_icon = "▶ ",
   },
 }
 

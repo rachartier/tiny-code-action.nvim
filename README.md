@@ -185,6 +185,7 @@ require("tiny-code-action").setup({
         { key = 'm', pattern = 'Fill match arms' },
         { key = 'r', pattern = 'Rename.*' }, -- Lua pattern matching
       },
+      group_icon = " └",
     },
   },
 })
@@ -216,6 +217,7 @@ end
   - `close`: Key(s) to close the picker window (default: `"q"`, can be string or table)
   - `select`: Key(s) to select/apply an action (default: `"<CR>"`, can be string or table)
 - **custom_keys**: Allows users to assign custom hotkeys to specific actions.
+- **group_icon**: Sets the string used for grouped keymaps (default: `"▶ "`)
 
 ### Custom Keys
 
