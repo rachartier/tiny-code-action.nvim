@@ -7,15 +7,25 @@ local RESERVED_HOTKEYS = {
   j = true,
 }
 
---- Adds configured keymaps to the set of reserved hotkeys.
---- @param config table: Picker configuration
-function M.add_config_keymaps_to_reserved(config)
-  local keymaps = config.picker and config.picker.opts and config.picker.opts.keymaps or {}
+--- Adds given keymaps to the set of reserved hotkeys.
+--- @param keymaps table: Configured keymaps.
+--- This can be a string or a table (in some cases)
+local function add_keymaps_list_to_reserved(keymaps)
   for _, key in pairs(keymaps) do
     if type(key) == "string" then
       RESERVED_HOTKEYS[key:lower()] = true
+    elseif type(key) == "table" then
+      add_keymaps_list_to_reserved(key)
     end
   end
+end
+
+--- Adds configured keymaps to the set of reserved hotkeys.
+--- @param config table: Picker configuration
+function M.add_config_keymaps_to_reserved(config)
+  local keymaps = config.picker and config.picker.opts and config.picker.opts.keymaps
+    or require("tiny-code-action.config").picker_config.buffer.keymaps
+  add_keymaps_list_to_reserved(keymaps)
 end
 
 --- Checks if a hotkey is reserved.
