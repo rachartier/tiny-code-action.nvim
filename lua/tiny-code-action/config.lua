@@ -44,8 +44,9 @@ M.picker_config = {
       preview = "K",
       close = "q",
       select = "<CR>",
+      back = "<Backspace>",
     },
-		group_icon = "▶ ",
+    group_icon = "▶ ",
   },
 }
 
