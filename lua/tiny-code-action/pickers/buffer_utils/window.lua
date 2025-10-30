@@ -229,6 +229,18 @@ function M.create_main_window(
   local function handle_selection()
     local cursor_line = vim.api.nvim_win_get_cursor(win)[1]
     local action_item = line_to_action[cursor_line]
+
+    if action_item and action_item.is_group then
+      -- clear used hotkeys so that selection works properly
+      config._tca_used_hotkeys = {}
+      -- nested picker: reopen with child action
+      require("tiny-code-action.pickers.buffer").create(config, action_item.children, bufnr, true)
+
+      vim.api.nvim_win_close(win, true)
+      preview.close_preview()
+      return
+    end
+
     if action_item and apply_action_fn then
       apply_action_fn(action_item.action, action_item.client, action_item.context, bufnr)
     end
