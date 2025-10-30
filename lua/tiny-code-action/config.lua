@@ -71,6 +71,7 @@ M.default_config = {
     },
   },
   resolve_timeout = 100,
+  sort = nil,
   signs = {
     quickfix = { "", { link = "DiagnosticWarning" } },
     others = { "", { link = "DiagnosticWarning" } },

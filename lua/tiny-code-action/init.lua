@@ -46,6 +46,12 @@ function M.code_action(opts)
 
     results = finder.sort_by_preferred(results)
 
+    if opts.sort and type(opts.sort) == "function" then
+      table.sort(results, opts.sort)
+    elseif M.config.sort and type(M.config.sort) == "function" then
+      table.sort(results, M.config.sort)
+    end
+
     if results == nil or #results == 0 then
       vim.notify("No code actions found.", vim.log.levels.INFO)
       return
