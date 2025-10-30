@@ -21,7 +21,7 @@ function M.code_action(opts)
     context = opts and opts.context,
     range = opts and opts.range,
   }
-  finder.code_action_finder(finder_opts, function(results)
+  finder.code_action_finder(finder_opts, M.config, function(results)
     if opts == nil then
       opts = {}
     end
@@ -53,7 +53,9 @@ function M.code_action(opts)
     end
 
     if results == nil or #results == 0 then
-      vim.notify("No code actions found.", vim.log.levels.INFO)
+      if not (M.config.notify and M.config.notify.on_empty == false) then
+        vim.notify("No code actions found.", vim.log.levels.INFO)
+      end
       return
     end
 

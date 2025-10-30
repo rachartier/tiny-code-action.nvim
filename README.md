@@ -130,6 +130,11 @@ end, { noremap = true, silent = true })
 
       resolve_timeout = 100, -- Timeout in milliseconds to resolve code actions
 
+      -- Notification settings
+      notify = {
+        on_empty = true, -- Show notification when no code actions are found
+      },
+
       -- The icons to use for the code actions
       -- You can add your own icons, you just need to set the exact action's kind of the code action
       -- You can set the highlight like so: { link = "DiagnosticError" } or  like nvim_set_hl ({ fg ..., bg..., bold..., ...})
