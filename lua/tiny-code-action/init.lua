@@ -53,7 +53,7 @@ function M.code_action(opts)
     end
 
     if results == nil or #results == 0 then
-      if not (M.config.notify and M.config.notify.on_empty == false) then
+      if M.config.notify and M.config.notify.enabled and M.config.notify.on_empty then
         vim.notify("No code actions found.", vim.log.levels.INFO)
       end
       return

@@ -132,6 +132,7 @@ end, { noremap = true, silent = true })
 
       -- Notification settings
       notify = {
+        enabled = true, -- Enable/disable all notifications
         on_empty = true, -- Show notification when no code actions are found
       },
 
@@ -370,7 +371,7 @@ require("tiny-code-action").setup({
     elseif a.client.name ~= "rust_analyzer" and b.client.name == "rust_analyzer" then
       return false
     end
-    
+
     -- Sort by action kind alphabetically
     local a_kind = a.action.kind or ""
     local b_kind = b.action.kind or ""
@@ -389,13 +390,13 @@ require("tiny-code-action").code_action({
     -- Prioritize "Disable" actions
     local a_is_disable = string.match(a.action.title, "Disable") ~= nil
     local b_is_disable = string.match(b.action.title, "Disable") ~= nil
-    
+
     if a_is_disable and not b_is_disable then
       return true
     elseif not a_is_disable and b_is_disable then
       return false
     end
-    
+
     return false
   end,
 })
@@ -412,10 +413,10 @@ require("tiny-code-action").code_action({
       if string.match(kind or "", "^refactor") then return 2 end
       return 3
     end
-    
+
     local a_priority = get_priority(a.action.kind)
     local b_priority = get_priority(b.action.kind)
-    
+
     return a_priority < b_priority
   end,
 })

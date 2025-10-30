@@ -75,6 +75,7 @@ M.default_config = {
   resolve_timeout = 100,
   sort = nil,
   notify = {
+    enabled = true,
     on_empty = true,
   },
   signs = {
