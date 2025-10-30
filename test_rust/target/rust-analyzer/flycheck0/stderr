@@ -1,0 +1,94 @@
+   0.018728519s  INFO prepare_target{force=false package_id=test_rust v0.1.0 (/home/rachartier/dev/nvim_plugins/tiny-code-action.nvim/test_rust) target="test_rust"}: cargo::core::compiler::fingerprint: fingerprint error for test_rust v0.1.0 (/home/rachartier/dev/nvim_plugins/tiny-code-action.nvim/test_rust)/Check { test: false }/TargetInner { name: "test_rust", doc: true, ..: with_path("/home/rachartier/dev/nvim_plugins/tiny-code-action.nvim/test_rust/src/main.rs", Edition2024) }
+   0.018758780s  INFO prepare_target{force=false package_id=test_rust v0.1.0 (/home/rachartier/dev/nvim_plugins/tiny-code-action.nvim/test_rust) target="test_rust"}: cargo::core::compiler::fingerprint:     err: failed to read `/home/rachartier/dev/nvim_plugins/tiny-code-action.nvim/test_rust/target/debug/.fingerprint/test_rust-115418854eb2f799/bin-test_rust`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: cargo_util::paths::read_bytes
+   1: cargo_util::paths::read
+   2: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   3: cargo::core::compiler::fingerprint::prepare_target
+   4: cargo::core::compiler::compile
+   5: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   6: cargo::ops::cargo_compile::compile_ws
+   7: cargo::ops::cargo_compile::compile_with_exec
+   8: cargo::ops::cargo_compile::compile
+   9: cargo::commands::check::exec
+  10: <cargo::cli::Exec>::exec
+  11: cargo::main
+  12: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  13: std::rt::lang_start::<()>::{closure#0}
+  14: core::ops::function::impls::<impl core::ops::function::FnOnce<A> for &F>::call_once
+             at /rustc/05f9846f893b09a1be1fc8560e33fc3c815cfecb/library/core/src/ops/function.rs:284:13
+  15: std::panicking::try::do_call
+             at /rustc/05f9846f893b09a1be1fc8560e33fc3c815cfecb/library/std/src/panicking.rs:587:40
+  16: std::panicking::try
+             at /rustc/05f9846f893b09a1be1fc8560e33fc3c815cfecb/library/std/src/panicking.rs:550:19
+  17: std::panic::catch_unwind
+             at /rustc/05f9846f893b09a1be1fc8560e33fc3c815cfecb/library/std/src/panic.rs:358:14
+  18: std::rt::lang_start_internal::{{closure}}
+             at /rustc/05f9846f893b09a1be1fc8560e33fc3c815cfecb/library/std/src/rt.rs:168:24
+  19: std::panicking::try::do_call
+             at /rustc/05f9846f893b09a1be1fc8560e33fc3c815cfecb/library/std/src/panicking.rs:587:40
+  20: std::panicking::try
+             at /rustc/05f9846f893b09a1be1fc8560e33fc3c815cfecb/library/std/src/panicking.rs:550:19
+  21: std::panic::catch_unwind
+             at /rustc/05f9846f893b09a1be1fc8560e33fc3c815cfecb/library/std/src/panic.rs:358:14
+  22: std::rt::lang_start_internal
+             at /rustc/05f9846f893b09a1be1fc8560e33fc3c815cfecb/library/std/src/rt.rs:164:5
+  23: main
+  24: __libc_start_call_main
+             at ./csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+  25: __libc_start_main_impl
+             at ./csu/../csu/libc-start.c:360:3
+  26: <unknown>
+   0.053198411s  INFO prepare_target{force=false package_id=test_rust v0.1.0 (/home/rachartier/dev/nvim_plugins/tiny-code-action.nvim/test_rust) target="test_rust"}: cargo::core::compiler::fingerprint: fingerprint error for test_rust v0.1.0 (/home/rachartier/dev/nvim_plugins/tiny-code-action.nvim/test_rust)/Check { test: true }/TargetInner { name: "test_rust", doc: true, ..: with_path("/home/rachartier/dev/nvim_plugins/tiny-code-action.nvim/test_rust/src/main.rs", Edition2024) }
+   0.053228052s  INFO prepare_target{force=false package_id=test_rust v0.1.0 (/home/rachartier/dev/nvim_plugins/tiny-code-action.nvim/test_rust) target="test_rust"}: cargo::core::compiler::fingerprint:     err: failed to read `/home/rachartier/dev/nvim_plugins/tiny-code-action.nvim/test_rust/target/debug/.fingerprint/test_rust-cf8deac39631d5b1/test-bin-test_rust`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: cargo_util::paths::read_bytes
+   1: cargo_util::paths::read
+   2: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   3: cargo::core::compiler::fingerprint::prepare_target
+   4: cargo::core::compiler::compile
+   5: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   6: cargo::ops::cargo_compile::compile_ws
+   7: cargo::ops::cargo_compile::compile_with_exec
+   8: cargo::ops::cargo_compile::compile
+   9: cargo::commands::check::exec
+  10: <cargo::cli::Exec>::exec
+  11: cargo::main
+  12: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  13: std::rt::lang_start::<()>::{closure#0}
+  14: core::ops::function::impls::<impl core::ops::function::FnOnce<A> for &F>::call_once
+             at /rustc/05f9846f893b09a1be1fc8560e33fc3c815cfecb/library/core/src/ops/function.rs:284:13
+  15: std::panicking::try::do_call
+             at /rustc/05f9846f893b09a1be1fc8560e33fc3c815cfecb/library/std/src/panicking.rs:587:40
+  16: std::panicking::try
+             at /rustc/05f9846f893b09a1be1fc8560e33fc3c815cfecb/library/std/src/panicking.rs:550:19
+  17: std::panic::catch_unwind
+             at /rustc/05f9846f893b09a1be1fc8560e33fc3c815cfecb/library/std/src/panic.rs:358:14
+  18: std::rt::lang_start_internal::{{closure}}
+             at /rustc/05f9846f893b09a1be1fc8560e33fc3c815cfecb/library/std/src/rt.rs:168:24
+  19: std::panicking::try::do_call
+             at /rustc/05f9846f893b09a1be1fc8560e33fc3c815cfecb/library/std/src/panicking.rs:587:40
+  20: std::panicking::try
+             at /rustc/05f9846f893b09a1be1fc8560e33fc3c815cfecb/library/std/src/panicking.rs:550:19
+  21: std::panic::catch_unwind
+             at /rustc/05f9846f893b09a1be1fc8560e33fc3c815cfecb/library/std/src/panic.rs:358:14
+  22: std::rt::lang_start_internal
+             at /rustc/05f9846f893b09a1be1fc8560e33fc3c815cfecb/library/std/src/rt.rs:164:5
+  23: main
+  24: __libc_start_call_main
+             at ./csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+  25: __libc_start_main_impl
+             at ./csu/../csu/libc-start.c:360:3
+  26: <unknown>
+    Checking test_rust v0.1.0 (/home/rachartier/dev/nvim_plugins/tiny-code-action.nvim/test_rust)
+error: could not compile `test_rust` (bin "test_rust") due to 2 previous errors; 2 warnings emitted
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `test_rust` (bin "test_rust" test) due to 2 previous errors; 2 warnings emitted

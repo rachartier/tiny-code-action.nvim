@@ -22,8 +22,9 @@ end
 -- Find code actions from all LSP clients
 --- Finds code actions from all LSP clients for the given options and invokes the callback with results.
 --- @param opts table: Options including bufnr, range, and context
+--- @param config table: Configuration options
 --- @param callback function: Function to call with the results
-function M.code_action_finder(opts, callback)
+function M.code_action_finder(opts, config, callback)
   local results = {}
   local position_encoding = vim.api.nvim_get_option_value("encoding", { scope = "local" })
   local params
@@ -92,7 +93,9 @@ function M.code_action_finder(opts, callback)
       end
       if client_count_done == #clients then
         if vim.tbl_isempty(results) then
-          vim.notify("No code actions found.", vim.log.levels.INFO)
+          if config.notify and config.notify.enabled and config.notify.on_empty then
+            vim.notify("No code actions found.", vim.log.levels.INFO)
+          end
           return
         end
         callback(results)
