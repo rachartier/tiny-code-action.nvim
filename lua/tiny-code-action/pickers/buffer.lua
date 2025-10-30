@@ -20,7 +20,9 @@ function M.create(config, results, bufnr, nested)
   local categorised_actions = categories.group_actions_by_category(results)
   if not nested then
     actions = require("tiny-code-action.pickers.buffer_utils.groups").group_actions_by_group(
-      categorised_actions
+      categorised_actions,
+      config.picker and config.picker.opts and config.picker.opts.group_icon
+        or require("tiny-code-action.config").picker_config.buffer.group_icon
     )
   else
     actions = categorised_actions
