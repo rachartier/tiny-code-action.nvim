@@ -208,6 +208,11 @@ function M.show_preview(
   if preview_state.action_item ~= action_item or need_new_win then
     preview_state.action_item = action_item
 
+    if not preview_state.buf or not vim.api.nvim_buf_is_valid(preview_state.buf) then
+      M.close_preview()
+      return
+    end
+
     utils.set_buf_option(preview_state.buf, "modifiable", true)
     vim.api.nvim_buf_set_lines(preview_state.buf, 0, -1, false, {})
     previewer.term_previewer(bufnr, {
