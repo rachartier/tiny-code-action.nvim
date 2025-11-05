@@ -72,7 +72,7 @@ M.default_config = {
       header_lines_to_remove = 4,
     },
   },
-  resolve_timeout = 100,
+  resolve_timeout = 500,
   sort = nil,
   notify = {
     enabled = true,
