@@ -80,7 +80,7 @@ function M.code_action(opts)
     if opts.apply and #results == 1 then
       local lsp_actions = require("tiny-code-action.action")
       local result = results[1]
-      lsp_actions.apply(result.action, result.client, result.context)
+      lsp_actions.apply_with_resolve(result.action, result.client, result.context, bufnr)
       return
     end
 

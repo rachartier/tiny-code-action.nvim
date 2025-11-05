@@ -105,6 +105,34 @@ function M.action_is_not_complete(action)
   return action.edit == nil
 end
 
+--- Applies an action with automatic resolution if needed.
+--- @param action table: The action to be applied.
+--- @param client table: The client in which the action is applied.
+--- @param context table: The context in which the action is applied.
+--- @param bufnr number: The buffer number where the action is to be applied.
+function M.apply_with_resolve(action, client, context, bufnr)
+  utils.add_client_methods(client)
+
+  if M.action_is_not_complete(action) and M.support_resolve(client, bufnr) then
+    client:request("codeAction/resolve", action, function(e, resolved_action)
+      if e then
+        if action.command then
+          M.apply(action, client, context)
+        else
+          vim.notify(
+            "Error resolving action: " .. (e.message or "unknown error"),
+            vim.log.levels.ERROR
+          )
+        end
+      else
+        M.apply(resolved_action or action, client, context)
+      end
+    end, bufnr)
+  else
+    M.apply(action, client, context)
+  end
+end
+
 --- This function generates a preview of the changes that a code action would make.
 --- @param opts table: A table of options for generating the preview. The structure and content of
 ---                    this table depend on the specific backend in use.
