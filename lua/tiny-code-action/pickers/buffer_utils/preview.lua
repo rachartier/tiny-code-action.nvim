@@ -181,6 +181,7 @@ function M.show_preview(
     vim.api.nvim_create_autocmd("WinLeave", {
       buffer = preview_buf,
       callback = function()
+        local initial_main_win = preview_state.main_win
         vim.schedule(function()
           local current_win = vim.api.nvim_get_current_win()
           
@@ -188,8 +189,8 @@ function M.show_preview(
             return
           end
           
-          if preview_state.main_win and vim.api.nvim_win_is_valid(preview_state.main_win) then
-            vim.api.nvim_win_close(preview_state.main_win, true)
+          if initial_main_win and vim.api.nvim_win_is_valid(initial_main_win) then
+            vim.api.nvim_win_close(initial_main_win, true)
           end
           M.close_preview()
         end)
@@ -207,11 +208,6 @@ function M.show_preview(
 
   if preview_state.action_item ~= action_item or need_new_win then
     preview_state.action_item = action_item
-
-    if not preview_state.buf or not vim.api.nvim_buf_is_valid(preview_state.buf) then
-      M.close_preview()
-      return
-    end
 
     utils.set_buf_option(preview_state.buf, "modifiable", true)
     vim.api.nvim_buf_set_lines(preview_state.buf, 0, -1, false, {})

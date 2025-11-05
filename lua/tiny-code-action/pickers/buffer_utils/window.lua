@@ -96,16 +96,22 @@ local function setup_window_autocmds(
   vim.api.nvim_create_autocmd("WinLeave", {
     buffer = buf,
     callback = function()
+      local initial_win = win
+      local initial_preview_buf = preview.get_preview_state().buf
       vim.schedule(function()
         local preview_state = preview.get_preview_state()
         local current_win = vim.api.nvim_get_current_win()
+
+        if initial_preview_buf and preview_state.buf ~= initial_preview_buf then
+          return
+        end
 
         if preview_state.win and current_win == preview_state.win then
           return
         end
 
-        if vim.api.nvim_win_is_valid(win) then
-          vim.api.nvim_win_close(win, true)
+        if vim.api.nvim_win_is_valid(initial_win) then
+          vim.api.nvim_win_close(initial_win, true)
         end
         preview.close_preview()
       end)
