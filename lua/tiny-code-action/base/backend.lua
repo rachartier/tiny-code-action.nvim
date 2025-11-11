@@ -21,9 +21,6 @@ function BaseBackendFiles:prepare_files(bufnr, old_lines, new_lines)
   old_lines = vim.split(table.concat(old_lines, "\n"), "\n")
   new_lines = vim.split(table.concat(new_lines, "\n"), "\n")
 
-  vim.fn.writefile(old_lines, old_file)
-  vim.fn.writefile(new_lines, new_file)
-
   ---@param path string
   local function ensure_dir_exists(path)
     local dir = vim.fn.fnamemodify(path, ":h")
@@ -34,6 +31,9 @@ function BaseBackendFiles:prepare_files(bufnr, old_lines, new_lines)
 
   ensure_dir_exists(old_file)
   ensure_dir_exists(new_file)
+
+  vim.fn.writefile(old_lines, old_file)
+  vim.fn.writefile(new_lines, new_file)
 
   return old_file, new_file
 end
