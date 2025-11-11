@@ -24,6 +24,17 @@ function BaseBackendFiles:prepare_files(bufnr, old_lines, new_lines)
   vim.fn.writefile(old_lines, old_file)
   vim.fn.writefile(new_lines, new_file)
 
+  ---@param path string
+  local function ensure_dir_exists(path)
+    local dir = vim.fn.fnamemodify(path, ":h")
+    if vim.fn.isdirectory(dir) == 0 then
+      vim.fn.mkdir(dir, "p")
+    end
+  end
+
+  ensure_dir_exists(old_file)
+  ensure_dir_exists(new_file)
+
   return old_file, new_file
 end
 
