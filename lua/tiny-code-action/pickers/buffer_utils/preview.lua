@@ -69,6 +69,7 @@ end
 --- @param focus boolean: Whether to focus the preview window
 --- @param config table: Picker configuration
 --- @param apply_action_fn function: Function to apply the action
+--- @param preview_close_keys table|string: Keys to close preview and return to main window
 function M.show_preview(
   action_item,
   bufnr,
@@ -76,7 +77,8 @@ function M.show_preview(
   main_win_config,
   focus,
   config,
-  apply_action_fn
+  apply_action_fn,
+  preview_close_keys
 )
   if not action_item or not action_item.action then
     vim.notify("No code action selected", vim.log.levels.WARN)
@@ -146,26 +148,25 @@ function M.show_preview(
       anchor = "NW",
     })
 
-    vim.api.nvim_buf_set_keymap(
-      preview_buf,
-      "n",
-      "<Esc>",
-      "<cmd>bd!<CR>",
-      { nowait = true, noremap = true, silent = true }
-    )
+    local close_keys = preview_close_keys or { "q", "<Esc>" }
+    if type(close_keys) == "string" then
+      close_keys = { close_keys }
+    end
 
-    vim.keymap.set("n", "q", function()
-      if config and config.picker and config.picker.opts and config.picker.opts.auto_preview then
-        M.focus_main_window_from_preview()
-      else
-        vim.api.nvim_win_close(preview_state.win, true)
-      end
-    end, {
-      buffer = preview_buf,
-      nowait = true,
-      noremap = true,
-      silent = true,
-    })
+    for _, key in ipairs(close_keys) do
+      vim.keymap.set("n", key, function()
+        if config and config.picker and config.picker.opts and config.picker.opts.auto_preview then
+          M.focus_main_window_from_preview()
+        else
+          vim.api.nvim_win_close(preview_state.win, true)
+        end
+      end, {
+        buffer = preview_buf,
+        nowait = true,
+        noremap = true,
+        silent = true,
+      })
+    end
 
     vim.keymap.set("n", "<CR>", function()
       M.accept_action_from_preview(apply_action_fn)
