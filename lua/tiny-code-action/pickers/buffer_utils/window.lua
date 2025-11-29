@@ -50,7 +50,8 @@ local function setup_window_autocmds(
   previewer,
   win_config,
   config,
-  apply_action_fn
+  apply_action_fn,
+  preview_close_keys
 )
   local preview_state = preview.get_preview_state()
 
@@ -69,7 +70,8 @@ local function setup_window_autocmds(
           win_config,
           false,
           config,
-          apply_action_fn
+          apply_action_fn,
+          preview_close_keys
         )
       else
         preview.close_preview()
@@ -182,6 +184,7 @@ function M.create_main_window(
   local close_keys = keymaps.close or default_keymaps.close
   local select_keys = keymaps.select or default_keymaps.select
   local back_key = keymaps.back or default_keymaps.back
+  local preview_close_keys = keymaps.preview_close or default_keymaps.preview_close
 
   if type(close_keys) == "string" then
     close_keys = { close_keys }
@@ -301,7 +304,8 @@ function M.create_main_window(
         win_config,
         false,
         config,
-        apply_action_fn
+        apply_action_fn,
+        preview_close_keys
       )
     end
   end
@@ -362,7 +366,8 @@ function M.create_main_window(
     previewer,
     win_config,
     config,
-    apply_action_fn
+    apply_action_fn,
+    preview_close_keys
   )
 
   return win

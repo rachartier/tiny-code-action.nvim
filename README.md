@@ -180,6 +180,7 @@ require("tiny-code-action").setup({
         preview = "K", -- Key to show preview
         close = { "q", "<Esc>" }, -- Keys to close the window (can be string or table)
         select = "<CR>", -- Keys to select action (can be string or table)
+        preview_close = { "q", "<Esc>" }, -- Keys to return from preview to main window (can be string or table)
       },
       custom_keys = {
         { key = 'm', pattern = 'Fill match arms' },
@@ -216,6 +217,7 @@ end
   - `preview`: Key to show/toggle preview (default: `"K"`)
   - `close`: Key(s) to close the picker window (default: `"q"`, can be string or table)
   - `select`: Key(s) to select/apply an action (default: `"<CR>"`, can be string or table)
+  - `preview_close`: Key(s) to return from preview window to main window (default: `{ "q", "<Esc>" }`, can be string or table)
 - **custom_keys**: Allows users to assign custom hotkeys to specific actions.
 - **group_icon**: Sets the string used for grouped keymaps (default: `"▶ "`)
 
