@@ -1,7 +1,7 @@
 # 📇 tiny-code-action.nvim
 A Neovim plugin that provides a simple way to run and visualize code actions.
 
-[Preview](#preview) • [Installation](#installation) • [Options](#options) • [Buffer Picker Options](#buffer-picker-options) • [FAQ](#faq)
+[Preview](#preview) • [Installation](#installation) • [Options](#options) • [Customizing Action Titles](#customizing-action-titles) • [Buffer Picker Options](#buffer-picker-options) • [FAQ](#faq)
 
 Supported pickers:
 - `buffer` (a minimal picker that uses buffer)
@@ -136,6 +136,11 @@ end, { noremap = true, silent = true })
         on_empty = true, -- Show notification when no code actions are found
       },
 
+      -- Customize how action titles are displayed in the picker
+      -- Function receives (action, client) and returns a formatted string
+      -- Default: action.title
+      format_title = nil,
+
       -- The icons to use for the code actions
       -- You can add your own icons, you just need to set the exact action's kind of the code action
       -- You can set the highlight like so: { link = "DiagnosticError" } or  like nvim_set_hl ({ fg ..., bg..., bold..., ...})
@@ -155,7 +160,33 @@ end, { noremap = true, silent = true })
 }
 ```
 
+## Customizing Action Titles
 
+You can customize how action titles are displayed in all pickers using the `format_title` option. This function receives the action and client objects and returns a formatted string.
+
+### Example: Show action.kind with the title
+
+```lua
+require("tiny-code-action").setup({
+  format_title = function(action, client)
+    if action.kind then
+      return string.format("%s (%s)", action.title, action.kind)
+    end
+    return action.title
+  end,
+})
+```
+
+This will display actions like:
+- `Add missing members (quickfix)`
+- `Extract to function (refactor.extract)`
+- `Organize imports (source.organizeImports)`
+
+The `format_title` function can access:
+- `action.title`: The action's title text
+- `action.kind`: The LSP CodeActionKind (e.g., "quickfix", "refactor.extract")
+- `action.isPreferred`: Boolean indicating if the action is preferred
+- `client.name`: The name of the LSP client providing the action
 
 ## Buffer Picker Options
 

@@ -53,7 +53,13 @@ function M.new(opts)
       end
     end
 
-    local ordinal = action.title:gsub("[\r\n]+", " ")
+    local ordinal
+    if config.format_title then
+      ordinal = config.format_title(action, client)
+    else
+      ordinal = action.title
+    end
+    ordinal = ordinal:gsub("[\r\n]+", " ")
 
     return {
       kind = kind[1],

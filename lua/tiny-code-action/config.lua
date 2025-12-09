@@ -54,6 +54,7 @@ M.picker_config = {
 M.default_config = {
   backend = "vim",
   picker = nil,
+  format_title = nil,
   backend_opts = {
     delta = {
       header_lines_to_remove = 4,
