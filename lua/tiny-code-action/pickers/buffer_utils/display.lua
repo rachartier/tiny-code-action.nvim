@@ -56,11 +56,19 @@ end
 --- @param hotkey_mode string: Hotkey generation mode
 --- @param custom_keys table: Custom hotkey definitions
 --- @param hotkey_enabled boolean: Whether hotkeys are enabled
+--- @param config table: Configuration object containing format_title function
 --- @return table lines
 --- @return table line_to_action
 --- @return table line_to_hotkey
 --- @return number last_line
-function M.build_display_content(groups, config_signs, hotkey_mode, custom_keys, hotkey_enabled)
+function M.build_display_content(
+  groups,
+  config_signs,
+  hotkey_mode,
+  custom_keys,
+  hotkey_enabled,
+  config
+)
   local lines = {}
   local line_to_action = {}
   local line_to_hotkey = {}
@@ -69,13 +77,29 @@ function M.build_display_content(groups, config_signs, hotkey_mode, custom_keys,
 
   local sorted_categories = categories.get_sorted_categories(groups)
 
+  -- Helper function to format action title
+  local function format_action_title(action_item)
+    if not action_item.action then
+      return ""
+    end
+
+    local title
+    if config and config.format_title then
+      title = config.format_title(action_item.action, action_item.client)
+    else
+      title = action_item.action.title
+    end
+
+    return title or ""
+  end
+
   -- Gather all actions and titles for global hotkey computation
   local all_actions = {}
   local all_titles = {}
   for _, category in ipairs(sorted_categories) do
     for _, action_item in ipairs(groups[category]) do
       table.insert(all_actions, action_item)
-      local title = action_item.action and action_item.action.title or ""
+      local title = format_action_title(action_item)
       table.insert(all_titles, title)
     end
   end
@@ -105,7 +129,7 @@ function M.build_display_content(groups, config_signs, hotkey_mode, custom_keys,
     local actions = groups[category]
     if hotkey_enabled then
       for _, action_item in ipairs(actions) do
-        local title = action_item.action and action_item.action.title or ""
+        local title = format_action_title(action_item)
         title = title:gsub("\n", " ")
 
         local hotkey = global_hotkeys[hotkey_idx]
@@ -119,7 +143,7 @@ function M.build_display_content(groups, config_signs, hotkey_mode, custom_keys,
       end
     else
       for _, action_item in ipairs(actions) do
-        local title = action_item.action and action_item.action.title or ""
+        local title = format_action_title(action_item)
         local display_line = string.format("  • %s", title)
         table.insert(lines, display_line)
         line_to_action[line_number] = action_item

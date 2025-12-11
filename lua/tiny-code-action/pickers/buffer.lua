@@ -1,7 +1,7 @@
 local BasePicker = require("tiny-code-action.base.picker")
 local categories = require("tiny-code-action.pickers.buffer_utils.categories")
-local groups = require("tiny-code-action.pickers.buffer_utils.groups")
 local display = require("tiny-code-action.pickers.buffer_utils.display")
+local groups = require("tiny-code-action.pickers.buffer_utils.groups")
 local hotkeys = require("tiny-code-action.pickers.buffer_utils.hotkeys")
 local window = require("tiny-code-action.pickers.buffer_utils.window")
 
@@ -50,7 +50,8 @@ function M.create(config, results, bufnr, nested)
     config.signs,
     hotkeys_mode,
     custom_keys,
-    M._hotkey_enabled
+    M._hotkey_enabled,
+    config
   )
 
   M.config = config

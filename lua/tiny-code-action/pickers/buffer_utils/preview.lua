@@ -185,11 +185,11 @@ function M.show_preview(
         local initial_main_win = preview_state.main_win
         vim.schedule(function()
           local current_win = vim.api.nvim_get_current_win()
-          
+
           if preview_state.main_win and current_win == preview_state.main_win then
             return
           end
-          
+
           if initial_main_win and vim.api.nvim_win_is_valid(initial_main_win) then
             vim.api.nvim_win_close(initial_main_win, true)
           end

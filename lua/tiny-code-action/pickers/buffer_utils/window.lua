@@ -339,20 +339,16 @@ function M.create_main_window(
 
   local keymap_opts = { buffer = buf, nowait = true }
 
-  -- Set up select keymaps
   for _, key in ipairs(select_keys) do
     vim.keymap.set("n", key, handle_selection, keymap_opts)
   end
 
-  -- Set up preview keymap
   vim.keymap.set("n", preview_key, handle_preview, keymap_opts)
 
-  -- Set up back keymap (only for nested pickers)
   if nested then
     vim.keymap.set("n", back_key, handle_back, keymap_opts)
   end
 
-  -- Set up close keymaps
   for _, key in ipairs(close_keys) do
     vim.keymap.set("n", key, close_window, keymap_opts)
   end
