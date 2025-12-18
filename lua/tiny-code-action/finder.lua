@@ -26,32 +26,6 @@ end
 --- @param callback function: Function to call with the results
 function M.code_action_finder(opts, config, callback)
   local results = {}
-  local position_encoding = vim.api.nvim_get_option_value("encoding", { scope = "local" })
-  local params
-  if opts.range then
-    params = {
-      textDocument = { uri = vim.uri_from_bufnr(opts.bufnr) },
-      range = {
-        start = { line = opts.range.start[1] - 1, character = opts.range.start[2] },
-        ["end"] = { line = opts.range["end"][1] - 1, character = opts.range["end"][2] },
-      },
-    }
-  elseif vim.fn.mode() == "n" then
-    params = {
-      textDocument = { uri = vim.uri_from_bufnr(opts.bufnr) },
-      range = vim.lsp.util.make_range_params(0, position_encoding).range,
-    }
-  else
-    params = {
-      textDocument = { uri = vim.uri_from_bufnr(opts.bufnr) },
-      range = vim.lsp.util.make_given_range_params(
-        { vim.fn.getpos("'<")[2], vim.fn.getpos("'<")[3] },
-        { vim.fn.getpos("'>")[2], vim.fn.getpos("'>")[3] },
-        0,
-        position_encoding
-      ).range,
-    }
-  end
   local context = {}
   if opts.context and opts.context.triggerKind then
     context.triggerKind = opts.context.triggerKind
@@ -66,23 +40,56 @@ function M.code_action_finder(opts, config, callback)
   if opts.context and opts.context.only then
     context.only = opts.context.only
   end
-  params.context = context
+
   local clients = vim.lsp.get_clients({ bufnr = opts.bufnr, method = "textDocument/codeAction" })
   if not clients or #clients == 0 then
     return nil
   end
   local client_count_done = 0
-  vim.lsp.buf_request(
-    opts.bufnr,
-    "textDocument/codeAction",
-    params,
-    function(err, req_results, ctx, _)
+
+  for _, client in ipairs(clients) do
+    local params
+    if opts.range then
+      params = {
+        textDocument = { uri = vim.uri_from_bufnr(opts.bufnr) },
+        range = {
+          start = { line = opts.range.start[1] - 1, character = opts.range.start[2] },
+          ["end"] = { line = opts.range["end"][1] - 1, character = opts.range["end"][2] },
+        },
+      }
+    elseif vim.fn.mode() == "n" then
+      params = {
+        textDocument = { uri = vim.uri_from_bufnr(opts.bufnr) },
+        range = vim.lsp.util.make_range_params(0, client.offset_encoding).range,
+      }
+    else
+      params = {
+        textDocument = { uri = vim.uri_from_bufnr(opts.bufnr) },
+        range = vim.lsp.util.make_given_range_params(
+          { vim.fn.getpos("'<")[2], vim.fn.getpos("'<")[3] },
+          { vim.fn.getpos("'>")[2], vim.fn.getpos("'>")[3] },
+          0,
+          client.offset_encoding
+        ).range,
+      }
+    end
+    params.context = context
+
+    client:request("textDocument/codeAction", params, function(err, req_results)
       client_count_done = client_count_done + 1
       if err then
+        if client_count_done == #clients then
+          if vim.tbl_isempty(results) then
+            if config.notify and config.notify.enabled and config.notify.on_empty then
+              vim.notify("No code actions found.", vim.log.levels.INFO)
+            end
+            return
+          end
+          callback(results)
+        end
         return
       end
       if req_results then
-        local client = vim.lsp.get_client_by_id(ctx.client_id)
         for _, action in ipairs(req_results) do
           table.insert(results, {
             client = client,
@@ -100,8 +107,8 @@ function M.code_action_finder(opts, config, callback)
         end
         callback(results)
       end
-    end
-  )
+    end, opts.bufnr)
+  end
 end
 
 -- Sort code actions based on priority with isPreferred at the top
