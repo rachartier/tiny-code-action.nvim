@@ -71,9 +71,16 @@ function M.new(opts)
   end
 
   -- Standard way to apply a code action
-  picker.apply_action = function(action, client, context, bufnr)
+  picker.apply_action = function(action, client, context, bufnr, resolved_from_preview)
     utils.add_client_methods(client)
     local lsp_actions = require("tiny-code-action.action")
+
+    -- If we already have a resolved action from preview, use it directly
+    -- This avoids double-resolution which can cause bugs in some LSP servers (e.g., jdtls)
+    if resolved_from_preview then
+      lsp_actions.apply(resolved_from_preview, client, context)
+      return
+    end
 
     local reg = client.dynamic_capabilities
         and client.dynamic_capabilities:get("textDocument/codeAction", { bufnr = bufnr })

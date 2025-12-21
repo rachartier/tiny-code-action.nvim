@@ -24,7 +24,7 @@ function M.create_previewer(bufnr)
         local action = entry.value.action
         local client = entry.value.client
 
-        local preview_content = M.preview_with_resolve(action, bufnr, client)
+        local preview_content = M.preview_with_resolve(action, bufnr, client, entry.value)
 
         if not preview_content or vim.tbl_isempty(preview_content) then
           preview_content = { "No preview available for this action" }
@@ -41,7 +41,7 @@ function M.create_previewer(bufnr)
         local action = entry.value.action
         local client = entry.value.client
 
-        local preview_content = M.preview_with_resolve(action, bufnr, client)
+        local preview_content = M.preview_with_resolve(action, bufnr, client, entry.value)
 
         if not preview_content or vim.tbl_isempty(preview_content) then
           preview_content = { "No preview available for this action" }

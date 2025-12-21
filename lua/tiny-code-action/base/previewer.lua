@@ -111,12 +111,19 @@ function M.new(opts)
   end
 
   -- Generate preview with action resolution
-  previewer.preview_with_resolve = function(action, bufnr, client)
+  previewer.preview_with_resolve = function(action, bufnr, client, entry)
+    local action_copy = vim.deepcopy(action)
     local resolved_action, has_error, error_message =
-      previewer.resolve_action(action, bufnr, client)
+      previewer.resolve_action(action_copy, bufnr, client)
 
     if has_error then
       return error_message
+    end
+
+    -- Cache the resolved action in the entry for reuse during apply
+    -- This avoids double-resolution which can cause bugs in some LSP servers (e.g., jdtls)
+    if entry and resolved_action then
+      entry._resolved_action = resolved_action
     end
 
     return previewer.generate_preview(resolved_action, bufnr)

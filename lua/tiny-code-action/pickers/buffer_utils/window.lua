@@ -284,7 +284,7 @@ function M.create_main_window(
     end
 
     if action_item and apply_action_fn then
-      apply_action_fn(action_item.action, action_item.client, action_item.context, bufnr)
+      apply_action_fn(action_item.action, action_item.client, action_item.context, bufnr, action_item._resolved_action)
     end
     vim.api.nvim_win_close(win, true)
     preview.close_preview()

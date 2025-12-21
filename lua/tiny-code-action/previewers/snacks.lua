@@ -22,7 +22,7 @@ function M.term_previewer(opts)
     local action = ctx.item.action
     local client = ctx.item.client
 
-    local preview_content = M.preview_with_resolve(action, opts.bufnr, client)
+    local preview_content = M.preview_with_resolve(action, opts.bufnr, client, ctx.item)
     if not preview_content or vim.tbl_isempty(preview_content) then
       preview_content = { "No preview available for this action" }
     end

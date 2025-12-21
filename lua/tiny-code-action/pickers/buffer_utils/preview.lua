@@ -43,7 +43,8 @@ function M.accept_action_from_preview(apply_action_fn)
       preview_state.action_item.action,
       preview_state.action_item.client,
       preview_state.action_item.context,
-      preview_state.bufnr
+      preview_state.bufnr,
+      preview_state.action_item._resolved_action
     )
   end
   if preview_state.main_win and vim.api.nvim_win_is_valid(preview_state.main_win) then

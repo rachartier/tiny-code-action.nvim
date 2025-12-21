@@ -139,13 +139,14 @@ function M.create(config, results, bufnr)
         local action = selection.value.action
         local client = selection.value.client
         local context = selection.value.context
+        local resolved_from_preview = selection.value._resolved_action
 
         if close_picker then
           actions.close(prompt_bufnr)
           vim.api.nvim_del_augroup_by_name("DeleteProcessStatus")
         end
 
-        M.apply_action(action, client, context, bufnr)
+        M.apply_action(action, client, context, bufnr, resolved_from_preview)
 
         if not close_picker then
           -- Remove the applied action from the results to provide visual feedback

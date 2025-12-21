@@ -13,7 +13,7 @@ local function extract_preview_data(entry, opts)
   local action = ctx.action
   local client = ctx.client
 
-  local preview_content = M.preview_with_resolve(action, opts.bufnr, client)
+  local preview_content = M.preview_with_resolve(action, opts.bufnr, client, ctx)
   if not preview_content or vim.tbl_isempty(preview_content) then
     preview_content = { "No preview available for this action" }
   end
