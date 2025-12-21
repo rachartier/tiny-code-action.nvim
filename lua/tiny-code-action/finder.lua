@@ -50,28 +50,18 @@ function M.code_action_finder(opts, config, callback)
   for _, client in ipairs(clients) do
     local params
     if opts.range then
-      params = {
-        textDocument = { uri = vim.uri_from_bufnr(opts.bufnr) },
-        range = {
-          start = { line = opts.range.start[1] - 1, character = opts.range.start[2] },
-          ["end"] = { line = opts.range["end"][1] - 1, character = opts.range["end"][2] },
-        },
-      }
+      local start = assert(opts.range.start, 'range must have a `start` property')
+      local end_ = assert(opts.range['end'], 'range must have a `end` property')
+      params = vim.lsp.util.make_given_range_params(start, end_, opts.bufnr, client.offset_encoding)
     elseif vim.fn.mode() == "n" then
-      params = {
-        textDocument = { uri = vim.uri_from_bufnr(opts.bufnr) },
-        range = vim.lsp.util.make_range_params(0, client.offset_encoding).range,
-      }
+      params = vim.lsp.util.make_range_params(0, client.offset_encoding)
     else
-      params = {
-        textDocument = { uri = vim.uri_from_bufnr(opts.bufnr) },
-        range = vim.lsp.util.make_given_range_params(
-          { vim.fn.getpos("'<")[2], vim.fn.getpos("'<")[3] },
-          { vim.fn.getpos("'>")[2], vim.fn.getpos("'>")[3] },
-          0,
-          client.offset_encoding
-        ).range,
-      }
+      params = vim.lsp.util.make_given_range_params(
+        { vim.fn.getpos("'<")[2], vim.fn.getpos("'<")[3] },
+        { vim.fn.getpos("'>")[2], vim.fn.getpos("'>")[3] },
+        0,
+        client.offset_encoding
+      )
     end
     params.context = context
 
