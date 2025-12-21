@@ -116,14 +116,14 @@ function M.new(opts)
     local resolved_action, has_error, error_message =
       previewer.resolve_action(action_copy, bufnr, client)
 
-    if has_error then
-      return error_message
-    end
-
     -- Cache the resolved action in the entry for reuse during apply
     -- This avoids double-resolution which can cause bugs in some LSP servers (e.g., jdtls)
     if entry and resolved_action then
       entry._resolved_action = resolved_action
+    end
+
+    if has_error then
+      return error_message
     end
 
     return previewer.generate_preview(resolved_action, bufnr)
