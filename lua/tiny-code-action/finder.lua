@@ -50,8 +50,8 @@ function M.code_action_finder(opts, config, callback)
   for _, client in ipairs(clients) do
     local params
     if opts.range then
-      local start = assert(opts.range.start, 'range must have a `start` property')
-      local end_ = assert(opts.range['end'], 'range must have a `end` property')
+      local start = assert(opts.range.start, "range must have a `start` property")
+      local end_ = assert(opts.range["end"], "range must have a `end` property")
       params = vim.lsp.util.make_given_range_params(start, end_, opts.bufnr, client.offset_encoding)
     elseif vim.fn.mode() == "n" then
       params = vim.lsp.util.make_range_params(0, client.offset_encoding)

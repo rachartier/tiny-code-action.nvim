@@ -229,7 +229,7 @@ function M.generate_preview_lines(changes, opts, backend, bufnr)
 
   for uri, edits in pairs(changes) do
     local lines = M.get_file_lines(uri, bufnr)
-    local new_lines = apply_edit(vim.deepcopy(lines), edits)
+    local new_lines = apply_edit(vim.deepcopy(lines), vim.deepcopy(edits))
     local diff = backend.get_diff(bufnr, lines, new_lines, opts)
 
     if type(diff) == "string" then
