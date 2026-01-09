@@ -49,7 +49,7 @@ function M.create(config, results, bufnr)
   end
 
   local picker_opts = {
-    prompt_title = "Code Actions",
+    title = "Code Actions",
     items = items,
     format = function(item)
       return format_code_action(item)
