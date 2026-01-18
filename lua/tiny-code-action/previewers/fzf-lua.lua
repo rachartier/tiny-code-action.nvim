@@ -37,12 +37,14 @@ local function preview_cmd(opts)
     o = o or {}
     return shell.stringify_cmd(function(entry_str)
       if type(entry_str) ~= "table" then
-        return "echo 'No preview available for this action'"
+        local fallback_cmd = utils.create_echo_command("No preview available for this action")
+        return table.concat(fallback_cmd, " ")
       end
 
       local preview_content = extract_preview_data(entry_str[1], opts)
       local text = table.concat(preview_content, "\n")
-      return "echo '" .. text .. "'"
+      local cmd = utils.create_echo_command(text)
+      return table.concat(cmd, " ")
     end, {}, "{}")
   end
 

@@ -42,7 +42,7 @@ function M.term_previewer(opts)
     else
       -- Use terminal preview for other content types
       local text = table.concat(preview_content, "\n")
-      snacks_preview.cmd({ "echo", text }, ctx)
+      snacks_preview.cmd(utils.create_echo_command(text), ctx)
     end
 
     return true

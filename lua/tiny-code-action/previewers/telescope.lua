@@ -48,7 +48,7 @@ function M.create_previewer(bufnr)
         end
 
         local text = table.concat(preview_content, "\n")
-        return { "echo", text }
+        return utils.create_echo_command(text)
       end,
       scroll_fn = function(self, direction)
         if not self.state then

@@ -137,4 +137,37 @@ function M.add_client_methods(client)
   end
 end
 
+--- Check if running on Windows
+--- @return boolean
+function M.is_windows()
+  return vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1
+end
+
+--- Create a cross-platform command to echo text to a terminal
+--- This handles the issue where 'echo' is not a standalone executable on Windows
+--- @param text string: The text to echo
+--- @return table|string: Command array for termopen or shell command string
+function M.create_echo_command(text)
+  if M.is_windows() then
+    -- On Windows, write to a temp file and use type/cat to display it
+    -- This avoids issues with echo not being a standalone executable
+    local temp_file = vim.fn.tempname()
+    vim.fn.writefile(vim.split(text, "\n", { plain = true }), temp_file)
+
+    -- Try to use cat if available (Git Bash), otherwise use cmd.exe with type
+    if vim.fn.executable("cat") == 1 then
+      return { "cat", temp_file }
+    else
+      return { "cmd.exe", "/c", "type", temp_file }
+    end
+  else
+    -- On Unix-like systems, printf is more reliable than echo for complex text
+    if vim.fn.executable("printf") == 1 then
+      return { "printf", "%s", text }
+    else
+      return { "echo", text }
+    end
+  end
+end
+
 return M
