@@ -226,10 +226,18 @@ end
 ---                available for this change".
 function M.generate_preview_lines(changes, opts, backend, bufnr)
   local preview_lines = {}
+  local utils = require("tiny-code-action.utils")
 
   for uri, edits in pairs(changes) do
     local lines = M.get_file_lines(uri, bufnr)
-    local new_lines = apply_edit(vim.deepcopy(lines), vim.deepcopy(edits))
+
+    -- Deep copy edits and strip snippet syntax for preview
+    local preview_edits = vim.deepcopy(edits)
+    for _, edit in ipairs(preview_edits) do
+      edit.newText = utils.strip_snippet_syntax(edit.newText)
+    end
+
+    local new_lines = apply_edit(vim.deepcopy(lines), preview_edits)
     local diff = backend.get_diff(bufnr, lines, new_lines, opts)
 
     if type(diff) == "string" then

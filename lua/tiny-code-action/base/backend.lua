@@ -50,9 +50,10 @@ function BaseBackendFiles:remove_header_lines(diff_output, header_lines_to_remov
   return diff_output
 end
 
---- Removes all occurrences of "$0" (cursor placeholder) from each line of the diff output.
+--- Processes diff output by removing header lines specific to the diff backend.
 ---@param diff_output table: Table of diff lines
----@return table: Table of diff lines with "$0" removed
+---@param header_lines_to_remove number: Number of header lines to remove
+---@return table: Table of diff lines with header lines removed
 function BaseBackendFiles:process_diff(diff_output, header_lines_to_remove)
   local cleaned = self:remove_header_lines(diff_output, header_lines_to_remove)
   return cleaned

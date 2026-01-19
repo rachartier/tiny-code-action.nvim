@@ -170,4 +170,29 @@ function M.create_echo_command(text)
   end
 end
 
+--- Strips LSP snippet placeholders from text.
+--- Handles common LSP snippet formats: $0, $1, ${1:default}, ${1|choice1,choice2|}, $VARIABLE
+--- @param text string: Text potentially containing snippet syntax
+--- @return string: Text with snippet syntax removed
+function M.strip_snippet_syntax(text)
+  if not text or text == "" then
+    return text
+  end
+
+  -- Remove placeholders with default values: ${1:default} -> default
+  text = text:gsub("%$%{%d+:([^}]-)%}", "%1")
+
+  -- Remove choice placeholders: ${1|choice1,choice2|} -> choice1
+  text = text:gsub("%$%{%d+|([^|,}]-)[^}]*%}", "%1")
+
+  -- Remove simple tab stops: $0, $1, $2, etc.
+  text = text:gsub("%$%d+", "")
+
+  -- Remove variables: $VARIABLE, ${VARIABLE}, ${VARIABLE:default}
+  text = text:gsub("%$%{[A-Z_]+[^}]*%}", "")
+  text = text:gsub("%$[A-Z_]+", "")
+
+  return text
+end
+
 return M
