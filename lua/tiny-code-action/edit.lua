@@ -101,20 +101,22 @@ end
 --- @param end_char number The 1-based index of the character in the end line where the edit ends.
 --- @return table The modified lines of the text document.
 local function apply_non_empty_edit(lines, edit, start_line, end_line, start_char, end_char)
-  if start_line == end_line then
-    local line = lines[start_line]
-    lines[start_line] = line:sub(1, start_char - 1) .. edit.newText .. line:sub(end_char)
-  else
-    local first_line = lines[start_line]
-    local last_line = lines[end_line]
-    lines[start_line] = first_line:sub(1, start_char - 1) .. edit.newText
-    for i = start_line + 1, end_line - 1 do
-      table.remove(lines, start_line + 1)
-    end
-    if end_line > start_line then
-      lines[start_line + 1] = last_line:sub(end_char)
-    end
+  local first = lines[start_line]
+  local last = lines[end_line]
+
+  local new_text_lines = vim.split(edit.newText, "\n", { plain = true })
+
+  new_text_lines[1] = first:sub(1, start_char - 1) .. new_text_lines[1]
+  new_text_lines[#new_text_lines] = new_text_lines[#new_text_lines] .. last:sub(end_char)
+
+  for i = end_line, start_line, -1 do
+    table.remove(lines, i)
   end
+
+  for i = #new_text_lines, 1, -1 do
+    table.insert(lines, start_line, new_text_lines[i])
+  end
+
   return lines
 end
 
@@ -130,24 +132,13 @@ end
 local function apply_empty_edit(lines, start_line, end_line, start_char, end_char)
   local first = lines[start_line]
   local last = lines[end_line]
-  if start_line == end_line then
-    lines[start_line] = first:sub(1, start_char - 1) .. last:sub(end_char)
-  else
-    end_line = end_line - 1
-    if start_char - 1 == 0 then
-      table.remove(lines, start_line)
-    else
-      lines[start_line] = first:sub(1, start_char - 1) .. last:sub(end_char)
-    end
-    for i = 1, (end_line - start_line) - 1 do
-      table.remove(lines, start_line)
-    end
-    if end_char - 1 == 0 then
-      table.remove(lines, start_line)
-    else
-      lines[start_line + 1] = last:sub(end_char)
-    end
+
+  lines[start_line] = first:sub(1, start_char - 1) .. last:sub(end_char)
+
+  for i = end_line, start_line + 1, -1 do
+    table.remove(lines, i)
   end
+
   return lines
 end
 --- Applies a single edit to the given lines.
