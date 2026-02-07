@@ -78,7 +78,7 @@ function M.new(opts)
     -- If we already have a resolved action from preview, use it directly
     -- This avoids double-resolution which can cause bugs in some LSP servers (e.g., jdtls)
     if resolved_from_preview then
-      lsp_actions.apply(resolved_from_preview, client, context)
+      lsp_actions.apply(resolved_from_preview, client, context, bufnr)
       return
     end
 
@@ -92,7 +92,7 @@ function M.new(opts)
       client:request("codeAction/resolve", action, function(e, resolved_action)
         if e then
           if action.command then
-            lsp_actions.apply(action, client, context)
+            lsp_actions.apply(action, client, context, bufnr)
           else
             vim.notify(
               "Error resolving action: " .. (e.message or "unknown error"),
@@ -100,11 +100,11 @@ function M.new(opts)
             )
           end
         else
-          lsp_actions.apply(resolved_action or action, client, context)
+          lsp_actions.apply(resolved_action or action, client, context, bufnr)
         end
       end, bufnr)
     else
-      lsp_actions.apply(action, client, context)
+      lsp_actions.apply(action, client, context, bufnr)
     end
   end
 

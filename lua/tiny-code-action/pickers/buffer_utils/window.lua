@@ -294,6 +294,9 @@ function M.create_main_window(
       return
     end
 
+    vim.api.nvim_win_close(win, true)
+    preview.close_preview()
+
     if action_item and apply_action_fn then
       apply_action_fn(
         action_item.action,
@@ -303,8 +306,6 @@ function M.create_main_window(
         action_item._resolved_action
       )
     end
-    vim.api.nvim_win_close(win, true)
-    preview.close_preview()
   end
 
   local function handle_preview()

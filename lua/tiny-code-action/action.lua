@@ -7,8 +7,9 @@ local apply_edit = require("tiny-code-action.edit").apply_edit
 --- @param action The action to be applied. If nil, an error message is displayed.
 --- @param client The client in which the action is applied. It is used to apply workspace edits and execute commands.
 --- @param ctx The context in which the action is applied. If not provided, an empty context is used.
+--- @param bufnr number|nil: The original buffer number to restore before executing.
 --- @return No return value. The function operates by side effects, applying the action in the given context.
-function M.apply(action, client, ctx)
+function M.apply(action, client, ctx, bufnr)
   if action == nil then
     vim.notify("Error: No action to apply/action can't be applied", vim.log.levels.ERROR)
     return
@@ -16,6 +17,14 @@ function M.apply(action, client, ctx)
 
   if not ctx then
     ctx = {}
+  end
+
+  -- restore the original buffer context
+  if bufnr and vim.api.nvim_buf_is_valid(bufnr) then
+    local win = vim.fn.bufwinid(bufnr)
+    if win ~= -1 then
+      vim.api.nvim_set_current_win(win)
+    end
   end
 
   if action.edit then
@@ -117,7 +126,7 @@ function M.apply_with_resolve(action, client, context, bufnr)
     client:request("codeAction/resolve", action, function(e, resolved_action)
       if e then
         if action.command then
-          M.apply(action, client, context)
+          M.apply(action, client, context, bufnr)
         else
           vim.notify(
             "Error resolving action: " .. (e.message or "unknown error"),
@@ -125,11 +134,11 @@ function M.apply_with_resolve(action, client, context, bufnr)
           )
         end
       else
-        M.apply(resolved_action or action, client, context)
+        M.apply(resolved_action or action, client, context, bufnr)
       end
     end, bufnr)
   else
-    M.apply(action, client, context)
+    M.apply(action, client, context, bufnr)
   end
 end
 
