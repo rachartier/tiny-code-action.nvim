@@ -43,8 +43,7 @@ local function preview_cmd(opts)
 
       local preview_content = extract_preview_data(entry_str[1], opts)
       local text = table.concat(preview_content, "\n")
-      local cmd = utils.create_echo_command(text)
-      return table.concat(cmd, " ")
+      return { cmd = utils.create_echo_command(text) }
     end, {}, "{}")
   end
 
