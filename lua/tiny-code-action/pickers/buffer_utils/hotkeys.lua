@@ -380,7 +380,7 @@ function M.generate_hotkeys(titles, hotkey_mode, custom_keys, used_hotkeys)
             end
 
             if matches then
-              custom_hotkey = key:lower()
+              custom_hotkey = key
               break
             end
           end
@@ -389,7 +389,7 @@ function M.generate_hotkeys(titles, hotkey_mode, custom_keys, used_hotkeys)
         -- Old table format: { m = 'Fill match arms', ... }
         for custom_key, action_title in pairs(custom_keys) do
           if title:find(action_title, 1, true) then
-            custom_hotkey = custom_key:lower()
+            custom_hotkey = custom_key
             break
           end
         end
