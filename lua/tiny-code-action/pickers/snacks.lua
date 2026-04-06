@@ -3,7 +3,11 @@ local BasePicker = require("tiny-code-action.base.picker")
 local M = BasePicker.new()
 
 local function format_code_action(item)
-  local formatted = M.format_code_action(item)
+  local base_picker_item = vim.deepcopy(item)
+  base_picker_item.client = vim.lsp.get_client_by_id(base_picker_item.client_id)
+  base_picker_item.client_id = nil
+
+  local formatted = M.format_code_action(base_picker_item)
 
   return {
     { formatted.kind, formatted.kind_hl },
@@ -32,7 +36,7 @@ function M.create(config, results, bufnr)
 
     table.insert(items, {
       action = pair_client_action.action,
-      client = pair_client_action.client,
+      client_id = pair_client_action.client.id,
       context = pair_client_action.context,
       text = pair_client_action.action.title,
     })
@@ -59,13 +63,14 @@ function M.create(config, results, bufnr)
       cwd = vim.fn.getcwd(),
     }),
     confirm = function(picker, item)
+      local client = vim.lsp.get_client_by_id(item.client_id)
       picker:close()
 
       if not item then
         return
       end
 
-      M.apply_action(item.action, item.client, item.context, bufnr)
+      M.apply_action(item.action, client, item.context, bufnr)
     end,
     win = {
       input = {
