@@ -77,4 +77,26 @@ function M.scratch_buffer()
   return buf
 end
 
+--- Hide the [Process exited N] message from a terminal buffer.
+--- On nvim 0.12+ it's virtual text in a namespace; on older versions it's a buffer line.
+--- @param buf number: buffer to clean
+function M.hide_exit_message(buf)
+  local exitmsg_ns = vim.api.nvim_get_namespaces()["nvim.terminal.exitmsg"]
+  if exitmsg_ns then
+    vim.api.nvim_buf_clear_namespace(buf, exitmsg_ns, 0, -1)
+    return
+  end
+
+  -- nvim < 0.12: remove the buffer line
+  local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+  for i = #lines, 1, -1 do
+    if lines[i]:match("%[Process exited %d+%]") then
+      vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
+      vim.api.nvim_buf_set_lines(buf, i - 1, i, true, { "" })
+      vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
+      return
+    end
+  end
+end
+
 return M
