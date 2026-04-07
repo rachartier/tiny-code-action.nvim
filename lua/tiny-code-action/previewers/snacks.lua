@@ -43,6 +43,19 @@ function M.term_previewer(opts)
       -- Use terminal preview for other content types
       local text = table.concat(preview_content, "\n")
       snacks_preview.cmd(utils.create_echo_command(text), ctx)
+
+      -- hide [Process exited 0] in terminal preview
+      local grp = vim.api.nvim_create_augroup("tiny-code-action", {})
+      vim.api.nvim_create_autocmd("TermClose", {
+        group = grp,
+        callback = function(event)
+          if event.buf == ctx.buf then
+            local exitmsg_ns = vim.api.nvim_get_namespaces()["nvim.terminal.exitmsg"]
+            vim.api.nvim_buf_clear_namespace(event.buf, exitmsg_ns, 0, -1)
+            vim.api.nvim_del_augroup_by_id(grp)
+          end
+        end,
+      })
     end
 
     return true
