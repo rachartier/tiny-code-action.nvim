@@ -141,7 +141,7 @@ function M.create(config, results, bufnr)
   }
 
   if type(config.picker) == "table" then
-    picker_opts = vim.tbl_deep_extend("force", config.picker.opts or {}, picker_opts)
+    picker_opts = vim.tbl_deep_extend("force", picker_opts, config.picker.opts or {})
   end
 
   if picker_opts.previewer == nil then
