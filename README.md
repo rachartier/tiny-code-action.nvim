@@ -46,8 +46,6 @@ With Lazy.nvim:
 {
     "rachartier/tiny-code-action.nvim",
     dependencies = {
-        {"nvim-lua/plenary.nvim"},
-
         -- optional picker via telescope
         {"nvim-telescope/telescope.nvim"},
         -- optional picker via fzf-lua
@@ -85,9 +83,6 @@ end, { noremap = true, silent = true })
 ```lua
 {
     "rachartier/tiny-code-action.nvim",
-    dependencies = {
-        {"nvim-lua/plenary.nvim"},
-    },
     event = "LspAttach",
     opts = {
       --- The backend to use, currently only "vim", "delta", "difftastic", "diffsofancy" are supported
