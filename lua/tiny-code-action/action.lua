@@ -100,6 +100,9 @@ function M.blocking_resolve(action, bufnr, client, timeout_ms)
 end
 
 function M.support_resolve(client, bufnr)
+  if not client then
+    return false
+  end
   utils.add_client_methods(client)
   local reg = client.dynamic_capabilities
       and client.dynamic_capabilities:get("textDocument/codeAction", { bufnr = bufnr })
