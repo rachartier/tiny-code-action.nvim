@@ -53,15 +53,36 @@ function M.code_action_finder(opts, config, callback)
       local start = assert(opts.range.start, "range must have a `start` property")
       local end_ = assert(opts.range["end"], "range must have a `end` property")
       params = vim.lsp.util.make_given_range_params(start, end_, opts.bufnr, client.offset_encoding)
-    elseif vim.fn.mode() == "n" then
-      params = vim.lsp.util.make_range_params(0, client.offset_encoding)
     else
-      params = vim.lsp.util.make_given_range_params(
-        { vim.fn.getpos("'<")[2], vim.fn.getpos("'<")[3] },
-        { vim.fn.getpos("'>")[2], vim.fn.getpos("'>")[3] },
-        0,
-        client.offset_encoding
-      )
+      local mode = vim.api.nvim_get_mode().mode
+      if mode == "v" or mode == "V" then
+        local start = vim.fn.getpos("v")
+        local end_ = vim.fn.getpos(".")
+        local start_row, start_col = start[2], start[3]
+        local end_row, end_col = end_[2], end_[3]
+
+        -- Normalize the range to start < end
+        if start_row == end_row and end_col < start_col then
+          end_col, start_col = start_col, end_col
+        elseif end_row < start_row then
+          start_row, end_row = end_row, start_row
+          start_col, end_col = end_col, start_col
+        end
+        if mode == "V" then
+          start_col = 1
+          local lines = vim.api.nvim_buf_get_lines(opts.bufnr, end_row - 1, end_row, true)
+          end_col = #lines[1]
+        end
+
+        params = vim.lsp.util.make_given_range_params(
+          { start_row, start_col - 1 },
+          { end_row, end_col - 1 },
+          opts.bufnr,
+          client.offset_encoding
+        )
+      else
+        params = vim.lsp.util.make_range_params(0, client.offset_encoding)
+      end
     end
     params.context = context
 
