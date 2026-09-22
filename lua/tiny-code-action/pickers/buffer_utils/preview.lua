@@ -209,6 +209,20 @@ function M.show_preview(
   end
 
   if preview_state.action_item ~= action_item or need_new_win then
+    if not need_new_win then
+      -- Use new scratch buffer but same win so that terminal can attach correctly
+      -- If the buffer is kept the same, then previewers.buffer.term_previewer can call
+      -- terminal.colorize on some backends, which creates a new terminal and tries to
+      -- attach it to the same buffer, which creates an error.
+      local old_buf = preview_state.buf
+      preview_state.buf = vim.api.nvim_create_buf(false, true)
+      vim.api.nvim_win_set_buf(preview_state.win, preview_state.buf)
+      -- delete old buf to clean up
+      if old_buf and vim.api.nvim_buf_is_valid(old_buf) then
+        vim.api.nvim_buf_delete(old_buf, { force = true })
+      end
+    end
+
     preview_state.action_item = action_item
 
     utils.set_buf_option(preview_state.buf, "modifiable", true)
